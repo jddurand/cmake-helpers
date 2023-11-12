@@ -3,13 +3,14 @@ function(cmake_helpers_try_run name configure_input)
   string(TOUPPER ${name} _name_upper)
   set(_singleton CMAKE_HELPERS_TRY_RUN_${_name_upper}_SINGLETON)
   if(NOT ${_singleton})
+    set(_compile_definitions ${CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS})
     set(_configure_output ${CMAKE_CURRENT_BINARY_DIR}/_configure.c)
     configure_file(${configure_input} ${_configure_output})
     unset(_forced_value)
     set(_found_value FALSE)
     if (_values)
       foreach(_value ${_values})
-	set(_compile_definitions -D${name}=${_value})
+	list(APPEND _compile_definitions -D${name}=${_value})
 	message(STATUS "Looking for ${_value}")
 	try_run(
 	  _run_result
@@ -43,12 +44,14 @@ function(cmake_helpers_try_run name configure_input)
 	_run_result
 	_compile_result
 	SOURCE_FROM_FILE _try.c ${_configure_output}
+	COMPILE_DEFINITIONS ${_compile_definitions}
 	COMPILE_OUTPUT_VARIABLE _compile_output
 	RUN_OUTPUT_VARIABLE _run_output
       )
       if(CMAKE_HELPERS_DEBUG)
 	file(READ ${_configure_output} _source)
 	message(STATUS "Source:\n${_source}")
+	message(STATUS "Compile definitions: ${_compile_definitions}")
 	message(STATUS "Compile result: ${_compile_result}")
 	message(STATUS "Compile output:\n${_compile_output}")
 	message(STATUS "Run result: ${_run_result}")

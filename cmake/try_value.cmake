@@ -2,6 +2,7 @@ function(cmake_helpers_try_value name configure_input extname)
   string(TOUPPER ${name} _name_upper)
   set(_singleton CMAKE_HELPERS_TRY_RUN_${_name_upper}_SINGLETON)
   if(NOT ${_singleton})
+    set(_compile_definitions ${CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS})
     set(_configure_output ${CMAKE_CURRENT_BINARY_DIR}/_configure.c)
     configure_file(${configure_input} ${_configure_output})
     message(STATUS "Looking for ${extname}")
@@ -9,12 +10,14 @@ function(cmake_helpers_try_value name configure_input extname)
       _run_result
       _compile_result
       SOURCE_FROM_FILE _try.c ${_configure_output}
+      COMPILE_DEFINITIONS ${_compile_definitions}
       COMPILE_OUTPUT_VARIABLE _compile_output
       RUN_OUTPUT_VARIABLE _run_output
     )
     if(CMAKE_HELPERS_DEBUG)
       file(READ ${_configure_output} _source)
       message(STATUS "Source:\n${_source}")
+      message(STATUS "Compile definitions: ${_compile_definitions}")
       message(STATUS "Compile result: ${_compile_result}")
       message(STATUS "Compile output:\n${_compile_output}")
       message(STATUS "Run result: ${_run_result}")
