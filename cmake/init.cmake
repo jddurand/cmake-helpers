@@ -12,13 +12,20 @@ function(cmake_helpers_init)
     message(FATAL_ERROR "CMake Helpers already initialized")
   endif()
   #
+  # Declare all options
+  #
+  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX    INTERNAL "-iface" "CMake Helpers interface suffix")              # Must be set, not an option in the GUI
+  cmake_helpers_option(CMAKE_HELPERS_LIBRARY_SOURCES STRING   "AUTO"   "CMake Helpers library sources" "AUTO" ON OFF) # Three choices, visibile in the GUI
+  cmake_helpers_option(CMAKE_HELPERS_LIBRARY_HEADERS STRING   "AUTO"   "CMake Helpers library headers" "AUTO" ON OFF) # Three choices, visibile in the GUI
+  #
   # We always create an interface library
   #
-  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX INTERNAL "-iface" "CMake Helpers interface suffix")
   if(NOT CMAKE_HELPERS_IFACE_SUFFIX)
     message(FATAL_ERROR "Interface suffix is not set")
   endif()
   cmake_helpers_call(add_library ${CMAKE_PROJECT_NAME}${CMAKE_HELPERS_IFACE_SUFFIX} INTERFACE)
-
+  #
+  # Remember we were initialized
+  #
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED TRUE)
 endfunction()
