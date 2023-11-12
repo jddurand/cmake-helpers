@@ -1,3 +1,5 @@
+#cmakedefine HAVE_STDLIB_H
+
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
