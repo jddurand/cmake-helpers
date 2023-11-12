@@ -47,6 +47,27 @@ function(cmake_helpers_init)
   check_include_file("float.h"        HAVE_FLOAT_H)
   check_include_file("locale.h"       HAVE_LOCALE_H)
   #
+  # Check math library
+  #
+  include(CheckSymbolExists)
+  check_symbol_exists(log "math.h" HAVE_LOG)
+  check_symbol_exists(exp "math.h" HAVE_EXP)
+  if(NOT (HAVE_LOG AND HAVE_EXP))
+    unset(HAVE_LOG CACHE)
+    unset(HAVE_EXP CACHE)
+    list(APPEND CMAKE_REQUIRED_LIBRARIES "m")
+    check_symbol_exists(log "math.h" HAVE_LOG)
+    check_symbol_exists(exp "math.h" HAVE_EXP)
+    if(HAVE_LOG AND HAVE_EXP)
+      set(CMAKE_MATH_LIBS "m" CACHE STRING "Math library")
+      mark_as_advanced(CMAKE_MATH_LIBS)
+      #
+      # Use the math library for the try_run tests
+      #
+      list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_MATH_LIBS})
+    endif()
+  endif()
+  #
   # Common checks
   #
   cmake_helpers_try_run(EBCDIC ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
@@ -67,23 +88,6 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_LOCALTIME_R ${PROJECT_SOURCE_DIR}/cmake/localtime_r.c localtime_r _localtime_r __localtime_r)
   cmake_helpers_try_run(C_WRITE ${PROJECT_SOURCE_DIR}/cmake/write.c write _write __write)
   cmake_helpers_try_run(C_LOG2 ${PROJECT_SOURCE_DIR}/cmake/log2.c log2)
-  #
-  # Check math library
-  #
-  include(CheckSymbolExists)
-  check_symbol_exists(log "math.h" HAVE_LOG)
-  check_symbol_exists(exp "math.h" HAVE_EXP)
-  if(NOT (HAVE_LOG AND HAVE_EXP))
-    unset(HAVE_LOG CACHE)
-    unset(HAVE_EXP CACHE)
-    list(APPEND CMAKE_REQUIRED_LIBRARIES "m")
-    check_symbol_exists(log "math.h" HAVE_LOG)
-    check_symbol_exists(exp "math.h" HAVE_EXP)
-    if(HAVE_LOG AND HAVE_EXP)
-      set(CMAKE_MATH_LIBS "m" CACHE STRING "Math library")
-      mark_as_advanced(CMAKE_MATH_LIBS)
-    endif()
-  endif()
   #
   # Check GNU features
   #
