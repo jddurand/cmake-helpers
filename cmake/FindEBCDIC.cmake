@@ -15,7 +15,7 @@ function(FindEBCDIC)
     set(_configure_input ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
     set(_configure_output ${CMAKE_CURRENT_BINARY_DIR}/configure.c)
     configure_file(${_configure_input} ${_configure_output})
-    set(_compile_definitions -DHAVE_STDLIB_H=${_HAVE_STDLIB_H})
+    set(_compile_definitions)
     try_run(
       _run_result
       _compile_result

@@ -49,7 +49,7 @@ function(cmake_helpers_init)
   #
   # Common checks
   #
-  FindEBCDIC()
+  cmake_helpers_try_run(EBCDIC ${PROJECT_SOURCE_DIR}/EBCDIC.c)
   #
   # Check math library
   #
