@@ -3,6 +3,8 @@ function(cmake_helpers_init)
   # We always create an interface library
   #
   set(CMAKE_HELPERS_IFACE_SUFFIX "-iface" CACHE STRING "CMake Helpers interface suffix")
+  set_property(CACHE CMAKE_HELPERS_IFACE_SUFFIX PROPERTY STRINGS ${CMAKE_HELPERS_IFACE_SUFFIX})
+
   if(NOT CMAKE_HELPERS_IFACE_SUFFIX)
     message(FATAL_ERROR "Interface suffix is not set")
   endif()
