@@ -91,6 +91,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_LOG2 ${PROJECT_SOURCE_DIR}/cmake/log2.c log2)
   cmake_helpers_try_run(C_LOG2F ${PROJECT_SOURCE_DIR}/cmake/log2f.c log2f)
   cmake_helpers_try_value(C_CHAR_BIT ${PROJECT_SOURCE_DIR}/cmake/CHAR_BIT.c CHAR_BIT)
+  cmake_helpers_try_run(C_STRTOLD ${PROJECT_SOURCE_DIR}/cmake/strtold.c strtold _strtold __strtold)
   #
   # Check GNU features
   #
