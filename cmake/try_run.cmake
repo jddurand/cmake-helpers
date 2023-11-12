@@ -3,7 +3,6 @@ function(cmake_helpers_try_run name configure_input)
   string(TOUPPER ${name} _name_upper)
   set(_singleton CMAKE_HELPERS_TRY_RUN_${_name_upper}_SINGLETON)
   if(NOT ${_singleton})
-    message(STATUS "Looking for ${name}")
     set(_configure_output ${CMAKE_CURRENT_BINARY_DIR}/_configure.c)
     configure_file(${configure_input} ${_configure_output})
     unset(_forced_value)
@@ -11,6 +10,7 @@ function(cmake_helpers_try_run name configure_input)
     if (_values)
       foreach(_value ${_values})
 	set(_compile_definitions -D${name}=${_value})
+	message(STATUS "Looking for ${name}=${_value}")
 	try_run(
 	  _run_result
 	  _compile_result
@@ -30,7 +30,7 @@ function(cmake_helpers_try_run name configure_input)
 	endif()
 	if(_compile_result AND (_run_result EQUAL 0))
 	  message(STATUS "Looking for ${name}=${value} - yes")
-	  set(_forced_value ${value})
+	  set(_forced_value ${_value})
 	  set(_found_value TRUE)
 	  break()
 	else()
@@ -38,6 +38,7 @@ function(cmake_helpers_try_run name configure_input)
 	endif()
       endforeach()
     else()
+      message(STATUS "Looking for ${name}")
       try_run(
 	_run_result
 	_compile_result
