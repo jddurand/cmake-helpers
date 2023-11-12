@@ -27,7 +27,7 @@ if(NOT _cmake_helpers_loaded)
   #
   file(GLOB _cmakes ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
   foreach (_cmake ${_cmakes})
-    cmake_path(GET ${_cmake} FILENAME _filename)
+    cmake_path(GET _cmake FILENAME _filename)
     if(_filename STREQUAL call.cmake)
       continue()
     endif()
