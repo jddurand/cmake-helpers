@@ -13,14 +13,22 @@ endif()
 if(NOT _cmake_helpers_loaded)
   option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "Loading ${PROJECT_NAME} files")
+    message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} loading")
   endif()
+  #
+  # Always start with cmake/call.cmake
+  #
+  include(${PROJECT_SOURCE_DIR}/cmake/call.cmake)
+  #
+  # Load the others
+  #
   file(GLOB _cmakes ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
   foreach (_cmake ${_cmakes})
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "include(${_cmake})")
+    cmake_path(GET ${_cmake} FILENAME _filename)
+    if(_filename STREQUAL call.cmake)
+      continue()
     endif()
-    include(${_cmake})
+    cmake_helpers_call(include ${_cmake})
   endforeach()
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_LOADED TRUE)
 endif()
