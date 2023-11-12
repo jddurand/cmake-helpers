@@ -18,5 +18,5 @@
 #endif
 int main() {
   float x = C_NAN;
-  return 0;
+  exit(0);
 }

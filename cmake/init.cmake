@@ -146,6 +146,22 @@ function(cmake_helpers_init)
       endif()
     endblock()
   endif()
+
+  cmake_helpers_try_run(C_ISINF ${PROJECT_SOURCE_DIR}/cmake/isinf.c isinf _isinf __isinf)
+  if(NOT C_ISINF_FOUND)
+    block()
+      set(CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS -DHAVE_ISINF_REPLACEMENT)
+      cmake_helpers_try_run(C_ISINF_REPLACEMENT ${PROJECT_SOURCE_DIR}/cmake/isinf.c)
+    endblock()
+  endif()
+
+  cmake_helpers_try_run(C_ISNAN ${PROJECT_SOURCE_DIR}/cmake/isnan.c isnan _isnan __isnan)
+  if(NOT C_ISNAN_FOUND)
+    block()
+      set(CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS -DHAVE_ISNAN_REPLACEMENT)
+      cmake_helpers_try_run(C_ISNAN_REPLACEMENT ${PROJECT_SOURCE_DIR}/cmake/isnan.c)
+    endblock()
+  endif()
   #
   # Check GNU features
   #

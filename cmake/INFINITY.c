@@ -19,5 +19,5 @@
 
 int main() {
   float x = -C_INFINITY;
-  return 0;
+  exit(0);
 }

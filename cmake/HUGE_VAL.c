@@ -15,5 +15,5 @@
 
 int main() {
   double x = -C_HUGE_VAL;
-  return 0;
+  exit(0);
 }

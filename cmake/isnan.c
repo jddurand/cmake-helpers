@@ -9,11 +9,12 @@
 #include <math.h>
 #endif
 
-#ifdef HAVE_HUGE_VALL_REPLACEMENT
-#  define C_HUGE_VALL (__builtin_huge_vall())
+#ifdef HAVE_ISNAN_REPLACEMENT
+#  undef C_ISNAN
+#  define C_ISNAN(x) (__builtin_isnan(x))
 #endif
 
 int main() {
-  long double x = -C_HUGE_VALL;
-  exit(0);
+  short x = C_ISNAN(0.0);
+  return 0;
 }

@@ -15,5 +15,5 @@
 
 int main() {
   float x = -C_HUGE_VALF;
-  return 0;
+  exit(0);
 }
