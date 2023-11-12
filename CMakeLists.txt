@@ -22,9 +22,6 @@ if(NOT _cmake_helpers_loaded)
   if(NOT _call)
     message(FATAL_ERROR "Could not find call.cmake")
   endif()
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "include(${_call})")
-  endif()
   include(${_call})
   #
   # Load the others
@@ -34,7 +31,7 @@ if(NOT _cmake_helpers_loaded)
     if(_file STREQUAL ${_call})
       continue()
     endif()
-    cmake_helpers_call(include ${_file})
+    include(${_file})
   endforeach()
   #
   # Initialize

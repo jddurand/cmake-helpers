@@ -1,5 +1,14 @@
 function(cmake_helpers_library)
-  cmake_helpers_call(include GNUInstallDirs)
-  cmake_helpers_call(include CheckSymbolExists)
-  cmake_helpers_call(check_symbol_exists __GNU_LIBRARY__ "features.h" _GNU_SOURCE)
+  set(_srcs ${ARGN})
+  #
+  # We always create an interface library if not already done
+  #
+  if(NOT CMAKE_HELPERS_IFACE_SUFFIX)
+    message(FATAL_ERROR "Interface suffix is not set")
+  endif()
+  set(_iface_target ${CMAKE_PROJECT_NAME}${CMAKE_HELPERS_IFACE_SUFFIX})
+  if(NOT TARGET ${_iface_target})
+    cmake_helpers_call(add_library ${_iface_target} INTERFACE)
+  endif()
+
 endfunction()
