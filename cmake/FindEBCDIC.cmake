@@ -12,18 +12,20 @@ function(FindEBCDIC)
     # Test
     #
     message(STATUS "Looking for EBCDIC")
-    set(_source_from_file ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
+    set(_configure_input ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
+    set(_configure_output ${CMAKE_CURRENT_BINARY_DIR}/configure.c)
+    configure_file(${_configure_input} ${_configure_output})
     set(_compile_definitions -DHAVE_STDLIB_H=${_HAVE_STDLIB_H})
     try_run(
       _run_result
       _compile_result
-      SOURCE_FROM_FILE try.c ${_source_from_file}
+      SOURCE_FROM_FILE try.c ${_configure_output}
       COMPILE_DEFINITIONS ${_compile_definitions}
       COMPILE_OUTPUT_VARIABLE _compile_output
       RUN_OUTPUT_VARIABLE _run_output
     )
     if(CMAKE_HELPERS_DEBUG)
-      file(READ ${_source_from_file} _source)
+      file(READ ${_configure_output} _source)
       message(STATUS "Source:\n${_source}")
       message(STATUS "Compile definitions: ${_compile_definitions}")
       message(STATUS "Compile result: ${_compile_result}")
