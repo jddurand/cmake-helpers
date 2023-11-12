@@ -46,6 +46,7 @@ function(cmake_helpers_init)
   check_include_file("math.h"         HAVE_MATH_H)
   check_include_file("float.h"        HAVE_FLOAT_H)
   check_include_file("locale.h"       HAVE_LOCALE_H)
+  check_include_file("limits.h"       HAVE_LIMITS_H)
   #
   # Check math library
   #
@@ -89,7 +90,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_WRITE ${PROJECT_SOURCE_DIR}/cmake/write.c write _write __write)
   cmake_helpers_try_run(C_LOG2 ${PROJECT_SOURCE_DIR}/cmake/log2.c log2)
   cmake_helpers_try_run(C_LOG2F ${PROJECT_SOURCE_DIR}/cmake/log2f.c log2f)
-  cmake_helpers_try_run(C_LOG2L ${PROJECT_SOURCE_DIR}/cmake/log2l.c log2l)
+  cmake_helpers_try_value(C_CHAR_BIT ${PROJECT_SOURCE_DIR}/cmake/CHAR_BIT.c CHAR_BIT)
   #
   # Check GNU features
   #
