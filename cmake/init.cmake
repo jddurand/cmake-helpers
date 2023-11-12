@@ -50,6 +50,16 @@ function(cmake_helpers_init)
   # Common checks
   #
   cmake_helpers_try_run(EBCDIC ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
+  cmake_helpers_try_run(C_INLINE ${PROJECT_SOURCE_DIR}/cmake/inline.c inline __inline__ inline__ __inline)
+  IF (C_INLINE)
+    if(C_INLINE STREQUAL inline)
+      set(_c_inline_is_inline TRUE)
+    else()
+      set(_c_inline_is_inline FALSE)
+    endif()
+    set(C_INLINE_IS_INLINE ${_c_inline_is_inline} CACHE BOOL "C inline keyword is inline")
+    mark_as_advanced(C_INLINE_IS_INLINE)
+  endif()
   #
   # Check math library
   #
