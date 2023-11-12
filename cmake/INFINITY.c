@@ -10,12 +10,10 @@
 #endif
 
 #ifdef HAVE_INFINITY_REPLACEMENT_USING_DIVISION
-#  undef INFINITY
-#  define INFINITY (1.0 / 0.0)
+#  define C_INFINITY (1.0 / 0.0)
 #else
 #  ifdef HAVE_INFINITY_REPLACEMENT
-#    undef INFINITY
-#    define INFINITY (__builtin_inff())
+#    define C_INFINITY (__builtin_inff())
 #  endif
 #endif
 

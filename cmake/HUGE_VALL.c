@@ -10,8 +10,7 @@
 #endif
 
 #ifdef HAVE_HUGE_VALL_REPLACEMENT
-#  undef HUGE_VALL
-#  define HUGE_VALL (__builtin_huge_vall())
+#  define C_HUGE_VALL (__builtin_huge_vall())
 #endif
 
 int main() {
