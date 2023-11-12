@@ -19,5 +19,5 @@ int main() {
   LONG_LONG  ll;
 
   ll = C_STRTOLL(p, &endptrp, 10);
-  return 0;
+  exit(0);
 }

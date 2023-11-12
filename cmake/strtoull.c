@@ -19,5 +19,5 @@ int main() {
   ULONG_LONG ull;
 
   ull = C_STRTOULL(p, &endptrp, 10);
-  return 0;
+  exit(0);
 }
