@@ -14,7 +14,7 @@ function(FindEBCDIC)
     try_run(
       _run_result
       _compile_result
-      SOURCE_FROM_FILE try ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c
+      SOURCE_FROM_FILE try.c ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c
       LOG_DESCRIPTION "Looking for EBCDIC"
       COMPILE_DEFINITIONS -DHAVE_STDLIB_H=${_HAVE_STDLIB_H}
       COMPILE_OUTPUT_VARIABLE _compile_output
