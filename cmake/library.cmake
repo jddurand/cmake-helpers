@@ -1,2 +1,5 @@
 function(cmake_helpers_library)
+  cmake_helpers_call(include GNUInstallDirs)
+  cmake_helpers_call(include CheckSymbolExists)
+  cmake_helpers_call(check_symbol_exists __GNU_LIBRARY__ "features.h" _GNU_SOURCE)
 endfunction()
