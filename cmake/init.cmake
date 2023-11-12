@@ -88,6 +88,8 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_LOCALTIME_R ${PROJECT_SOURCE_DIR}/cmake/localtime_r.c localtime_r _localtime_r __localtime_r)
   cmake_helpers_try_run(C_WRITE ${PROJECT_SOURCE_DIR}/cmake/write.c write _write __write)
   cmake_helpers_try_run(C_LOG2 ${PROJECT_SOURCE_DIR}/cmake/log2.c log2)
+  cmake_helpers_try_run(C_LOG2F ${PROJECT_SOURCE_DIR}/cmake/log2f.c log2f)
+  cmake_helpers_try_run(C_LOG2L ${PROJECT_SOURCE_DIR}/cmake/log2l.c log2l)
   #
   # Check GNU features
   #
