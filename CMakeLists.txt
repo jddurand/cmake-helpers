@@ -36,5 +36,12 @@ if(NOT _cmake_helpers_loaded)
     endif()
     cmake_helpers_call(include ${_file})
   endforeach()
+  #
+  # Initialize
+  #
+  cmake_helpers_init()
+  #
+  # Avoid repeating ourself
+  #
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_LOADED TRUE)
 endif()
