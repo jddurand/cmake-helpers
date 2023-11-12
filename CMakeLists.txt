@@ -30,7 +30,7 @@ if(NOT _cmake_helpers_loaded)
   # Load the others
   #
   file(GLOB _files ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
-  foreach (_file ${_cmakes})
+  foreach (_file ${_files})
     if(_file STREQUAL ${_call})
       continue()
     endif()
