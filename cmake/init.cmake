@@ -94,9 +94,9 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_STRTOLD ${PROJECT_SOURCE_DIR}/cmake/strtold.c strtold _strtold __strtold)
   cmake_helpers_try_run(C_STRTOD ${PROJECT_SOURCE_DIR}/cmake/strtod.c strtod _strtod __strtod)
   cmake_helpers_try_run(C_STRTOF ${PROJECT_SOURCE_DIR}/cmake/strtof.c strtof _strtof __strtof)
-  cmake_helpers_try_run(C_HUGE_VAL ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c)
+  cmake_helpers_try_run(C_HUGE_VAL ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c HUGE_VAL)
   block()
-    cmake_helpers_try_run(C_HUGE_VAL_REPLACEMENT ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c)
+    cmake_helpers_try_run(C_HUGE_VAL_REPLACEMENT ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c HUGE_VAL)
   endblock()
   #
   # Check GNU features
