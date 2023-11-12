@@ -62,6 +62,7 @@ function(cmake_helpers_init)
   endif()
   cmake_helpers_try_run(C_FORCEINLINE ${PROJECT_SOURCE_DIR}/cmake/forceinline.c forceinline __forceinline__ forceinline__ __forceinline)
   cmake_helpers_try_run(C_VA_COPY ${PROJECT_SOURCE_DIR}/cmake/va_copy.c va_copy _va_copy __va_copy)
+  cmake_helpers_try_run(C_VSNPRINTF ${PROJECT_SOURCE_DIR}/cmake/vsnprintf.c vsnprintf _vsnprintf __vsnprintf)
   #
   # Check math library
   #
