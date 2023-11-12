@@ -2,7 +2,7 @@ function(cmake_helpers_init)
   #
   # We always create an interface library
   #
-  cmake_helpers_option(CMAKE_HELPERS_IFACE "-iface" "CMake Helpers interface suffix")
+  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX "-iface" "CMake Helpers interface suffix")
 
   if(NOT CMAKE_HELPERS_IFACE_SUFFIX)
     message(FATAL_ERROR "Interface suffix is not set")
