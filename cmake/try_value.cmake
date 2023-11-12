@@ -27,9 +27,19 @@ function(cmake_helpers_try_value name configure_input extname)
       message(STATUS "Looking for ${extname} gives ${_run_output}")
       set(${name} ${_run_output} CACHE STRING "${name} try_run result")
       mark_as_advanced(${name})
+      set(_found_value_ TRUE)
     else()
       message(STATUS "Looking for ${extname} failed")
+      set(_found_value FALSE)
     endif()
+    #
+    # Put a boolean for tests - the value itself can lead to some suprising result, e.g. INFINITY
+    #
+    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run result")
+    mark_as_advanced(${name}_FOUND)
+    #
+    # Set singleton to prevent multiple calls
+    #
     set(${_singleton} TRUE CACHE BOOL "${name} try_run singleton")
     mark_as_advanced(${_singleton})
     file(REMOVE ${_configure_output})

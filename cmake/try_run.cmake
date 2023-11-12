@@ -70,6 +70,14 @@ function(cmake_helpers_try_run name configure_input)
       set(${name} ${_found_value} CACHE BOOL "${name} try_run result")
     endif()
     mark_as_advanced(${name})
+    #
+    # Put a boolean for tests - the value itself can lead to some suprising result, e.g. INFINITY
+    #
+    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run result")
+    mark_as_advanced(${name}_FOUND)
+    #
+    # Set singleton to prevent multiple calls
+    #
     set(${_singleton} TRUE CACHE BOOL "${name} try_run singleton")
     mark_as_advanced(${_singleton})
     file(REMOVE ${_configure_output})
