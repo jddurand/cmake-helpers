@@ -64,6 +64,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_VA_COPY ${PROJECT_SOURCE_DIR}/cmake/va_copy.c va_copy _va_copy __va_copy)
   cmake_helpers_try_run(C_VSNPRINTF ${PROJECT_SOURCE_DIR}/cmake/vsnprintf.c vsnprintf _vsnprintf __vsnprintf)
   cmake_helpers_try_run(C_FILENO ${PROJECT_SOURCE_DIR}/cmake/fileno.c fileno _fileno __fileno)
+  cmake_helpers_try_run(C_LOCALTIME_R ${PROJECT_SOURCE_DIR}/cmake/localtime_r.c localtime_r _localtime_r __localtime_r)
   #
   # Check math library
   #
