@@ -96,7 +96,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_STRTOF ${PROJECT_SOURCE_DIR}/cmake/strtof.c strtof _strtof __strtof)
   cmake_helpers_try_run(C_HUGE_VAL ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c HUGE_VAL)
   block()
-    set(CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS -DC_HUGE_VAL=HUGE_VAL -DC_HUGE_VAL_REPLACEMENT)
+    set(CMAKE_HELPERS_TRY_RUN_COMPILE_DEFINITIONS -DC_HUGE_VAL=HUGE_VAL -DHAVE_HUGE_VAL_REPLACEMENT)
     cmake_helpers_try_run(C_HUGE_VAL_REPLACEMENT ${PROJECT_SOURCE_DIR}/cmake/HUGE_VAL.c)
   endblock()
   #

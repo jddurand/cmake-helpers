@@ -1,6 +1,5 @@
 #cmakedefine HAVE_STDLIB_H
 #cmakedefine HAVE_MATH_H
-#cmakedefine HAVE_HUGE_VAL_REPLACEMENT
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
