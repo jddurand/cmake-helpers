@@ -49,18 +49,7 @@ function(cmake_helpers_init)
   #
   # Common checks
   #
-  cmake_helpers_init_value(EBCDIC [[
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-int main() {
-  if ('M'==0xd4) {
-    exit(0);
-  }
-  exit(1);
-}
-]])
+  FindEBCDIC()
   #
   # Check math library
   #
@@ -86,46 +75,4 @@ int main() {
   # Remember we were initialized
   #
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED TRUE)
-endfunction()
-
-function(cmake_helpers_init_value value source)
-  set(_argn ${ARGN})
-  if(NOT _cmake_helpers_initialized_${value})
-    set(_compile_definitions)
-    foreach(_arg ${_argn})
-      if(${${_arg}})
-	list(APPEND _compile_definitions -D${_arg})
-      endif()
-    endforeach()
-    try_run(_run_result _compile_result
-      SOURCE_FROM_VAR ${value}.c source
-      LOG_DESCRIPTION "Looking for ${value}"
-      COMPILE_DEFINITIONS ${_compile_definitions}
-      COMPILE_OUTPUT_VARIABLE _compile_output
-      RUN_OUTPUT_VARIABLE _run_output
-    )
-    if(CMAKE_HELPERS_DEBUG)
-      if (_compile_output)
-	message(STATUS ${_compile_output})
-      else()
-	message(STATUS "No compilation output")
-      endif()
-      if(_run_output)
-	message(STATUS ${_run_output})
-      else()
-	message(STATUS "No run output")
-      endif()
-    endif()
-    if(_compile_result AND (_run_result EQUAL 0))
-      set(_value TRUE)
-      message(STATUS "Looking for ${value} - yes")
-    else()
-      set(_value FALSE)
-      message(STATUS "Looking for ${value} - no")
-    endif()
-    set(${value} ${_value} CACHE BOOL ${value})
-    mark_as_advanced(${value})
-    set(_cmake_helpers_initialized_${value} TRUE CACHE BOOL "${value} check singleton")
-    mark_as_advanced(_cmake_helpers_initialized_${value})
-  endif()
 endfunction()
