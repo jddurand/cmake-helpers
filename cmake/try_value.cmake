@@ -35,7 +35,7 @@ function(cmake_helpers_try_value name configure_input extname)
     #
     # Put a boolean for tests - the value itself can lead to some suprising result, e.g. INFINITY
     #
-    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run result")
+    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run found result")
     mark_as_advanced(${name}_FOUND)
     #
     # Set singleton to prevent multiple calls
