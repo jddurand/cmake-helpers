@@ -1,0 +1,8 @@
+function(cmake_helpers_depend depname)
+  set(_argn ${ARGN})
+  cmake_helpers_call(include FetchContent)
+  cmake_helpers_call(FetchContent_Declare ${depname} ${_argn})
+  if(NOT ${depname}_POPULATED)
+    cmake_helpers_call(FetchContent_Populate ${depname})
+  endif()
+endfunction()
