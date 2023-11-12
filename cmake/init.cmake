@@ -60,6 +60,7 @@ function(cmake_helpers_init)
     set(C_INLINE_IS_INLINE ${_c_inline_is_inline} CACHE BOOL "C inline keyword is inline")
     mark_as_advanced(C_INLINE_IS_INLINE)
   endif()
+  cmake_helpers_try_run(C_FORCEINLINE ${PROJECT_SOURCE_DIR}/cmake/forceinline.c forceinline __forceinline__ forceinline__ __forceinline)
   #
   # Check math library
   #
