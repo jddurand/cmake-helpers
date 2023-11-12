@@ -18,20 +18,23 @@ if(NOT _cmake_helpers_loaded)
   #
   # Always start with cmake/call.cmake
   #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "include(${PROJECT_SOURCE_DIR}/cmake/call.cmake)")
+  file(GLOB _call ${PROJECT_SOURCE_DIR}/cmake/call.cmake)
+  if(NOT _call)
+    message(FATAL_ERROR "Could not find call.cmake")
   endif()
-  include(${PROJECT_SOURCE_DIR}/cmake/call.cmake)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "include(${_call})")
+  endif()
+  include(${_call})
   #
   # Load the others
   #
-  file(GLOB _cmakes ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
-  foreach (_cmake ${_cmakes})
-    cmake_path(GET _cmake FILENAME _filename)
-    if(_filename STREQUAL call.cmake)
+  file(GLOB _files ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
+  foreach (_file ${_cmakes})
+    if(_file STREQUAL ${_call})
       continue()
     endif()
-    cmake_helpers_call(include ${_cmake})
+    cmake_helpers_call(include ${_file})
   endforeach()
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_LOADED TRUE)
 endif()
