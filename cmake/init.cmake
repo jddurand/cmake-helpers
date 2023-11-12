@@ -88,7 +88,7 @@ int main() {
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED TRUE)
 endfunction()
 
-function(cmake_helpers_init_value value source_from_content)
+function(cmake_helpers_init_value value source)
   set(_argn ${ARGN})
   get_property(_cmake_helpers_initialized_${value}_set GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED_${value} SET)
   if(_cmake_helpers_initialized_${value}_set)
@@ -105,10 +105,11 @@ function(cmake_helpers_init_value value source_from_content)
       endif()
     endforeach()
     message(STATUS "Looking for ${value}")
+    file(WRITE 
     try_run(
       _run_result
       _compile_result
-      SOURCE_FROM_CONTENT ${value}.c ${source_from_content}
+      SOURCE_FROM_VAR ${value}.c source
       COMPILE_DEFINITIONS ${_compile_definitions}
       RUN_OUTPUT_VARIABLE _output_result)
     if(_compile_result AND (_run_result EQUAL 0))
