@@ -1,6 +1,6 @@
-function(cmake_helpers_option name default description)
+function(cmake_helpers_option name type default description)
   set(_proposed_values ${ARGN})
-  set(${name} ${default} CACHE STRING ${description})
+  set(${name} ${default} CACHE ${type} ${description})
   if(NOT default IN_LIST _proposed_values)
     list(APPEND _proposed_values ${default})
   endif()

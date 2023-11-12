@@ -9,12 +9,12 @@ function(cmake_helpers_init)
     set(_cmake_helpers_initialized FALSE)
   endif()
   if(_cmake_helpers_initialized)
-    message(FATAL_ERROR "CMake Helpers initialized already called")
+    message(FATAL_ERROR "CMake Helpers already initialized")
   endif()
   #
   # We always create an interface library
   #
-  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX "-iface" "CMake Helpers interface suffix")
+  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX INTERNAL "-iface" "CMake Helpers interface suffix")
   if(NOT CMAKE_HELPERS_IFACE_SUFFIX)
     message(FATAL_ERROR "Interface suffix is not set")
   endif()
