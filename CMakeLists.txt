@@ -18,6 +18,9 @@ if(NOT _cmake_helpers_loaded)
   #
   # Always start with cmake/call.cmake
   #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "include(${PROJECT_SOURCE_DIR}/cmake/call.cmake)")
+  endif()
   include(${PROJECT_SOURCE_DIR}/cmake/call.cmake)
   #
   # Load the others
