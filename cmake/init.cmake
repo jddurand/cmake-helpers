@@ -105,14 +105,8 @@ function(cmake_helpers_init_value value source)
       endif()
     endforeach()
     message(STATUS "Looking for ${value}")
-    file(WRITE 
-    try_run(
-      _run_result
-      _compile_result
-      SOURCE_FROM_VAR ${value}.c source
-      COMPILE_DEFINITIONS ${_compile_definitions}
-      RUN_OUTPUT_VARIABLE _output_result)
-    if(_compile_result AND (_run_result EQUAL 0))
+    try_run(_run _compile SOURCE_FROM_VAR ${value}.c source COMPILE_DEFINITIONS ${_compile_definitions} RUN_OUTPUT_VARIABLE _output)
+    if(_compile AND (_run EQUAL 0))
       set(_value TRUE)
       message(STATUS "Looking for ${value} - yes")
     else()
