@@ -108,8 +108,9 @@ function(cmake_helpers_init_value value source)
       SOURCE_FROM_VAR ${value}.c source
       LOG_DESCRIPTION "Looking for ${value}"
       COMPILE_DEFINITIONS ${_compile_definitions}
-      COMPILE_OUTPUT_VARIABLE _compile_output)
-      RUN_OUTPUT_VARIABLE _run_output)
+      COMPILE_OUTPUT_VARIABLE _compile_output
+      RUN_OUTPUT_VARIABLE _run_output
+    )
     if(CMAKE_HELPERS_DEBUG)
       if (_compile_output)
 	message(STATUS ${_compile_output})
