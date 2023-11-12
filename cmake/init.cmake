@@ -47,6 +47,21 @@ function(cmake_helpers_init)
   check_include_file("float.h"        HAVE_FLOAT_H)
   check_include_file("locale.h"       HAVE_LOCALE_H)
   #
+  # Common checks
+  #
+  cmake_helpers_init_value(EBCDIC [[
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+int main() {
+  if ('M'==0xd4) {
+    exit(0);
+  }
+  exit(1);
+}
+]])
+  #
   # Check math library
   #
   include(CheckSymbolExists)
@@ -55,7 +70,7 @@ function(cmake_helpers_init)
   if(NOT (HAVE_LOG AND HAVE_EXP))
     unset(HAVE_LOG CACHE)
     unset(HAVE_EXP CACHE)
-    set(CMAKE_REQUIRED_LIBRARIES "m")
+    list(APPEND CMAKE_REQUIRED_LIBRARIES "m")
     check_symbol_exists(log "math.h" HAVE_LOG)
     check_symbol_exists(exp "math.h" HAVE_EXP)
     if(HAVE_LOG AND HAVE_EXP)
@@ -71,4 +86,40 @@ function(cmake_helpers_init)
   # Remember we were initialized
   #
   set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED TRUE)
+endfunction()
+
+function(cmake_helpers_init_value value source_from_content)
+  set(_argn ${ARGN})
+  get_property(_cmake_helpers_initialized_${value}_set GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED_${value} SET)
+  if(_cmake_helpers_initialized_${value}_set)
+    get_property(_cmake_helpers_initialized_${value} GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED_${value})
+  else()
+    set(_cmake_helpers_initialized_${value} FALSE)
+  endif()
+
+  if(NOT _cmake_helpers_initialized_${value})
+    set(_compile_definitions)
+    foreach(_arg ${_argn})
+      if(${${_arg}})
+	list(APPEND _compile_definitions -D${_arg})
+      endif()
+    endforeach()
+    message(STATUS "Looking for ${value}")
+    try_run(
+      _run_result
+      _compile_result
+      SOURCE_FROM_CONTENT ${value}.c ${source_from_content}
+      COMPILE_DEFINITIONS ${_compile_definitions}
+      RUN_OUTPUT_VARIABLE _output_result)
+    if(_compile_result AND (_run_result EQUAL 0))
+      set(_value TRUE)
+      message(STATUS "Looking for ${value} - yes")
+    else()
+      set(_value FALSE)
+      message(STATUS "Looking for ${value} - no")
+    endif()
+    set(${value} ${_value} CACHE BOOL ${value})
+    mark_as_advanced(${value})
+    set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED_${value} TRUE)
+  endif()
 endfunction()
