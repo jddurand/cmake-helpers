@@ -169,6 +169,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_CONST ${PROJECT_SOURCE_DIR}/cmake/const.c const)
   cmake_helpers_try_run(HAVE_C99MODIFIERS ${PROJECT_SOURCE_DIR}/cmake/c99modifiers.c)
   cmake_helpers_try_run(C_RESTRICT ${PROJECT_SOURCE_DIR}/cmake/restrict.c __restrict __restrict__ _Restrict restrict)
+  cmake_helpers_try_run(C___BUILTIN_EXPECT ${PROJECT_SOURCE_DIR}/cmake/__builtin_expect.c __builtin_expect)
   #
   # Check GNU features
   #
