@@ -167,6 +167,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_STRTOULL ${PROJECT_SOURCE_DIR}/cmake/strtoull.c strtoull _strtoull __strtoull strtou64 _strtou64 __strtou64)
   cmake_helpers_try_run(C_FPCLASSIFY ${PROJECT_SOURCE_DIR}/cmake/fpclassify.c fpclassify _fpclassify __fpclassify fpclass _fpclass __fpclass)
   cmake_helpers_try_run(C_CONST ${PROJECT_SOURCE_DIR}/cmake/const.c const)
+  cmake_helpers_try_run(HAVE_C99MODIFIERS ${PROJECT_SOURCE_DIR}/cmake/c99modifiers)
   #
   # Check GNU features
   #
