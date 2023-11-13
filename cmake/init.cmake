@@ -172,6 +172,8 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C___BUILTIN_EXPECT ${PROJECT_SOURCE_DIR}/cmake/__builtin_expect.c __builtin_expect)
   cmake_helpers_try_run(C_SIGNBIT ${PROJECT_SOURCE_DIR}/cmake/signbit.c signbit _signbit __signbit)
   cmake_helpers_try_run(C_COPYSIGN ${PROJECT_SOURCE_DIR}/cmake/copysign.c copysign _copysign __copysign)
+  cmake_helpers_try_run(C_COPYSIGNF ${PROJECT_SOURCE_DIR}/cmake/copysignf.c copysignf _copysignf __copysignf)
+  cmake_helpers_try_run(C_COPYSIGNL ${PROJECT_SOURCE_DIR}/cmake/copysignl.c copysignl _copysignl __copysignl)
   #
   # Check GNU features
   #
