@@ -16,5 +16,5 @@
 
 int main() {
   int x = C_FPCLASSIFY(0.0);
-  return 0;
+  exit(0);
 }
