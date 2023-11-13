@@ -366,7 +366,7 @@ function(cmake_helpers_init)
           #
           set(_found_type FALSE)
           foreach(_c "char" "short" "int" "long" "long long")
-            if(${_sign} STREQUAL "u")
+            if(_sign STREQUAL "u")
 	      set(_c "unsigned ${_c}")
             endif()
             string(TOUPPER ${_c} _C)
