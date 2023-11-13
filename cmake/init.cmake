@@ -171,6 +171,7 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_RESTRICT ${PROJECT_SOURCE_DIR}/cmake/restrict.c __restrict __restrict__ _Restrict restrict)
   cmake_helpers_try_run(C___BUILTIN_EXPECT ${PROJECT_SOURCE_DIR}/cmake/__builtin_expect.c __builtin_expect)
   cmake_helpers_try_run(C_SIGNBIT ${PROJECT_SOURCE_DIR}/cmake/signbit.c signbit _signbit __signbit)
+  cmake_helpers_try_run(C_COPYSIGN ${PROJECT_SOURCE_DIR}/cmake/copysign.c copysign _copysign __copysign)
   #
   # Check GNU features
   #
