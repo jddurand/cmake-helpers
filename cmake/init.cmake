@@ -496,7 +496,20 @@ function(cmake_helpers_init)
       #
       set(CMAKE_HELPERS_STDINT_H_PATH "include/extra/stdint.h")
     endif()
+    set(_output_file "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_HELPERS_STDINT_H_PATH]")
     message(STATUS "Generating ${CMAKE_HELPERS_STDINT_H_PATH}")
+    CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
+  endif()
+  if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H)
+    if(NOT CMAKE_HELPERS_INTTYPES_H_PATH)
+      #
+      # Default value unless given on the command-line
+      #
+      set(CMAKE_HELPERS_INTTYPES_H_PATH "include/extra/inttypes.h")
+    endif()
+    set(_output_file "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_HELPERS_INTTYPES_H_PATH]")
+    message(STATUS "Generating ${CMAKE_HELPERS_INTTYPES_H_PATH}")
+    CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
   endif()
   #
   # Check GNU features
