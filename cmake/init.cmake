@@ -165,6 +165,7 @@ function(cmake_helpers_init)
 
   cmake_helpers_try_run(C_STRTOLL ${PROJECT_SOURCE_DIR}/cmake/strtoll.c strtoll _strtoll __strtoll strtoi64 _strtoi64 __strtoi64)
   cmake_helpers_try_run(C_STRTOULL ${PROJECT_SOURCE_DIR}/cmake/strtoull.c strtoull _strtoull __strtoull strtou64 _strtou64 __strtou64)
+  cmake_helpers_try_run(C_FPCLASSIFY ${PROJECT_SOURCE_DIR}/cmake/fpclassify.c fpclassify _fpclassify __fpclassify fpclass _fpclass __fpclass)
   #
   # Check GNU features
   #
