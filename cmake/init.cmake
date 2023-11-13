@@ -470,39 +470,24 @@ function(cmake_helpers_init)
     #
     # Header files generation
     #
-    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H)
-      if(NOT CMAKE_HELPERS_STDINT_H_PATH)
-	#
-	# Default value unless given on the command-line
-	#
-	set(CMAKE_HELPERS_STDINT_H_PATH "include/extra/stdint.h")
-      endif()
-      set(_output_file "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_HELPERS_STDINT_H_PATH}")
+    set(_header_files_generated FALSE)
+    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_INCLUDE_GENDIR))
+      set(_output_file "${CMAKE_HELPERS_INCLUDE_GENDIR}/${CMAKE_HELPERS_STDINT_H_PATH}")
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
       get_filename_component(_cmake_helpers_stdint_h_directory ${_output_file} DIRECTORY)
+      set(_header_files_generated TRUE)
     endif()
-    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H)
-      if(NOT CMAKE_HELPERS_INTTYPES_H_PATH)
-	#
-	# Default value unless given on the command-line
-	#
-	set(CMAKE_HELPERS_INTTYPES_H_PATH "include/extra/inttypes.h")
-      endif()
-      set(_output_file "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_HELPERS_INTTYPES_H_PATH}")
+    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H AND CMAKE_HELPERS_INCLUDE_GENDIR)
+      set(_output_file "${CMAKE_HELPERS_INCLUDE_GENDIR}/${CMAKE_HELPERS_INTTYPES_H_PATH}")
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
       get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
+      set(_header_files_generated TRUE)
     endif()
-    if(_cmake_helpers_stdint_h_directory OR _cmake_helpers_inttypes_h_directory)
-      message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories")
-      include_directories(${_cmake_helpers_stdint_h_directory})
-      #
-      # Try to be clever and include it once only
-      #
-      if(NOT (_cmake_helpers_stdint_h_directory STREQUAL _cmake_helpers_inttypes_h_directory))
-	message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories")
-	include_directories(${_cmake_helpers_stdint_h_directory})
+    if(_header_files_generated)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "${CMAKE_HELPERS_INCLUDE_GENDIR} should be added by caller to its include path")
       endif()
     endif()
   endblock()
