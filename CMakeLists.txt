@@ -12,6 +12,9 @@ endif()
 
 if(NOT _cmake_helpers_loaded)
   option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
+  option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
+  option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
+
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} loading")
   endif()

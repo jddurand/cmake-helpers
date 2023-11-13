@@ -250,12 +250,12 @@ function(cmake_helpers_init)
 	# Speciying a MIN for unsigned case is meaningless (it is always zero) and not in the standard.
 	# We neverthless set it, well, to zero.
 	#
-	set(_mytypemin    TMP_${_sign}int${_size}_MIN)
+	set(_mytypemin CMAKE_HELPERS_${_sign}int${_size}_MIN)
 	string(TOUPPER ${_mytypemin} _MYTYPEMIN)
-	set(_mytypemax    TMP_${_sign}int${_size}_MAX)
+	set(_mytypemax CMAKE_HELPERS_${_sign}int${_size}_MAX)
 	string(TOUPPER ${_mytypemax} _MYTYPEMAX)
 	#
-	# Always define the TMP_XXX_MIN and TMP_XXX_MAX
+	# Always define the CMAKE_HELPERS_XXX_MIN and CMAKE_HELPERS_XXX_MAX
 	#
 	foreach(_c "char" "short" "int" "long" "long long")
           #
@@ -352,7 +352,7 @@ function(cmake_helpers_init)
           set(_ctype    ${_sign}int${_variation}${_size}_t)
           string(TOUPPER ${_ctype} _CTYPE)
 
-          set(_mytype    TMP_${_sign}int${_variation}${_size})
+          set(_mytype    CMAKE_HELPERS_${_sign}int${_variation}${_size})
           string(TOUPPER ${_mytype} _MYTYPE)
 
           set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
@@ -437,7 +437,7 @@ function(cmake_helpers_init)
       set(_sizeof ${SIZEOF_VOID_STAR})
       set(_ctype    ${_sign}intptr_t)
       string(TOUPPER ${_ctype} _CTYPE)
-      set(_mytype    TMP_${_sign}intptr)
+      set(_mytype    CMAKE_HELPERS_${_sign}intptr)
       string(TOUPPER ${_mytype} _MYTYPE)
       set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
 
@@ -486,6 +486,18 @@ function(cmake_helpers_init)
       endif()
     endforeach()
   endblock()
+  #
+  # Header files generation
+  #
+  if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H)
+    if(NOT CMAKE_HELPERS_STDINT_H_PATH)
+      #
+      # Default value unless given on the command-line
+      #
+      set(CMAKE_HELPERS_STDINT_H_PATH "include/extra/stdint.h")
+    endif()
+    message(STATUS "Generating ${CMAKE_HELPERS_STDINT_H_PATH}")
+  endif()
   #
   # Check GNU features
   #
