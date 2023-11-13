@@ -495,13 +495,13 @@ function(cmake_helpers_init)
       get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
     endif()
     if(_cmake_helpers_stdint_h_directory OR _cmake_helpers_inttypes_h_directory)
-      message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories for stdint.h")
+      message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories")
       include_directories(${_cmake_helpers_stdint_h_directory})
       #
       # Try to be clever and include it once only
       #
       if(NOT (_cmake_helpers_stdint_h_directory STREQUAL _cmake_helpers_inttypes_h_directory))
-	message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories for stdint.h")
+	message(STATUS "Adding ${_cmake_helpers_stdint_h_directory} to include directories")
 	include_directories(${_cmake_helpers_stdint_h_directory})
       endif()
     endif()
