@@ -47,6 +47,7 @@ function(cmake_helpers_init)
   check_include_file("float.h"        HAVE_FLOAT_H)
   check_include_file("locale.h"       HAVE_LOCALE_H)
   check_include_file("limits.h"       HAVE_LIMITS_H)
+  check_include_file("features.h"     HAVE_FEATURES_H)
   #
   # Check math library
   #
@@ -69,7 +70,7 @@ function(cmake_helpers_init)
     endif()
   endif()
   #
-  # Common checks
+  # Common features checks
   #
   cmake_helpers_try_run(EBCDIC ${PROJECT_SOURCE_DIR}/cmake/EBCDIC.c)
   cmake_helpers_try_run(C_INLINE ${PROJECT_SOURCE_DIR}/cmake/inline.c inline __inline__ inline__ __inline)
@@ -189,6 +190,40 @@ function(cmake_helpers_init)
       endforeach()
     endblock()
   endif()
+  #
+  # Common sizes checks
+  #
+  include(CheckTypeSize)
+  block()
+    if(HAVE_STDINT_H)
+      list(APPEND CMAKE_EXTRA_INCLUDE_FILES stdint.h)
+    endif()
+    if(HAVE_INTTYPES_H)
+      list(APPEND CMAKE_EXTRA_INCLUDE_FILES inttypes.h)
+    endif()
+    if(HAVE_SYS_INTTYPES_H)
+      list(APPEND CMAKE_EXTRA_INCLUDE_FILES sys/inttypes.h)
+    endif()
+    if(HAVE_STDDEF_H)
+      list(APPEND CMAKE_EXTRA_INCLUDE_FILES stddef.h)
+    endif()
+    check_type_size("char" SIZEOF_CHAR)
+    check_type_size("short" SIZEOF_SHORT)
+    check_type_size("int" SIZEOF_INT)
+    check_type_size("long" SIZEOF_LONG)
+    check_type_size("long long" SIZEOF_LONG_LONG)
+    check_type_size("float" SIZEOF_FLOAT)
+    check_type_size("double" SIZEOF_DOUBLE)
+    check_type_size("long double" SIZEOF_LONG_DOUBLE)
+    check_type_size("unsigned char" SIZEOF_UNSIGNED_CHAR)
+    check_type_size("unsigned short" SIZEOF_UNSIGNED_SHORT)
+    check_type_size("unsigned int" SIZEOF_UNSIGNED_INT)
+    check_type_size("unsigned long" SIZEOF_UNSIGNED_LONG)
+    check_type_size("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG)
+    check_type_size("size_t" SIZEOF_SIZE_T)
+    check_type_size("void *" SIZEOF_VOID_STAR)
+    check_type_size("ptrdiff_t" SIZEOF_PTRDIFF_T)
+  endblock()
   #
   # Check GNU features
   #
