@@ -97,7 +97,7 @@ function(cmake_helpers_init)
     # We must have a value for CHAR_BIT...
     #
     message(WARNING "Unable to find CHAR_BIT - Assuming 8")
-    set(C_CHAR_BIT "8" CACHE STRING "C_CHAR_BIT try_run result")
+    set(C_CHAR_BIT "8" CACHE STRING "C_CHAR_BIT forced value")
     mark_as_advanced(C_CHAR_BIT)
   endif()
   #

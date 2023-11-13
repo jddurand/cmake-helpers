@@ -65,20 +65,20 @@ function(cmake_helpers_try_run name configure_input)
       endif()
     endif()
     if(DEFINED _forced_value)
-      set(${name} ${_forced_value} CACHE STRING "${name} try_run result")
+      set(${name} ${_forced_value} CACHE STRING "${name} try_run result" FORCE)
     else()
-      set(${name} ${_found_value} CACHE BOOL "${name} try_run result")
+      set(${name} ${_found_value} CACHE BOOL "${name} try_run result" FORCE)
     endif()
     mark_as_advanced(${name})
     #
     # Put a boolean for tests - the value itself can lead to some suprising result, e.g. INFINITY
     #
-    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run found result")
+    set(${name}_FOUND ${_found_value} CACHE BOOL "${name} try_run found result" FORCE)
     mark_as_advanced(${name}_FOUND)
     #
     # Set singleton to prevent multiple calls
     #
-    set(${_singleton} TRUE CACHE BOOL "${name} try_run singleton")
+    set(${_singleton} TRUE CACHE BOOL "${name} try_run singleton" FORCE)
     mark_as_advanced(${_singleton})
     file(REMOVE ${_configure_output})
   endif()
