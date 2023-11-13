@@ -439,7 +439,7 @@ function(cmake_helpers_init)
       string(TOUPPER ${_ctype} _CTYPE)
       set(_mytype    TMP_${_sign}intptr)
       string(TOUPPER ${_mytype} _MYTYPE)
-      string(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
+      set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
 
       set(HAVE_${_MYTYPE} FALSE)
       set(${_MYTYPE} "")
