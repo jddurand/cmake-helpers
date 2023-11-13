@@ -471,7 +471,7 @@ function(cmake_helpers_init)
     # Header files generation
     #
     set(_header_files_generated FALSE)
-    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_INCLUDE_GENDIR))
+    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_INCLUDE_GENDIR)
       set(_output_file "${CMAKE_HELPERS_INCLUDE_GENDIR}/${CMAKE_HELPERS_STDINT_H_PATH}")
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
