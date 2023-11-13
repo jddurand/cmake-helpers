@@ -175,6 +175,21 @@ function(cmake_helpers_init)
   cmake_helpers_try_run(C_COPYSIGNF ${PROJECT_SOURCE_DIR}/cmake/copysignf.c copysignf _copysignf __copysignf)
   cmake_helpers_try_run(C_COPYSIGNL ${PROJECT_SOURCE_DIR}/cmake/copysignl.c copysignl _copysignl __copysignl)
   #
+  # We reserve the next lines to clang or gcc family
+  #
+  if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    include(CheckCCompilerFlag)
+    check_c_compiler_flag(-Werror C_COMPILER_HAS_WERROR_OPTION)
+    block()
+      list(APPEND CMAKE_C_FLAGS -Werror)
+      foreach(_attribute alias aligned alloc_size always_inline artificial cold const constructor_priority constructor deprecated destructor dllexport dllimport error externally_visible fallthrough flatten format gnu_format format_arg gnu_inline hot ifunc leaf malloc noclone noinline nonnull noreturn nothrow optimize pure sentinel sentinel_position returns_nonnull unused used visibility warning warn_unused_result weak weakref)
+	string(TOUPPER ${_attribute} _attribute_topupper)
+	cmake_helpers_try_run(C_GCC_FUNC_ATTRIBUTE_${_attribute_topupper} ${PROJECT_SOURCE_DIR}/cmake/gccfuncattribute.c)
+        FINDGCCFUNCATTRIBUTE(${_attribute})
+      endforeach()
+    endblock()
+  endif()
+  #
   # Check GNU features
   #
   check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
