@@ -16,13 +16,6 @@ function(cmake_helpers_init)
     message(FATAL_ERROR "CMake Helpers already initialized")
   endif()
   #
-  # Declare all options
-  #
-  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_IFACE    STRING _iface  "CMake Helpers interface library suffix") # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_STATIC   STRING _static "CMake Helpers static library suffix")    # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_SHARED   STRING _shared "CMake Helpers shared library suffix")    # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_BINARY_DIR      STRING ${PARENT_BINARY_DIR}/output "CMake Helpers output directory") # Must be set, not an option in the GUI
-  #
   # Common include files
   #
   include(CheckIncludeFile)
@@ -470,15 +463,15 @@ function(cmake_helpers_init)
     # Header files generation
     #
     set(_header_files_generated FALSE)
-    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_BINARY_DIR)
-      set(_output_file ${CMAKE_HELPERS_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/stdint.h)
+    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H)
+      set(_output_file ${CMAKE_CURENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/stdint.h)
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
       get_filename_component(_cmake_helpers_stdint_h_directory ${_output_file} DIRECTORY)
       set(_header_files_generated TRUE)
     endif()
-    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H AND CMAKE_HELPERS_BINARY_DIR)
-      set(_output_file ${CMAKE_HELPERS_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/inttypes.h)
+    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H)
+      set(_output_file ${CMAKE_CURENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/inttypes.h)
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
       get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
@@ -486,7 +479,7 @@ function(cmake_helpers_init)
     endif()
     if(_header_files_generated)
       if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "${CMAKE_HELPERS_INCLUDE_GENDIR} should be added by caller to its include path")
+	message(STATUS "${CMAKE_CURENT_BINARY_GENDIR}/${CMAKE_INSTALL_INCLUDEDIR} should be added by caller to its include path")
       endif()
     endif()
   endblock()
