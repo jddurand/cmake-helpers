@@ -7,12 +7,12 @@ function(cmake_helpers_library name type)
   #
   set(_options)
   set(_oneValueArgs
-    SOURCES_AUTO
     NAMESPACE
     VERSION
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
+    SOURCES_AUTO
   )
   set(_multiValueArgs
     SOURCES
@@ -81,8 +81,10 @@ function(cmake_helpers_library name type)
   if((NOT _cmake_helpers_sources) AND _cmake_helpers_sources_auto)
     foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
       foreach(_glob ${_cmake_helpers_sources_auto_globs})
-	file(GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false ${_base_dir}/${_glob})
-	list(APPEND _cmake_helpers_sources ${_base_dir_sources})
+	cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false ${_base_dir}/${_glob})
+	if(_base_dir_sources)
+	  cmake_helpers_call(list APPEND _cmake_helpers_sources ${_base_dir_sources})
+	endif()
       endforeach()
     endforeach()
   endif()
