@@ -179,6 +179,7 @@ function(cmake_helpers_library name)
   if(_cmake_helpers_public_headers)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PUBLIC
       FILE_SET public_headers
+      BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}"
       TYPE HEADERS
       FILES ${_cmake_helpers_public_headers})
     cmake_helpers_call(install
