@@ -149,7 +149,7 @@ function(cmake_helpers_library name)
   #
   if(_cmake_helpers_config)
     list(GET _cmake_helpers_config 0 _cmake_helpers_config_in)
-    list(GET _cmake_helpers_config 0 _cmake_helpers_config_out)
+    list(GET _cmake_helpers_config 1 _cmake_helpers_config_out)
     cmake_helpers_call(configure_file ${_cmake_helpers_config_in} ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}/${_cmake_helpers_config_out})
     cmake_helpers_call(source_group TREE ${CMAKE_CURRENT_BINARY_DIR} FILES ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}/${_cmake_helpers_config_out})
   else()
