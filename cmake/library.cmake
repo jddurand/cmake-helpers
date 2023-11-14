@@ -18,6 +18,7 @@ function(cmake_helpers_library name)
     MODULE_NAME
     SOURCES_AUTO
     PUBLIC_HEADERS_AUTO
+    PRIVATE_HEADERS_AUTO
   )
   set(_multiValueArgs
     SOURCES
@@ -26,6 +27,7 @@ function(cmake_helpers_library name)
     SOURCES_AUTO_IFACE_RELPATH_ACCEPT_REGEXES
     SOURCES_AUTO_IFACE_RELPATH_REJECT_REGEXES
     PUBLIC_HEADERS
+    PRIVATE_HEADERS
   )
   #
   # Arguments default values
@@ -41,6 +43,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_module_name                         ${PROJECT_NAME}_module)
   set(_cmake_helpers_sources_auto                        TRUE)
   set(_cmake_helpers_public_headers_auto                 TRUE)
+  set(_cmake_helpers_private_headers_auto                TRUE)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
@@ -55,6 +58,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_sources_auto_iface_relpath_accept_regexes "\.h$" "\.hh$" "\.hpp$" "\.hxx$")
   set(_cmake_helpers_sources_auto_iface_relpath_reject_regexes "/internal/" "/_")
   set(_cmake_helpers_public_headers)
+  set(_cmake_helpers_private_headers)
   #
   # Parse Arguments
   #
@@ -121,16 +125,46 @@ function(cmake_helpers_library name)
       message(STATUS "[library] Source: ${_cmake_helpers_source}")
     endforeach()
   endif()
-
   #
-  # Fill interface with public headers
+  # Public headers
   #
   if((NOT _cmake_helpers_public_headers) AND _cmake_helpers_public_headers_auto)
     foreach(_source ${_cmake_helpers_sources})
       cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" _matched)
       if(_matched)
-	cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} INTERFACE ${_source})
+	list(APPEND _cmake_helpers_public_headers ${_source})
       endif()
     endforeach()
+  endif()
+  if(_cmake_helpers_public_headers)
+    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name}
+      PUBLIC
+      FILE_SET public_headers
+      TYPE HEADERS
+      ${_cmake_helpers_public_headers})
+    cmake_helpers_call(install
+      TARGETS ${_cmake_helpers_iface_name}
+      EXPORT ${_cmake_helpers_namespace}-targets
+      FILE_SET public_headers
+      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      COMPONENT HeaderComponent)
+  endif()
+  #
+  # Private headers
+  #
+  if((NOT _cmake_helpers_private_headers) AND _cmake_helpers_private_headers_auto)
+    foreach(_source ${_cmake_helpers_sources})
+      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" _matched)
+      if(NOT _matched)
+	list(APPEND _cmake_helpers_private_headers ${_source})
+      endif()
+    endforeach()
+  endif()
+  if(_cmake_helpers_private_headers)
+    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name}
+      PUBLIC
+      FILE_SET private_headers
+      TYPE HEADERS
+      ${_cmake_helpers_public_headers})
   endif()
 endfunction()
