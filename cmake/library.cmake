@@ -52,22 +52,28 @@ function(cmake_helpers_library name type)
   #
   cmake_parse_arguments(CMAKE_HELPERS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   #
-  # Recuperate arguments that are set
+  # Set internal variables
   #
-  foreach(_variable ${options} ${oneValueArgs} ${multiValueArgs})
-    if(DEFINED CMAKE_HELPERS_${_variable})
-      set(_name CMAKE_HELPERS_${_variable})
-      set(_value ${CMAKE_HELPERS_${_variable}})
-      string(TOLOWER "${_name}" _name)
-      set(_${_name} ${_value})
+  foreach(_option ${options} ${oneValueArgs} ${multiValueArgs})
+    set(_name CMAKE_HELPERS_${_option})
+    set(_var _${_name})
+    string(TOLOWER "${_var}" _var)
+    if(DEFINED CMAKE_HELPERS_${_option})
+      set(${_var} ${CMAKE_HELPERS_${_option}})
+    endif()
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "${_var}=${${_var}}")
     endif()
   endforeach()
   #
   # Validation of arguments - only the oneValueArgs must have a value
   #
-  foreach(_arg ${oneValueArgs})
-    if(NOT CMAKE_HELPERS_${_arg})
-      message(FATAL_ERROR "${_arg} option is missing")
+  foreach(_option ${oneValueArgs})
+    set(_name CMAKE_HELPERS_${_option})
+    set(_var _${_name})
+    string(TOLOWER "${_var}" _var)
+    if(NOT (DEFINED ${_var}))
+      message(FATAL_ERROR "${_var} is missing")
     endif()
   endforeach()
 endfunction()
