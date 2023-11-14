@@ -5,10 +5,9 @@ function(cmake_helpers_library name type)
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
-  set(_options
-    SOURCES_AUTO
-  )
+  set(_options)
   set(_oneValueArgs
+    SOURCES_AUTO
     NAMESPACE
     VERSION
     VERSION_MAJOR
@@ -47,11 +46,11 @@ function(cmake_helpers_library name type)
   #
   # Parse Arguments
   #
-  cmake_parse_arguments(CMAKE_HELPERS "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+  cmake_parse_arguments(CMAKE_HELPERS "" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
   #
   # Set internal variables
   #
-  foreach(_option ${_options} ${_oneValueArgs} ${_multiValueArgs})
+  foreach(_option ${_oneValueArgs} ${_multiValueArgs})
     set(_name CMAKE_HELPERS_${_option})
     set(_var _${_name})
     string(TOLOWER "${_var}" _var)
