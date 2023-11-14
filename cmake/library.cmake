@@ -31,7 +31,6 @@ function(cmake_helpers_library name type)
   #
   # oneValueArgs defaults - we intentionally recuperate latest project()
   #
-  set(_cmake_helpers_sources_auto  TRUE)
   set(_cmake_helpers_namespace     ${PROJECT_NAME})
   set(_cmake_helpers_version       ${PROJECT_VERSION})
   set(_cmake_helpers_version_major ${PROJECT_VERSION_MAJOR})
