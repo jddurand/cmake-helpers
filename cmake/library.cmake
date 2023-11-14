@@ -12,6 +12,10 @@ function(cmake_helpers_library name type)
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
+    IFACE_NAME
+    SHARED_NAME
+    STATIC_NAME
+    MODULE_NAME
     SOURCES_AUTO
   )
   set(_multiValueArgs
@@ -31,6 +35,10 @@ function(cmake_helpers_library name type)
   set(_cmake_helpers_version_major                       ${PROJECT_VERSION_MAJOR})
   set(_cmake_helpers_version_minor                       ${PROJECT_VERSION_MINOR})
   set(_cmake_helpers_version_patch                       ${PROJECT_VERSION_PATCH})
+  set(_cmake_helpers_iface_name                          ${PROJECT_NAME}_iface)
+  set(_cmake_helpers_shared_name                         ${PROJECT_NAME}_shared)
+  set(_cmake_helpers_static_name                         ${PROJECT_NAME}_static)
+  set(_cmake_helpers_module_name                         ${PROJECT_NAME}_module)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
     ${CMAKE_INSTALL_INCLUDEDIR}/*.h
@@ -76,15 +84,16 @@ function(cmake_helpers_library name type)
     endif()
   endforeach()
   #
+  # We always generate an interface library
+  #
+  cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
+  #
   # If no source and sources_auto is set, auto-discover sources
   #
   if((NOT _cmake_helpers_sources) AND _cmake_helpers_sources_auto)
     foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
       foreach(_glob ${_cmake_helpers_sources_auto_globs})
-	cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false ${_base_dir}/${_glob})
-	if(_base_dir_sources)
-	  cmake_helpers_call(list APPEND _cmake_helpers_sources ${_base_dir_sources})
-	endif()
+	file(GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false ${_base_dir}/${_glob})
       endforeach()
     endforeach()
   endif()
