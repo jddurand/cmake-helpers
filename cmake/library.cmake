@@ -1,6 +1,6 @@
-function(cmake_helpers_library name type)
-  if((NOT name) OR (NOT type))
-    message(FATAL_ERROR "Usage: cmake_helpers_library name type [<src> ...]")
+function(cmake_helpers_library name)
+  if(NOT name)
+    message(FATAL_ERROR "name argument is missing")
   endif()
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
@@ -17,19 +17,19 @@ function(cmake_helpers_library name type)
     STATIC_NAME
     MODULE_NAME
     SOURCES_AUTO
+    PUBLIC_HEADERS_AUTO
   )
   set(_multiValueArgs
     SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
-    SOURCES_AUTO_RELPATH_ACCEPT_REGEXES
-    SOURCES_AUTO_RELPATH_REJECT_REGEXES
+    SOURCES_AUTO_IFACE_RELPATH_ACCEPT_REGEXES
+    SOURCES_AUTO_IFACE_RELPATH_REJECT_REGEXES
+    PUBLIC_HEADERS
   )
   #
   # Arguments default values
   #
-  set(_cmake_helpers_sources_auto                        TRUE)
-  set(_cmake_helpers_sources)
   set(_cmake_helpers_namespace                           ${PROJECT_NAME})
   set(_cmake_helpers_version                             ${PROJECT_VERSION})
   set(_cmake_helpers_version_major                       ${PROJECT_VERSION_MAJOR})
@@ -39,6 +39,9 @@ function(cmake_helpers_library name type)
   set(_cmake_helpers_shared_name                         ${PROJECT_NAME}_shared)
   set(_cmake_helpers_static_name                         ${PROJECT_NAME}_static)
   set(_cmake_helpers_module_name                         ${PROJECT_NAME}_module)
+  set(_cmake_helpers_sources_auto                        TRUE)
+  set(_cmake_helpers_public_headers_auto                 TRUE)
+  set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
     ${CMAKE_INSTALL_INCLUDEDIR}/*.h
@@ -49,8 +52,9 @@ function(cmake_helpers_library name type)
     src/*.cpp
     src/*.cxx
   )
-  set(_cmake_helpers_sources_auto_relpath_accept_regexes)
-  set(_cmake_helpers_sources_auto_relpath_reject_regexes "/internal/" "/_")
+  set(_cmake_helpers_sources_auto_iface_relpath_accept_regexes "\.h$" "\.hh$" "\.hpp$" "\.hxx$")
+  set(_cmake_helpers_sources_auto_iface_relpath_reject_regexes "/internal/" "/_")
+  set(_cmake_helpers_public_headers)
   #
   # Parse Arguments
   #
@@ -94,7 +98,22 @@ function(cmake_helpers_library name type)
     foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
       foreach(_glob ${_cmake_helpers_sources_auto_globs})
 	file(GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false ${_base_dir}/${_glob})
+	if(_base_dir_sources)
+	  source_group(TREE ${_base_dir} FILES ${_base_dir_sources})
+	  list(APPEND _cmake_helpers_sources ${_base_dir_sources})
+	endif()
       endforeach()
+    endforeach()
+  endif()
+  #
+  # Fill interface with public headers
+  #
+  if((NOT _cmake_helpers_public_headers) AND _cmake_helpers_public_headers_auto)
+    foreach(_source ${_cmake_helpers_sources})
+      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" _matched)
+      if(_matched)
+	target_sources(INTERFACE ${_cmake_helpers_iface_name} ${_source})
+      endif()
     endforeach()
   endif()
 endfunction()
