@@ -113,6 +113,9 @@ function(cmake_helpers_library name)
   # We always generate an interface library
   #
   cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
+  set(_iface_base_dirs ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}")
+  cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_iface_base_dirs})
+  cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_iface_base_dirs})
   #
   # If no source and sources_auto is set, auto-discover sources
   #
@@ -154,7 +157,7 @@ function(cmake_helpers_library name)
     set(_cmake_helpers_config_out "${_cmake_helpers_config_outdir}/${_cmake_helpers_config_out}")
     cmake_helpers_call(configure_file ${_cmake_helpers_config_in} ${_cmake_helpers_config_out})
     cmake_helpers_call(source_group TREE ${_cmake_helpers_config_outdir} FILES ${_cmake_helpers_config_out})
-    target_include_directories(${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_config_outdir}>)
+    cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_config_outdir}>)
   else()
     set(_cmake_helpers_config_out)
   endif()
@@ -181,7 +184,7 @@ function(cmake_helpers_library name)
   if(_cmake_helpers_public_headers)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PUBLIC
       FILE_SET public_headers
-      BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}"
+      BASE_DIRS ${_iface_base_dirs}
       TYPE HEADERS
       FILES ${_cmake_helpers_public_headers})
     cmake_helpers_call(install
