@@ -81,10 +81,12 @@ function(cmake_helpers_library name type)
   #
   # If no source and sources_auto is set, auto-discover sources
   #
-  if((NOT _sources) AND _cmake_helpers_sources_auto_base_dirs AND _cmake_helpers_sources_auto_globs)
+  if((NOT _sources) AND _cmake_helpers_sources_auto)
     foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
-      cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false CONFIGURE_DEPENDS ${_cmake_helpers_sources_auto_globs})
-      list(APPEND _sources ${_base_dir_sources})
+      foreach(_glob ${_cmake_helpers_sources_auto_globs})
+	cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false CONFIGURE_DEPENDS ${_base_dir}/${_glob})
+	list(APPEND _sources ${_base_dir_sources})
+      endforeach()
     endforeach()
   endif()
 endfunction()
