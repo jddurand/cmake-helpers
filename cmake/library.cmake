@@ -146,11 +146,6 @@ function(cmake_helpers_library name)
 	else()
 	  set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
 	endif()
-	#
-	# Include directories
-	#
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_INTERFACE:${_base_dirs}>)
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_LOCAL_INTERFACE:${_base_dirs}>)
       endif()
       foreach(_base_dir ${_base_dirs})
 	if(CMAKE_HELPERS_DEBUG)
@@ -179,6 +174,13 @@ function(cmake_helpers_library name)
 	foreach(_file ${_cmake_helpers_${_type}})
 	  message(STATUS "[library] ... ${_file}")
 	endforeach()
+      endif()
+      if(_type STREQUAL "headers")
+	#
+	# Include directories
+	#
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_INTERFACE:${_base_dirs}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_LOCAL_INTERFACE:${_base_dirs}>)
       endif()
     endif()
   endforeach()
