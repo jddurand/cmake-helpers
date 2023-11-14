@@ -137,8 +137,7 @@ function(cmake_helpers_library name)
     endforeach()
   endif()
   if(_cmake_helpers_public_headers)
-    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name}
-      PUBLIC
+    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PUBLIC
       FILE_SET public_headers
       TYPE HEADERS
       ${_cmake_helpers_public_headers})
@@ -161,8 +160,7 @@ function(cmake_helpers_library name)
     endforeach()
   endif()
   if(_cmake_helpers_private_headers)
-    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name}
-      PUBLIC
+    cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PRIVATE
       FILE_SET private_headers
       TYPE HEADERS
       ${_cmake_helpers_public_headers})
