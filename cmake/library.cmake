@@ -3,18 +3,11 @@ function(cmake_helpers_library name type)
     message(FATAL_ERROR "Usage: cmake_helpers_library name type [<src> ...]")
   endif()
   #
-  # Get a copy of ARGN
-  #
-  set(_sources ${ARGN})
-  #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
   set(_options
     SOURCES_AUTO
   )
-  # We put our options in oneValueArgs because options are always set when calling
-  # cmake_parse_arguments().
-  #
   set(_oneValueArgs
     NAMESPACE
     VERSION
@@ -23,23 +16,23 @@ function(cmake_helpers_library name type)
     VERSION_PATCH
   )
   set(_multiValueArgs
+    SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
     SOURCES_AUTO_RELPATH_ACCEPT_REGEXES
     SOURCES_AUTO_RELPATH_REJECT_REGEXES
   )
   #
-  # oneValueArgs defaults - we intentionally recuperate latest project()
+  # Arguments default values
   #
-  set(_cmake_helpers_namespace     ${PROJECT_NAME})
-  set(_cmake_helpers_version       ${PROJECT_VERSION})
-  set(_cmake_helpers_version_major ${PROJECT_VERSION_MAJOR})
-  set(_cmake_helpers_version_minor ${PROJECT_VERSION_MINOR})
-  set(_cmake_helpers_version_patch ${PROJECT_VERSION_PATCH})
-  #
-  # multiValueArgs defaults
-  #
-  set(_cmake_helpers_sources_auto_base_dirs ${PROJECT_SOURCE_DIR})
+  set(_cmake_helpers_sources_auto                        TRUE)
+  set(_cmake_helpers_sources)
+  set(_cmake_helpers_namespace                           ${PROJECT_NAME})
+  set(_cmake_helpers_version                             ${PROJECT_VERSION})
+  set(_cmake_helpers_version_major                       ${PROJECT_VERSION_MAJOR})
+  set(_cmake_helpers_version_minor                       ${PROJECT_VERSION_MINOR})
+  set(_cmake_helpers_version_patch                       ${PROJECT_VERSION_PATCH})
+  set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
     ${CMAKE_INSTALL_INCLUDEDIR}/*.h
     ${CMAKE_INSTALL_INCLUDEDIR}/*.hh
@@ -50,7 +43,7 @@ function(cmake_helpers_library name type)
     src/*.cxx
   )
   set(_cmake_helpers_sources_auto_relpath_accept_regexes)
-  set(_cmake_helpers_sources_auto_relpath_reject_regexes  "/internal/" "/_")
+  set(_cmake_helpers_sources_auto_relpath_reject_regexes "/internal/" "/_")
   #
   # Parse Arguments
   #
@@ -83,11 +76,11 @@ function(cmake_helpers_library name type)
   #
   # If no source and sources_auto is set, auto-discover sources
   #
-  if((NOT _sources) AND _cmake_helpers_sources_auto)
+  if((NOT _cmake_helpers_sources) AND _cmake_helpers_sources_auto)
     foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
       foreach(_glob ${_cmake_helpers_sources_auto_globs})
 	cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false CONFIGURE_DEPENDS ${_base_dir}/${_glob})
-	list(APPEND _sources ${_base_dir_sources})
+	list(APPEND _cmake_helpers_sources ${_base_dir_sources})
       endforeach()
     endforeach()
   endif()
