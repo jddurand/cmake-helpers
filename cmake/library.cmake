@@ -106,9 +106,8 @@ function(cmake_helpers_library name)
     list(GET _cmake_helpers_config 1 _config_out)
     cmake_path(IS_ABSOLUTE _config_out _config_out_is_absolute)
     if(_config_out_is_absolute)
-      message(FATAL_ERROR "${_config_out} must be absolute")
+      message(FATAL_ERROR "${_config_out} must be relative")
     endif()
-    set(_config
   endif()
   #
   # We always generate an interface library
