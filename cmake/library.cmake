@@ -57,7 +57,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_config)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR}/src)
-  set(_cmake_helpers_sources_auto_globs                  *.c *.cpp *.cxx
+  set(_cmake_helpers_sources_auto_globs                  *.c *.cpp *.cxx)
   set(_cmake_helpers_headers)
   set(_cmake_helpers_headers_auto_base_dirs              ${PROJECT_SOURCE_DIR}/include)
   set(_cmake_helpers_headers_auto_globs                  *.h *.hh *.hpp *.hxx)
