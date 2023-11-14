@@ -68,12 +68,12 @@ function(cmake_helpers_library name)
     string(TOLOWER "${_var}" _var)
     if(DEFINED CMAKE_HELPERS_${_option})
       if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "Using option CMAKE_HELPERS_${_option}=${CMAKE_HELPERS_${_option}}")
+	message(STATUS "[library] Argument CMAKE_HELPERS_${_option}=${CMAKE_HELPERS_${_option}}")
       endif()
       set(${_var} ${CMAKE_HELPERS_${_option}})
     endif()
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "${_var}=${${_var}}")
+      message(STATUS "[library] Option ${_var}=${${_var}}")
     endif()
   endforeach()
   #
@@ -105,6 +105,11 @@ function(cmake_helpers_library name)
       endforeach()
     endforeach()
   endif()
+  if(CMAKE_HELPERS_DEBUG)
+    list(JOIN _cmake_helpers_sources_join " " _cmake_helpers_sources)
+    message(STATUS "[library] Sources: ${_cmake_helpers_sources_join}")
+  endif()
+
   #
   # Fill interface with public headers
   #
