@@ -153,7 +153,7 @@ function(cmake_helpers_library name)
   #
   if((NOT _cmake_helpers_private_headers) AND _cmake_helpers_private_headers_auto)
     foreach(_source ${_cmake_helpers_sources})
-      cmake_helpers_match_regexes(${_source} ${_cmake_helpers_sources_auto_iface_relpath_accept_regexes} TRUE _accept_matched)
+      cmake_helpers_match_accept_reject_regexes(${_source} ${_cmake_helpers_sources_auto_iface_relpath_accept_regexes} ${_cmake_helpers_sources_auto_iface_relpath_private_regexes} _accept_matched)
       if (_accept_matched)
 	if(CMAKE_HELPERS_DEBUG)
 	  message(STATUS "[library] ${_source} matches accept regexes: ${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}")
