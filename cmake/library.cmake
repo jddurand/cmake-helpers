@@ -66,9 +66,8 @@ function(cmake_helpers_library name type)
   # Validation of arguments - only the oneValueArgs must have a value
   #
   foreach(_arg ${oneValueArgs})
-    set(_option CMAKE_HELPERS_${_arg})
-    if(NOT ${_option})
-      message(FATAL_ERROR "${option} is missing")
+    if(NOT CMAKE_HELPERS_${_arg})
+      message(FATAL_ERROR "${_arg} option is missing")
     endif()
   endforeach()
 endfunction()
