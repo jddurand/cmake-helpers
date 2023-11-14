@@ -18,6 +18,7 @@ function(cmake_helpers_library name)
     STATIC_NAME
     MODULE_NAME
     SOURCES_AUTO
+    HEADERS_AUTO
     PUBLIC_HEADERS_AUTO
     PRIVATE_HEADERS_AUTO
   )
@@ -26,13 +27,15 @@ function(cmake_helpers_library name)
     SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
-    SOURCES_AUTO_IFACE_RELPATH_ACCEPT_REGEXES
-    SOURCES_AUTO_IFACE_RELPATH_PRIVATE_REGEXES
+    HEADERS
+    HEADERS_AUTO_BASE_DIRS
+    HEADERS_AUTO_GLOBS
+    HEADERS_AUTO_RELPATH_PRIVATE_REGEXES
     PUBLIC_HEADERS
     PRIVATE_HEADERS
   )
   #
-  # Arguments default values
+  # Single-value arguments default values
   #
   set(_cmake_helpers_outputdir                           output)
   set(_cmake_helpers_namespace                           ${PROJECT_NAME})
@@ -45,22 +48,20 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_static_name                         ${PROJECT_NAME}_static)
   set(_cmake_helpers_module_name                         ${PROJECT_NAME}_module)
   set(_cmake_helpers_sources_auto                        TRUE)
+  set(_cmake_helpers_headers_auto                        TRUE)
   set(_cmake_helpers_public_headers_auto                 TRUE)
   set(_cmake_helpers_private_headers_auto                TRUE)
+  #
+  # Multiple-value arguments default values
+  #
   set(_cmake_helpers_config)
   set(_cmake_helpers_sources)
-  set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
-  set(_cmake_helpers_sources_auto_globs
-    ${CMAKE_INSTALL_INCLUDEDIR}/*.h
-    ${CMAKE_INSTALL_INCLUDEDIR}/*.hh
-    ${CMAKE_INSTALL_INCLUDEDIR}/*.hpp
-    ${CMAKE_INSTALL_INCLUDEDIR}/*.hxx
-    src/*.c
-    src/*.cpp
-    src/*.cxx
-  )
-  set(_cmake_helpers_sources_auto_iface_relpath_accept_regexes "\.h$" "\.hh$" "\.hpp$" "\.hxx$")
-  set(_cmake_helpers_sources_auto_iface_relpath_private_regexes "/internal/" "^_" "/_")
+  set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR}/src)
+  set(_cmake_helpers_sources_auto_globs                  *.c *.cpp *.cxx
+  set(_cmake_helpers_headers)
+  set(_cmake_helpers_headers_auto_base_dirs              ${PROJECT_SOURCE_DIR}/include)
+  set(_cmake_helpers_headers_auto_globs                  *.h *.hh *.hpp *.hxx)
+  set(_cmake_helpers_headers_auto_relpath_private_regexes "/internal/" "^_" "/_")
   set(_cmake_helpers_public_headers)
   set(_cmake_helpers_private_headers)
   #
@@ -162,16 +163,49 @@ function(cmake_helpers_library name)
     set(_cmake_helpers_config_out)
   endif()
   #
+  # Sources and headers
+  #
+  foreach(_type sources headers)
+    if((NOT _cmake_helpers_${_type}) AND _cmake_helpers_${_type}_auto)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[library] Auto-discovering ${_type}")
+      endif()
+      foreach(_base_dir ${_cmake_helpers_${_type}_auto_base_dirs})
+	foreach(_glob ${_cmake_helpers_${_type}_auto_globs})
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[library] ... ${_base_dir}/${_glob}")
+	  endif()
+	  file(GLOB_RECURSE _base_dir_${_type} LIST_DIRECTORIES false ${_base_dir}/${_glob})
+	  if(_base_dir_${_type})
+	    if(CMAKE_HELPERS_DEBUG)
+	      foreach(_base_dir_element ${_base_dir_${_type}})
+		message(STATUS "[library] ... ... ${_base_dir_element}")
+	      endforeach()
+	    endif()
+	    cmake_helpers_call(source_group TREE ${_base_dir} FILES ${_base_dir_${_type}})
+	    list(APPEND _cmake_helpers_${_type} ${_base_dir_${_type}})
+	  endif()
+	endforeach()
+      endforeach()
+    endif()
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[library] Discovered ${_type}:")
+      foreach(_cmake_helpers_element ${_cmake_helpers_${_type}})
+	message(STATUS "[library] ... ${_cmake_helpers_element}")
+      endforeach()
+    endif()
+  endforeach()
+  #
   # Public headers
   #
   if((NOT _cmake_helpers_public_headers) AND _cmake_helpers_public_headers_auto)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] Auto-discovering public headers")
     endif()
-    foreach(_source ${_cmake_helpers_sources} ${_cmake_helpers_config_out})
-      cmake_helpers_match_accept_reject_regexes("${_source}" "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_private_regexes}" _matched)
-      if(_matched)
-	list(APPEND _cmake_helpers_public_headers ${_source})
+    foreach(_header ${_cmake_helpers_headers} ${_cmake_helpers_config_out})
+      cmake_helpers_match_regexes("${_header}" "${_cmake_helpers_headers_auto_relpath_private_regexes}" FALSE _matched)
+      if(NOT _matched)
+	list(APPEND _cmake_helpers_public_headers ${_header})
       endif()
     endforeach()
   endif()
@@ -201,34 +235,17 @@ function(cmake_helpers_library name)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] Auto-discovering private headers")
     endif()
-    foreach(_source ${_cmake_helpers_sources} ${_cmake_helpers_config_out})
-      cmake_helpers_match_regexes("${_source}" "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" TRUE _accept_matched)
-      if (_accept_matched)
-	if(CMAKE_HELPERS_DEBUG)
-	  message(STATUS "[library] ${_source} matches accept regexes: ${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}")
-	endif()
-	cmake_helpers_match_regexes("${_source}" "${_cmake_helpers_sources_auto_iface_relpath_private_regexes}" FALSE _private_matched)
-	if(_private_matched)
-	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[library] ${_source} matches private regexes: ${_cmake_helpers_sources_auto_iface_relpath_private_regexes}")
-	  endif()
-	  list(APPEND _cmake_helpers_private_headers ${_source})
-	else()
-	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[library] ${_source} do not match private regexes: ${_cmake_helpers_sources_auto_iface_relpath_private_regexes}")
-	  endif()
-	endif()
-	else()
-	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[library] ${_source} do not match accept regexes: ${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}")
-	  endif()
+    foreach(_header ${_cmake_helpers_headers} ${_cmake_helpers_config_out})
+      cmake_helpers_match_regexes("${_header}" "${_cmake_helpers_headers_auto_relpath_private_regexes}" FALSE _matched)
+      if(_matched)
+	list(APPEND _cmake_helpers_private_headers ${_header})
       endif()
     endforeach()
   endif()
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[library] Discovered private headers:")
-    foreach(_cmake_helpers_private_header ${_cmake_helpers_private_headers})
-      message(STATUS "[library] ... ${_cmake_helpers_private_header}")
+    message(STATUS "[library] Discovered public headers:")
+    foreach(_cmake_helpers_public_header ${_cmake_helpers_public_headers})
+      message(STATUS "[library] ... ${_cmake_helpers_public_header}")
     endforeach()
   endif()
   if(_cmake_helpers_private_headers)
