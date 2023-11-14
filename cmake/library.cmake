@@ -1,7 +1,13 @@
 function(cmake_helpers_library name type)
+  if((NOT name) OR (NOT type))
+    message(FATAL_ERROR "Usage: cmake_helpers_library name type [<src> ...]")
+  endif()
+  #
+  # Get a copy of ARGN
+  #
   set(_srcs ${ARGN})
   #
-  # Arguments
+  # Arguments definitions: options, one value arguments, multivalue arguments
   #
   set(options
     SOURCES_AUTO
