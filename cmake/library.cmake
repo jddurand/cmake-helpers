@@ -179,8 +179,9 @@ function(cmake_helpers_library name)
 	#
 	# Include directories
 	#
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_INTERFACE:${_base_dirs}>)
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_LOCAL_INTERFACE:${_base_dirs}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_base_dirs}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_base_dirs}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
       endif()
     endif()
   endforeach()
