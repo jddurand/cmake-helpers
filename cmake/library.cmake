@@ -5,7 +5,7 @@ function(cmake_helpers_library name type)
   #
   # Get a copy of ARGN
   #
-  set(_srcs ${ARGN})
+  set(_sources ${ARGN})
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   # We put our options in oneValueArgs because options are always set when calling
@@ -78,4 +78,13 @@ function(cmake_helpers_library name type)
       message(FATAL_ERROR "${_var} is missing")
     endif()
   endforeach()
+  #
+  # If no source and sources_auto is set, auto-discover sources
+  #
+  if((NOT _sources) AND _cmake_helpers_sources_auto_base_dirs AND _cmake_helpers_sources_auto_globs)
+    foreach(_base_dir ${_cmake_helpers_sources_auto_base_dirs})
+      cmake_helpers_call(file GLOB_RECURSE _base_dir_sources LIST_DIRECTORIES false CONFIGURE_DEPENDS ${_cmake_helpers_sources_auto_globs})
+      list(APPEND _sources ${_base_dir_sources})
+    endforeach()
+  endif()
 endfunction()
