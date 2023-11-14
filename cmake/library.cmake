@@ -163,6 +163,6 @@ function(cmake_helpers_library name)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PRIVATE
       FILE_SET private_headers
       TYPE HEADERS
-      FILES ${_cmake_helpers_public_headers})
+      FILES ${_cmake_helpers_private_headers})
   endif()
 endfunction()
