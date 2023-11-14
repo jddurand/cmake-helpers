@@ -115,8 +115,6 @@ function(cmake_helpers_library name)
   #
   cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
   set(_iface_base_dirs ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}")
-  cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_iface_base_dirs})
-  cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_iface_base_dirs})
   #
   # Config
   #
@@ -129,6 +127,7 @@ function(cmake_helpers_library name)
     cmake_helpers_call(source_group TREE ${_cmake_helpers_config_outdir} FILES ${_cmake_helpers_config_out})
     cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_config_outdir}>)
   else()
+    set(_cmake_helpers_config_outdir)
     set(_cmake_helpers_config_out)
   endif()
   #
@@ -147,6 +146,11 @@ function(cmake_helpers_library name)
 	else()
 	  set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
 	endif()
+	#
+	# Include directories
+	#
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_INTERFACE:${_base_dirs}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_iface_name} $<BUILD_LOCAL_INTERFACE:${_base_dirs}>)
       endif()
       foreach(_base_dir ${_base_dirs})
 	if(CMAKE_HELPERS_DEBUG)
