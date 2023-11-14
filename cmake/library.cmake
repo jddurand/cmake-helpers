@@ -154,6 +154,7 @@ function(cmake_helpers_library name)
     set(_cmake_helpers_config_out "${_cmake_helpers_config_outdir}/${_cmake_helpers_config_out}")
     cmake_helpers_call(configure_file ${_cmake_helpers_config_in} ${_cmake_helpers_config_out})
     cmake_helpers_call(source_group TREE ${_cmake_helpers_config_outdir} FILES ${_cmake_helpers_config_out})
+    target_include_directories(${_cmake_helpers_iface_name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_config_outdir}>)
   else()
     set(_cmake_helpers_config_out)
   endif()
@@ -232,17 +233,5 @@ function(cmake_helpers_library name)
       FILE_SET private_headers
       TYPE HEADERS
       FILES ${_cmake_helpers_private_headers})
-  endif()
-  #
-  # If there is a config file, determine the scope of the include directory
-  #
-  if(_cmake_helpers_config)
-    if(_cmake_helpers_config_out IN_LIST _cmake_helpers_public_headers)
-      target_include_directories(${_cmake_helpers_iface_name} PUBLIC ${_cmake_helpers_config_outdir})
-    elseif(_cmake_helpers_config_out IN_LIST _cmake_helpers_private_headers)
-      target_include_directories(${_cmake_helpers_iface_name} PRIVATE ${_cmake_helpers_config_outdir}>)
-    else()
-      message(WARNING "Cannot determine if ${_cmake_helpers_config_out} is public or private")
-    endif()
   endif()
 endfunction()
