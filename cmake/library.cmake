@@ -56,7 +56,7 @@ function(cmake_helpers_library name)
     src/*.cxx
   )
   set(_cmake_helpers_sources_auto_iface_relpath_accept_regexes "\.h$" "\.hh$" "\.hpp$" "\.hxx$")
-  set(_cmake_helpers_sources_auto_iface_relpath_reject_regexes "/internal/" "/_")
+  set(_cmake_helpers_sources_auto_iface_relpath_reject_regexes "/internal/" "^_" "/_")
   set(_cmake_helpers_public_headers)
   set(_cmake_helpers_private_headers)
   #
