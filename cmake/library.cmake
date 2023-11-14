@@ -140,7 +140,7 @@ function(cmake_helpers_library name)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PUBLIC
       FILE_SET public_headers
       TYPE HEADERS
-      ${_cmake_helpers_public_headers})
+      FILES ${_cmake_helpers_public_headers})
     cmake_helpers_call(install
       TARGETS ${_cmake_helpers_iface_name}
       EXPORT ${_cmake_helpers_namespace}-targets
@@ -163,6 +163,6 @@ function(cmake_helpers_library name)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PRIVATE
       FILE_SET private_headers
       TYPE HEADERS
-      ${_cmake_helpers_public_headers})
+      FILES ${_cmake_helpers_public_headers})
   endif()
 endfunction()
