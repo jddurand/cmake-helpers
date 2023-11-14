@@ -8,18 +8,21 @@ function(cmake_helpers_library name type)
   set(_sources ${ARGN})
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
+  #
+  set(_options
+    SOURCES_AUTO
+  )
   # We put our options in oneValueArgs because options are always set when calling
   # cmake_parse_arguments().
   #
-  set(oneValueArgs
-    SOURCES_AUTO
+  set(_oneValueArgs
     NAMESPACE
     VERSION
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
   )
-  set(multiValueArgs
+  set(_multiValueArgs
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
     SOURCES_AUTO_RELPATH_ACCEPT_REGEXES
@@ -52,11 +55,11 @@ function(cmake_helpers_library name type)
   #
   # Parse Arguments
   #
-  cmake_parse_arguments(CMAKE_HELPERS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments(CMAKE_HELPERS "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
   #
   # Set internal variables
   #
-  foreach(_option ${options} ${oneValueArgs} ${multiValueArgs})
+  foreach(_option ${_options} ${_oneValueArgs} ${_multiValueArgs})
     set(_name CMAKE_HELPERS_${_option})
     set(_var _${_name})
     string(TOLOWER "${_var}" _var)
@@ -70,8 +73,8 @@ function(cmake_helpers_library name type)
   #
   # Validation of arguments - only the oneValueArgs must have a value
   #
-  foreach(_option ${oneValueArgs})
-    set(_name CMAKE_HELPERS_${_option})
+  foreach(_oneValueArg ${_oneValueArgs})
+    set(_name CMAKE_HELPERS_${_oneValueArg})
     set(_var _${_name})
     string(TOLOWER "${_var}" _var)
     if(NOT (DEFINED ${_var}))
