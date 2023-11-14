@@ -1,5 +1,9 @@
 function(cmake_helpers_init)
   #
+  # We use GNU standard for installation
+  #
+  include(GNUInstallDirs)
+  #
   # Alike the CMakeLists.txt, we should not have been called more than once
   #
   get_property(_cmake_helpers_initialized_set GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED SET)
@@ -14,14 +18,10 @@ function(cmake_helpers_init)
   #
   # Declare all options
   #
-  cmake_helpers_option(CMAKE_HELPERS_IFACE_SUFFIX    STRING _iface  "CMake Helpers interface library suffix") # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_STATIC_SUFFIX   STRING _static "CMake Helpers static library suffix")    # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_SHARED_SUFFIX   STRING _shared "CMake Helpers shared library suffix")    # Must be set, not an option in the GUI
-  cmake_helpers_option(CMAKE_HELPERS_OUTPUT_DIR_NAME STRING output  "CMake Helpers output directory name")    # Must be set, not an option in the GUI
-  #
-  # We use GNU standard for installation
-  #
-  include(GNUInstallDirs)
+  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_IFACE    STRING _iface  "CMake Helpers interface library suffix") # Must be set, not an option in the GUI
+  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_STATIC   STRING _static "CMake Helpers static library suffix")    # Must be set, not an option in the GUI
+  cmake_helpers_option(CMAKE_HELPERS_SUFFIX_SHARED   STRING _shared "CMake Helpers shared library suffix")    # Must be set, not an option in the GUI
+  cmake_helpers_option(CMAKE_HELPERS_BINARY_DIR      STRING ${PARENT_BINARY_DIR}/output "CMake Helpers output directory") # Must be set, not an option in the GUI
   #
   # Common include files
   #
@@ -470,15 +470,15 @@ function(cmake_helpers_init)
     # Header files generation
     #
     set(_header_files_generated FALSE)
-    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_INCLUDE_GENDIR)
-      set(_output_file "${CMAKE_HELPERS_INCLUDE_GENDIR}/stdint.h")
+    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H AND CMAKE_HELPERS_BINARY_DIR)
+      set(_output_file ${CMAKE_HELPERS_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/stdint.h)
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
       get_filename_component(_cmake_helpers_stdint_h_directory ${_output_file} DIRECTORY)
       set(_header_files_generated TRUE)
     endif()
-    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H AND CMAKE_HELPERS_INCLUDE_GENDIR)
-      set(_output_file "${CMAKE_HELPERS_INCLUDE_GENDIR}/inttypes.h")
+    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H AND CMAKE_HELPERS_BINARY_DIR)
+      set(_output_file ${CMAKE_HELPERS_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/inttypes.h)
       message(STATUS "Generating ${_output_file}")
       configure_file(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
       get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
