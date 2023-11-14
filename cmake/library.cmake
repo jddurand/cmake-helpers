@@ -114,7 +114,6 @@ function(cmake_helpers_library name)
   # We always generate an interface library
   #
   cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
-  set(_iface_base_dirs ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}")
   #
   # Config
   #
@@ -145,6 +144,7 @@ function(cmake_helpers_library name)
 	else()
 	  set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
 	endif()
+	set(_iface_base_dirs ${_base_dirs})
       endif()
       foreach(_base_dir ${_base_dirs})
 	if(CMAKE_HELPERS_DEBUG)
@@ -240,6 +240,7 @@ function(cmake_helpers_library name)
   if(_cmake_helpers_private_headers)
     cmake_helpers_call(target_sources ${_cmake_helpers_iface_name} PRIVATE
       FILE_SET private_headers
+      BASE_DIRS ${_iface_base_dirs}
       TYPE HEADERS
       FILES ${_cmake_helpers_private_headers})
   endif()
