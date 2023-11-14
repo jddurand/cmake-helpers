@@ -25,7 +25,7 @@ function(cmake_helpers_library name)
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
     SOURCES_AUTO_IFACE_RELPATH_ACCEPT_REGEXES
-    SOURCES_AUTO_IFACE_RELPATH_REJECT_REGEXES
+    SOURCES_AUTO_IFACE_RELPATH_PRIVATE_REGEXES
     PUBLIC_HEADERS
     PRIVATE_HEADERS
   )
@@ -56,7 +56,7 @@ function(cmake_helpers_library name)
     src/*.cxx
   )
   set(_cmake_helpers_sources_auto_iface_relpath_accept_regexes "\.h$" "\.hh$" "\.hpp$" "\.hxx$")
-  set(_cmake_helpers_sources_auto_iface_relpath_reject_regexes "/internal/" "^_" "/_")
+  set(_cmake_helpers_sources_auto_iface_relpath_private_regexes "/internal/" "^_" "/_")
   set(_cmake_helpers_public_headers)
   set(_cmake_helpers_private_headers)
   #
@@ -130,7 +130,7 @@ function(cmake_helpers_library name)
   #
   if((NOT _cmake_helpers_public_headers) AND _cmake_helpers_public_headers_auto)
     foreach(_source ${_cmake_helpers_sources})
-      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" _matched)
+      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_private_regexes}" _matched)
       if(_matched)
 	list(APPEND _cmake_helpers_public_headers ${_source})
       endif()
@@ -153,9 +153,12 @@ function(cmake_helpers_library name)
   #
   if((NOT _cmake_helpers_private_headers) AND _cmake_helpers_private_headers_auto)
     foreach(_source ${_cmake_helpers_sources})
-      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" _matched)
-      if(NOT _matched)
-	list(APPEND _cmake_helpers_private_headers ${_source})
+      cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_accept_regexes}" "" _accept_matched)
+      if (_accept_matched)
+	cmake_helpers_match_accept_reject_regexes(${_source} "${_cmake_helpers_sources_auto_iface_relpath_reject_regexes}" "" _private_matched)
+	if(_private_matched)
+	  list(APPEND _cmake_helpers_private_headers ${_source})
+	endif()
       endif()
     endforeach()
   endif()
