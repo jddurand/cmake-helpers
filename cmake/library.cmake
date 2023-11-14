@@ -7,12 +7,12 @@ function(cmake_helpers_library name type)
   #
   set(_srcs ${ARGN})
   #
-  # Arguments definitions: options, one value arguments, multivalue arguments
+  # Arguments definitions: options, one value arguments, multivalue arguments.
+  # We put our options in oneValueArgs because options are always set when calling
+  # cmake_parse_arguments().
   #
-  set(options
-    SOURCES_AUTO
-  )
   set(oneValueArgs
+    SOURCES_AUTO
     NAMESPACE
     VERSION
     VERSION_MAJOR
@@ -26,12 +26,9 @@ function(cmake_helpers_library name type)
     SOURCES_AUTO_RELPATH_REJECT_REGEXES
   )
   #
-  # options defaults
-  #
-  set(_cmake_helpers_sources_auto   TRUE)
-  #
   # oneValueArgs defaults - we intentionally recuperate latest project()
   #
+  set(_cmake_helpers_sources_auto  TRUE)
   set(_cmake_helpers_namespace     ${PROJECT_NAME})
   set(_cmake_helpers_version       ${PROJECT_VERSION})
   set(_cmake_helpers_version_major ${PROJECT_VERSION_MAJOR})
@@ -42,15 +39,20 @@ function(cmake_helpers_library name type)
   #
   set(_cmake_helpers_sources_auto_base_dirs ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
-    ${CMAKE_INSTALL_INCLUDEDIR}/*.h ${CMAKE_INSTALL_INCLUDEDIR}/*.hh ${CMAKE_INSTALL_INCLUDEDIR}/*.hpp ${CMAKE_INSTALL_INCLUDEDIR}/*.hxx
-    src/*.c src/*.cpp src/*.cxx
+    ${CMAKE_INSTALL_INCLUDEDIR}/*.h
+    ${CMAKE_INSTALL_INCLUDEDIR}/*.hh
+    ${CMAKE_INSTALL_INCLUDEDIR}/*.hpp
+    ${CMAKE_INSTALL_INCLUDEDIR}/*.hxx
+    src/*.c
+    src/*.cpp
+    src/*.cxx
   )
   set(_cmake_helpers_sources_auto_relpath_accept_regexes)
   set(_cmake_helpers_sources_auto_relpath_reject_regexes  "/internal/" "/_")
   #
   # Parse Arguments
   #
-  cmake_parse_arguments(CMAKE_HELPERS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments(CMAKE_HELPERS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   #
   # Set internal variables
   #
