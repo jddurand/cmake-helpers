@@ -7,6 +7,7 @@ function(cmake_helpers_library name)
   #
   set(_options)
   set(_oneValueArgs
+    OUTPUTDIR
     NAMESPACE
     VERSION
     VERSION_MAJOR
@@ -21,6 +22,7 @@ function(cmake_helpers_library name)
     PRIVATE_HEADERS_AUTO
   )
   set(_multiValueArgs
+    CONFIG
     SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
@@ -32,6 +34,7 @@ function(cmake_helpers_library name)
   #
   # Arguments default values
   #
+  set(_cmake_helpers_outputdir                           output)
   set(_cmake_helpers_namespace                           ${PROJECT_NAME})
   set(_cmake_helpers_version                             ${PROJECT_VERSION})
   set(_cmake_helpers_version_major                       ${PROJECT_VERSION_MAJOR})
@@ -44,6 +47,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_sources_auto                        TRUE)
   set(_cmake_helpers_public_headers_auto                 TRUE)
   set(_cmake_helpers_private_headers_auto                TRUE)
+  set(_cmake_helpers_config)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR})
   set(_cmake_helpers_sources_auto_globs
@@ -92,6 +96,21 @@ function(cmake_helpers_library name)
     endif()
   endforeach()
   #
+  # If CONFIG is set, it must have two arguments, where the second one is not an absolute path
+  #
+  if(_cmake_helpers_config)
+    list(LENGTH _cmake_helpers_config _cmake_helpers_config_length)
+    if(NOT (_cmake_helpers_config_length EQUAL 2))
+      message(FATAL_ERROR "CONFIG must have two elements when it is set")
+    endif()
+    list(GET _cmake_helpers_config 1 _config_out)
+    cmake_path(IS_ABSOLUTE _config_out _config_out_is_absolute)
+    if(_config_out_is_absolute)
+      message(FATAL_ERROR "${_config_out} must be absolute")
+    endif()
+    set(_config
+  endif()
+  #
   # We always generate an interface library
   #
   cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
@@ -114,7 +133,7 @@ function(cmake_helpers_library name)
 	      message(STATUS "[library] ... ... ${_base_dir_source}")
 	    endforeach()
 	  endif()
-	  source_group(TREE ${_base_dir} FILES ${_base_dir_sources})
+	  cmake_helpers_call(source_group TREE ${_base_dir} FILES ${_base_dir_sources})
 	  list(APPEND _cmake_helpers_sources ${_base_dir_sources})
 	endif()
       endforeach()
@@ -181,5 +200,14 @@ function(cmake_helpers_library name)
       FILE_SET private_headers
       TYPE HEADERS
       FILES ${_cmake_helpers_private_headers})
+  endif()
+  #
+  # Config
+  #
+  if(_cmake_helpers_config)
+    list(GET _cmake_helpers_config 0 _config_in)
+    list(GET _cmake_helpers_config 0 _config_out)
+    cmake_helpers_call(configure_file ${_config_in} ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}/${_config_out})
+    cmake_helpers_call(source_group TREE ${CMAKE_CURRENT_BINARY_DIR} FILES ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}/${_config_out})
   endif()
 endfunction()
