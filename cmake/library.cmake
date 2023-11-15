@@ -24,6 +24,7 @@ function(cmake_helpers_library name)
   )
   set(_multiValueArgs
     CONFIG_ARGS
+    GENERATE_EXPORT_HEADER_ARGS
     SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
@@ -55,6 +56,7 @@ function(cmake_helpers_library name)
   # Multiple-value arguments default values
   #
   set(_cmake_helpers_config_args)
+  set(_cmake_helpers_generate_export_header_args)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR}/src)
   set(_cmake_helpers_sources_auto_globs                  *.c *.cpp *.cxx)
@@ -105,6 +107,13 @@ function(cmake_helpers_library name)
   #
   if(_cmake_helpers_config_args)
     cmake_helpers_call(configure_file ${_cmake_helpers_config_args})
+  endif()
+  #
+  # Export
+  #
+  if(_cmake_helpers_generate_export_header_args)
+    include(GenerateExportHeader)
+    cmake_helpers_call(generate_export_header ${_cmake_helpers_generate_export_header_args})
   endif()
   #
   # Sources and headers
