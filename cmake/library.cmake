@@ -23,7 +23,7 @@ function(cmake_helpers_library name)
     PRIVATE_HEADERS_AUTO
   )
   set(_multiValueArgs
-    CONFIG
+    CONFIG_ARGS
     SOURCES
     SOURCES_AUTO_BASE_DIRS
     SOURCES_AUTO_GLOBS
@@ -54,7 +54,7 @@ function(cmake_helpers_library name)
   #
   # Multiple-value arguments default values
   #
-  set(_cmake_helpers_config)
+  set(_cmake_helpers_config_args)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto_base_dirs              ${PROJECT_SOURCE_DIR}/src)
   set(_cmake_helpers_sources_auto_globs                  *.c *.cpp *.cxx)
@@ -97,36 +97,14 @@ function(cmake_helpers_library name)
     endif()
   endforeach()
   #
-  # If CONFIG is set, it must have two arguments, where the second one is not an absolute path
-  #
-  if(_cmake_helpers_config)
-    list(LENGTH _cmake_helpers_config _cmake_helpers_config_length)
-    if(NOT (_cmake_helpers_config_length EQUAL 2))
-      message(FATAL_ERROR "CONFIG must have two elements when it is set")
-    endif()
-    list(GET _cmake_helpers_config 1 _config_out)
-    cmake_path(IS_ABSOLUTE _config_out _config_out_is_absolute)
-    if(_config_out_is_absolute)
-      message(FATAL_ERROR "${_config_out} must be relative")
-    endif()
-  endif()
-  #
   # We always generate an interface library
   #
   cmake_helpers_call(add_library ${_cmake_helpers_iface_name} INTERFACE)
   #
   # Config
   #
-  if(_cmake_helpers_config)
-    list(GET _cmake_helpers_config 0 _cmake_helpers_config_in)
-    list(GET _cmake_helpers_config 1 _cmake_helpers_config_out)
-    set(_cmake_helpers_config_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_outputdir}/${CMAKE_INSTALL_INCLUDEDIR}")
-    set(_cmake_helpers_config_out "${_cmake_helpers_config_outdir}/${_cmake_helpers_config_out}")
-    cmake_helpers_call(configure_file ${_cmake_helpers_config_in} ${_cmake_helpers_config_out})
-    cmake_helpers_call(source_group TREE ${_cmake_helpers_config_outdir} PREFIX include FILES ${_cmake_helpers_config_out})
-  else()
-    set(_cmake_helpers_config_outdir)
-    set(_cmake_helpers_config_out)
+  if(_cmake_helpers_config_args)
+    cmake_helpers_call(configure_file ${_cmake_helpers_config_args})
   endif()
   #
   # Sources and headers
@@ -140,11 +118,7 @@ function(cmake_helpers_library name)
 	set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
 	set(_prefix src)
       else()
-	if(_cmake_helpers_config)
-	  set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs} ${_cmake_helpers_config_outdir})
-	else()
-	  set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
-	endif()
+	set(_base_dirs ${_cmake_helpers_${_type}_auto_base_dirs})
 	set(_iface_base_dirs ${_base_dirs})
 	set(_prefix include)
       endif()
