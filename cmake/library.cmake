@@ -42,10 +42,18 @@ function(cmake_helpers_library name)
   )
   set(_multiValueArgs
     CONFIG_ARGS
+    SOURCES
+    SOURCES_PREFIX
     SOURCES_BASE_DIRS
-    HEADERS_BASE_DIRS
     SOURCES_GLOBS
+    SOURCES_ACCEPT_RELPATH_REGEXES
+    SOURCES_REJECT_RELPATH_REGEXES
+    HEADERS
+    HEADERS_PREFIX
+    HEADERS_BASE_DIRS
     HEADERS_GLOBS
+    HEADERS_ACCEPT_RELPATH_REGEXES
+    HEADERS_REJECT_RELPATH_REGEXES
     PRIVATE_HEADERS_RELPATH_REGEXES
   )
   #
@@ -84,6 +92,8 @@ function(cmake_helpers_library name)
   # Multiple-value arguments default values
   #
   set(_cmake_helpers_config_args)
+  set(_cmake_helpers_sources)
+  set(_cmake_helpers_sources_prefix                       src)
   get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   if(_srcdir STREQUAL _bindir)
@@ -94,7 +104,13 @@ function(cmake_helpers_library name)
     set(_cmake_helpers_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
   endif()
   set(_cmake_helpers_sources_globs                        *.c *.cpp *.cxx)
+  set(_cmake_helpers_sources_accept_relpath_regexes)
+  set(_cmake_helpers_sources_reject_relpath_regexes)
+  set(_cmake_helpers_headers)
+  set(_cmake_helpers_headers_prefix                       include)
   set(_cmake_helpers_headers_globs                        *.h *.hh *.hpp *.hxx)
+  set(_cmake_helpers_headers_accept_relpath_regexes)
+  set(_cmake_helpers_headers_reject_relpath_regexes)
   set(_cmake_helpers_private_headers_relpath_regexes      "/internal" "/_" "^_")
   #
   # Parse Arguments
@@ -155,12 +171,14 @@ function(cmake_helpers_library name)
   #
   # Sources discovery
   #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[library] -------------------")
-    message(STATUS "[library] Discovering sources")
-    message(STATUS "[library] -------------------")
+  if(NOT _cmake_helpers_sources)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[library] -------------------")
+      message(STATUS "[library] Discovering sources")
+      message(STATUS "[library] -------------------")
+    endif()
+    _cmake_helpers_files_find(sources "${_cmake_helpers_sources_base_dirs}" "${_cmake_helpers_sources_prefix}" "${_cmake_helpers_sources_accept_relpath_regexes}" "${_cmake_helpers_sources_reject_relpath_regexes}" _cmake_helpers_sources)
   endif()
-  _cmake_helpers_files_find(sources "${_cmake_helpers_sources_base_dirs}" src _cmake_helpers_sources)
   #
   # Decide targets
   #
@@ -224,12 +242,14 @@ function(cmake_helpers_library name)
   #
   # Headers discovery
   #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[library] -------------------")
-    message(STATUS "[library] Discovering headers")
-    message(STATUS "[library] -------------------")
+  if(NOT _cmake_helpers_headers)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[library] -------------------")
+      message(STATUS "[library] Discovering headers")
+      message(STATUS "[library] -------------------")
+    endif()
+    _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_sources)
   endif()
-  _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" include _cmake_helpers_headers)
   #
   # Get private headers out of header files
   #
@@ -837,7 +857,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   endif()
 endfunction()
 
-function(_cmake_helpers_files_find type base_dirs prefix output_var)
+function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_regexes output_var)
   set(_all_files)
   foreach(_base_dir ${base_dirs})
     if(CMAKE_HELPERS_DEBUG)
@@ -849,14 +869,15 @@ function(_cmake_helpers_files_find type base_dirs prefix output_var)
 	message(STATUS "[library] ... ... glob ${_base_dir}/${_glob}")
       endif()
       file(GLOB_RECURSE _files LIST_DIRECTORIES false ${_base_dir}/${_glob})
-      if(_files)
-	if(CMAKE_HELPERS_DEBUG)
-	  foreach(_file ${_files})
+      foreach(_file ${_files})
+	cmake_helpers_match_accept_reject_regexes(${_file} "${accept_regexes}" "${reject_regexes}" _matched)
+	if(_matched)
+	  if(CMAKE_HELPERS_DEBUG)
 	    message(STATUS "[library] ... ... ... file ${_file}")
-	  endforeach()
+	  endif()
+	  list(APPEND _base_dir_files ${_file})
 	endif()
-	list(APPEND _base_dir_files ${_files})
-      endif()
+      endforeach()
     endforeach()
     if(_base_dir_files)
       cmake_helpers_call(source_group TREE ${_base_dir} PREFIX ${prefix} FILES ${_base_dir_files})
