@@ -765,6 +765,11 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   # Generate tests
   #
   if(_cmake_helpers_tests)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] --------------")
+      message(STATUS "[${PROJECT_NAME}/library] Creating tests")
+      message(STATUS "[${PROJECT_NAME}/library] --------------")
+    endif()
     foreach(_cmake_helpers_test ${_cmake_helpers_tests})
       #
       # We assume one filename without extension is the name of the test
