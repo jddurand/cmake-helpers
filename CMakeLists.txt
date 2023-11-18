@@ -16,23 +16,15 @@ if(NOT _cmake_helpers_loaded)
   option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
 
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} loading")
+    message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION}")
   endif()
   #
-  # Always start with cmake/call.cmake
-  #
-  file(GLOB _call ${PROJECT_SOURCE_DIR}/cmake/call.cmake)
-  if(NOT _call)
-    message(FATAL_ERROR "Could not find call.cmake")
-  endif()
-  include(${_call})
-  #
-  # Load the others
+  # Load all cmake file
   #
   file(GLOB _files ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
   foreach (_file ${_files})
-    if(_file STREQUAL ${_call})
-      continue()
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[cmake_helpers] include(${_file})")
     endif()
     include(${_file})
   endforeach()
