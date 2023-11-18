@@ -2,10 +2,10 @@
 # Intentionaly a macro and not a function
 #
 macro(cmake_helpers_call command)
-  set(_argn ${ARGN})
+  set(_cmake_helpers_call_argn ${ARGN})
   if(CMAKE_HELPERS_DEBUG)
-    list(JOIN _argn " " _args)
-    message(STATUS "${command}(${_args})")
+    list(JOIN _cmake_helpers_call_argn " " _cmake_helpers_call_args)
+    message(STATUS "${command}(${_cmake_helpers_call_args})")
   endif()
-  cmake_language(CALL ${command} ${_argn})
+  cmake_language(CALL ${command} ${_cmake_helpers_call_argn})
 endmacro()
