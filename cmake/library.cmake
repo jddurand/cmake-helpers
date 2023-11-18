@@ -904,6 +904,18 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       list(APPEND CPACK_COMPONENTS_ALL ApplicationComponent)
     endif()
   endif()
+
+cmake_helpers_call(get_property _cmake_helpers_sources_auto_defined DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto DEFINED)
+if(_cmake_helpers_sources_auto_defined)
+  message(STATUS "[library] _cmake_helpers_sources_auto is defined")
+  cmake_helpers_call(get_property _cmake_helpers_sources_auto DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto SET)
+  message(STATUS "[library] _cmake_helpers_sources_auto is ${_cmake_helpers_sources_auto}")
+else()
+  message(STATUS "[library] _cmake_helpers_sources_auto is not defined")
+endif()
+    
+cmake_helpers_call(get_property _cmake_helpers_sources_auto_defined DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto SET)
+message(STATUS "_cmake_helpers_sources_auto direct fetch gives ${_cmake_helpers_sources_auto}")
 endfunction()
 
 function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_regexes output_var)
