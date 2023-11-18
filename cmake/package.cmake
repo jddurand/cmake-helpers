@@ -1,8 +1,8 @@
 function(cmake_helpers_package)
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[package] -------------------------")
-    message(STATUS "[package] Doing CPack configuration")
-    message(STATUS "[package] -------------------------")
+    message(STATUS "[${PROJECT_NAME}/package] -------------------------")
+    message(STATUS "[${PROJECT_NAME}/package] Doing CPack configuration")
+    message(STATUS "[${PROJECT_NAME}/package] -------------------------")
   endif()
   #
   # Recuperate directory properties
@@ -11,12 +11,19 @@ function(cmake_helpers_package)
       namespace
       version
       package_vendor package_description_summary package_license
-      have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent)
+      have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent
+      cpack_pre_build_script)
     cmake_helpers_call(get_property _cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
+      message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
   endforeach()
+  #
+  # Set CPack hooks
+  #
+  if(_cmake_helpers_cpack_pre_build_script)
+    list(APPEND CPACK_PRE_BUILD_SCRIPTS ${_cmake_helpers_cpack_pre_build_script})
+  endif()
   #
   # Set common CPack variables
   #
