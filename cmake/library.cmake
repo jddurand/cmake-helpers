@@ -255,7 +255,7 @@ function(cmake_helpers_library name)
       message(STATUS "[library] Discovering headers")
       message(STATUS "[library] -------------------")
     endif()
-    _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_sources)
+    _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_headers)
   endif()
   #
   # Get private headers out of header files
