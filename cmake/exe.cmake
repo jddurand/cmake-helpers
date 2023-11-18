@@ -18,15 +18,15 @@ function(cmake_helpers_exe name)
   #
   # Add an executable using all library targets
   #
-  foreach(_target ${_cmake_helpers_targets})
-    get_target_property(_type ${_target} TYPE)
+  foreach(_library_target ${_cmake_helpers_targets})
+    get_target_property(_type ${_library_target} TYPE)
     if(_type STREQUAL "STATIC_LIBRARY")
-      set(_exe "${name}${_cmake_helpers_static_library_suffix}_exe")
+      set(_target "${name}${_cmake_helpers_static_library_suffix}_exe")
     else()
-      set(_exe "${name}_exe")
+      set(_target "${name}_exe")
     endif()
-    cmake_helpers_call(add_executable ${_exe} ${_argn})
-    cmake_helpers_call(target_link_libraries ${_exe} ${_target})
+    cmake_helpers_call(add_executable ${_target} ${_argn})
+    cmake_helpers_call(target_link_libraries ${_target} ${_library_target})
     cmake_helpers_call(install
       TARGETS ${_target}
       EXPORT ${_cmake_helpers_export_cmake_name}
