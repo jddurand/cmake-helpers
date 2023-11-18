@@ -43,12 +43,14 @@ function(cmake_helpers_library name)
   set(_multiValueArgs
     CONFIG_ARGS
     SOURCES
+    SOURCES_AUTO
     SOURCES_PREFIX
     SOURCES_BASE_DIRS
     SOURCES_GLOBS
     SOURCES_ACCEPT_RELPATH_REGEXES
     SOURCES_REJECT_RELPATH_REGEXES
     HEADERS
+    HEADERS_AUTO
     HEADERS_PREFIX
     HEADERS_BASE_DIRS
     HEADERS_GLOBS
@@ -93,6 +95,7 @@ function(cmake_helpers_library name)
   #
   set(_cmake_helpers_config_args)
   set(_cmake_helpers_sources)
+  set(_cmake_helpers_sources_auto                         TRUE)
   set(_cmake_helpers_sources_prefix                       src)
   get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
@@ -107,6 +110,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_sources_accept_relpath_regexes)
   set(_cmake_helpers_sources_reject_relpath_regexes)
   set(_cmake_helpers_headers)
+  set(_cmake_helpers_headers_auto                         TRUE)
   set(_cmake_helpers_headers_prefix                       include)
   set(_cmake_helpers_headers_globs                        *.h *.hh *.hpp *.hxx)
   set(_cmake_helpers_headers_accept_relpath_regexes)
@@ -171,7 +175,7 @@ function(cmake_helpers_library name)
   #
   # Sources discovery
   #
-  if(NOT _cmake_helpers_sources)
+  if((NOT _cmake_helpers_sources) AND _cmake_helpers_sources_auto)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] -------------------")
       message(STATUS "[library] Discovering sources")
@@ -242,7 +246,7 @@ function(cmake_helpers_library name)
   #
   # Headers discovery
   #
-  if(NOT _cmake_helpers_headers)
+  if((NOT _cmake_helpers_headers) AND _cmake_helpers_headers_auto)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] -------------------")
       message(STATUS "[library] Discovering headers")
