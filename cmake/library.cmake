@@ -29,7 +29,6 @@ function(cmake_helpers_library name)
     VERSION_PATCH
     EXPORT_CMAKE_NAME
     PKGCONFIG
-    PACKAGE
     EXPORT_HEADER
     EXPORT_HEADER_BASE_NAME
     EXPORT_HEADER_MACRO_NAME
@@ -80,7 +79,6 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_version_patch                        ${PROJECT_VERSION_PATCH})
   set(_cmake_helpers_export_cmake_name                    ${PROJECT_NAME}-targets)
   set(_cmake_helpers_pkgconfig                            TRUE)
-  set(_cmake_helpers_package                              TRUE)
   set(_cmake_helpers_export_header                        TRUE)
   set(_cmake_helpers_export_header_base_name              ${PROJECT_NAME})
   set(_cmake_helpers_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
@@ -154,14 +152,6 @@ function(cmake_helpers_library name)
       message(FATAL_ERROR "${_var} is missing")
     endif()
   endforeach()
-  #
-  # Pkgconfig requires pack
-  #
-  if(_cmake_helpers_pkgconfig)
-    if(NOT _cmake_helpers_package)
-      message(FATAL_ERROR "PKGCONFIG option requires PACKAGE option")
-    endif()
-  endif()
   #
   # Config
   #
