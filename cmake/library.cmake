@@ -469,7 +469,7 @@ endif()
 
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@_cmake_helpers_namespace@/build] Initializing CMAKE_PREFIX_PATH with: $ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
-endif
+endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
