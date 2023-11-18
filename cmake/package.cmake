@@ -13,7 +13,7 @@ function(cmake_helpers_package)
       package_vendor package_description_summary package_license
       have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent
       cpack_pre_build_script)
-    cmake_helpers_call(get_property _cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()

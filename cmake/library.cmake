@@ -152,7 +152,7 @@ function(cmake_helpers_library name)
       endif()
       set(${_var} ${CMAKE_HELPERS_${_option}})
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_var} ${${_var}})
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_var} ${${_var}})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/library] ... ${_var}=${${_var}}")
     endif()
@@ -189,7 +189,7 @@ function(cmake_helpers_library name)
       message(STATUS "[${PROJECT_NAME}/library] -------------------")
     endif()
     _cmake_helpers_files_find(sources "${_cmake_helpers_sources_base_dirs}" "${_cmake_helpers_sources_prefix}" "${_cmake_helpers_sources_accept_relpath_regexes}" "${_cmake_helpers_sources_reject_relpath_regexes}" _cmake_helpers_sources)
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources ${_cmake_helpers_sources})
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources ${_cmake_helpers_sources})
   endif()
   #
   # Decide targets
@@ -215,10 +215,10 @@ function(cmake_helpers_library name)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/library] Enable library component")
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_librarycomponent TRUE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_librarycomponent TRUE)
     set(_have_librarycomponent TRUE)
   endif()
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
   # Create targets
   #
@@ -237,7 +237,7 @@ function(cmake_helpers_library name)
     cmake_helpers_call(add_library ${_target} ${_library_type} ${_cmake_helpers_sources})
     list(APPEND _cmake_helpers_targets ${_target})
   endforeach()
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_targets ${_cmake_helpers_targets})
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_targets ${_cmake_helpers_targets})
   #
   # Export
   #
@@ -267,7 +267,7 @@ function(cmake_helpers_library name)
       message(STATUS "[${PROJECT_NAME}/library] -------------------")
     endif()
     _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_headers)
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
   endif()
   #
   # Tests discovery
@@ -279,7 +279,7 @@ function(cmake_helpers_library name)
       message(STATUS "[${PROJECT_NAME}/library] -------------------")
     endif()
     _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
   endif()
   #
   # Get private headers out of header files
@@ -452,7 +452,7 @@ function(cmake_helpers_library name)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/library] Enabling header component")
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
     set(_have_headercomponent TRUE)
   endif()
 
@@ -759,7 +759,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
 
     set(_cmake_helpers_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_namespace}.cmake)
     file(WRITE ${_cmake_helpers_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_cpack_pre_build_script ${_cmake_helpers_cpack_pre_build_script})
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_cpack_pre_build_script ${_cmake_helpers_cpack_pre_build_script})
   endif()
   #
   # Generate tests

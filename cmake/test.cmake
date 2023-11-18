@@ -14,7 +14,7 @@ function(cmake_helpers_test name)
   # Recuperate directory properties
   #
   foreach(_variable targets static_library_suffix)
-    cmake_helpers_call(get_property _cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/test] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
