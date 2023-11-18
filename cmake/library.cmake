@@ -211,7 +211,7 @@ function(cmake_helpers_library name)
     message(STATUS "[${PROJECT_NAME}/library] Creating targets")
     message(STATUS "[${PROJECT_NAME}/library] ----------------")
   endif()
-  set(_targets)
+  set(_cmake_helpers_targets)
   foreach(_library_type ${_cmake_helpers_library_types})
     if(_library_type STREQUAL "STATIC")
       set(_target ${name}${_cmake_helpers_static_library_suffix})
@@ -219,8 +219,9 @@ function(cmake_helpers_library name)
       set(_target ${name})
     endif()
     cmake_helpers_call(add_library ${_target} ${_library_type} ${_cmake_helpers_sources})
-    list(APPEND _targets ${_target})
+    list(APPEND _cmake_helpers_targets ${_target})
   endforeach()
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_targets ${_cmake_helpers_targets})
   #
   # Export
   #
@@ -291,7 +292,7 @@ function(cmake_helpers_library name)
   #
   # Targets specifics
   #
-  foreach(_target ${_targets})
+  foreach(_target ${_cmake_helpers_targets})
     get_target_property(_type ${_target} TYPE)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/library] ----------------------------")
@@ -402,7 +403,7 @@ function(cmake_helpers_library name)
     endforeach()
     cmake_helpers_call(target_include_directories ${name} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   else()
-    foreach(_target ${_targets})
+    foreach(_target ${_cmake_helpers_targets})
       foreach(_include_dir ${_cmake_helpers_headers_base_dirs})
 	cmake_helpers_call(target_include_directories ${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_include_dir}>)
 	cmake_helpers_call(target_include_directories ${_target} PUBLIC $<BUILD_INTERFACE:${_include_dir}>)
@@ -428,7 +429,7 @@ function(cmake_helpers_library name)
   endif()
 
   cmake_helpers_call(install
-    TARGETS       ${_targets}
+    TARGETS       ${_cmake_helpers_targets}
     EXPORT        ${_cmake_helpers_export_cmake_name}
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT LibraryComponent
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
@@ -502,7 +503,7 @@ find_package(@_cmake_helpers_namespace@ REQUIRED)
 # It is important to do static before shared, because shared will reuse static properties
 #
 set(_target_static)
-foreach(_subtarget @_targets@)
+foreach(_subtarget @_cmake_helpers_targets@)
   set(_target @_cmake_helpers_namespace@::${_subtarget})
   get_target_property(_type ${_target} TYPE)
   get_target_property(_interface_link_libraries ${_target} INTERFACE_LINK_LIBRARIES)
@@ -586,7 +587,7 @@ foreach(_subtarget @_targets@)
   LIST(APPEND _target_computed_dependencies ${_target_filename_we})
 endforeach()
 
-foreach(_subtarget @_targets@)
+foreach(_subtarget @_cmake_helpers_targets@)
   set(_target @_cmake_helpers_namespace@::${_subtarget})
   set(_file ${_subtarget}.pc)
   if(CMAKE_HELPERS_DEBUG)
@@ -719,7 +720,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     #
     # Generate a file that will be overwriten by the post-install scripts
     #
-    foreach(_target ${_targets})
+    foreach(_target ${_cmake_helpers_targets})
       set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_namespace}/build/${_target}.pc)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${PROJECT_NAME}/library] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
