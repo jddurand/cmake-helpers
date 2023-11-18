@@ -283,30 +283,6 @@ function(cmake_helpers_library name)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
   endif()
   #
-  # Tests discovery
-  #
-  if((NOT _cmake_helpers_tests) AND _cmake_helpers_tests_auto)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/library] -------------------")
-      message(STATUS "[${PROJECT_NAME}/library] Discovering tests")
-      message(STATUS "[${PROJECT_NAME}/library] -------------------")
-    endif()
-    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
-  endif()
-  #
-  # Exes discovery
-  #
-  if((NOT _cmake_helpers_exes) AND _cmake_helpers_exes_auto)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/library] ----------------")
-      message(STATUS "[${PROJECT_NAME}/library] Discovering exes")
-      message(STATUS "[${PROJECT_NAME}/library] ----------------")
-    endif()
-    _cmake_helpers_files_find(exes "${_cmake_helpers_exes_base_dirs}" "${_cmake_helpers_exes_prefix}" "${_cmake_helpers_exes_accept_relpath_regexes}" "${_cmake_helpers_exes_reject_relpath_regexes}" _cmake_helpers_exes)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_exes ${_cmake_helpers_exes})
-  endif()
-  #
   # Get private headers out of header files
   #
   if((NOT _cmake_helpers_public_headers) OR (NOT _cmake_helpers_private_headers))
@@ -341,6 +317,30 @@ function(cmake_helpers_library name)
 	message(STATUS "[${PROJECT_NAME}/library] ... ${_file}")
       endforeach()
     endforeach()
+  endif()
+  #
+  # Tests discovery
+  #
+  if((NOT _cmake_helpers_tests) AND _cmake_helpers_tests_auto)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] -------------------")
+      message(STATUS "[${PROJECT_NAME}/library] Discovering tests")
+      message(STATUS "[${PROJECT_NAME}/library] -------------------")
+    endif()
+    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
+  endif()
+  #
+  # Exes discovery
+  #
+  if((NOT _cmake_helpers_exes) AND _cmake_helpers_exes_auto)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] ----------------")
+      message(STATUS "[${PROJECT_NAME}/library] Discovering exes")
+      message(STATUS "[${PROJECT_NAME}/library] ----------------")
+    endif()
+    _cmake_helpers_files_find(exes "${_cmake_helpers_exes_base_dirs}" "${_cmake_helpers_exes_prefix}" "${_cmake_helpers_exes_accept_relpath_regexes}" "${_cmake_helpers_exes_reject_relpath_regexes}" _cmake_helpers_exes)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_exes ${_cmake_helpers_exes})
   endif()
   #
   # Targets specifics
