@@ -416,7 +416,7 @@ function(cmake_helpers_library name)
     endforeach()
   endif()
   #
-  # Install public headers
+  # Install rules
   #
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[library] ---------------------")
@@ -437,7 +437,7 @@ function(cmake_helpers_library name)
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT LibraryComponent
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT HeaderComponent
+    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT HeaderComponent
     ${_file_set_args}
   )
 
