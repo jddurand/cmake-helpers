@@ -761,6 +761,18 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     file(WRITE ${_cmake_helpers_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
     cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_cpack_pre_build_script ${_cmake_helpers_cpack_pre_build_script})
   endif()
+  #
+  # Generate tests
+  #
+  if(_cmake_helpers_tests)
+    foreach(_cmake_helpers_test ${_cmake_helpers_tests})
+      #
+      # We assume one filename without extension is the name of the test
+      #
+      get_filename_component(_filename_we ${_cmake_helpers_test} NAME_WE)
+      cmake_helpers_test(${_filename_we} ${_cmake_helpers_test})
+    endforeach()
+  endif()
 endfunction()
 
 function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_regexes output_var)
