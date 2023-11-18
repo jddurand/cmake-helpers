@@ -278,7 +278,7 @@ function(cmake_helpers_library name)
       message(STATUS "[${PROJECT_NAME}/library] Discovering tests")
       message(STATUS "[${PROJECT_NAME}/library] -------------------")
     endif()
-    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_sources)
+    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
     cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
   endif()
   #
