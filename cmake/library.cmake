@@ -64,6 +64,13 @@ function(cmake_helpers_library name)
     TESTS_GLOBS
     TESTS_ACCEPT_RELPATH_REGEXES
     TESTS_REJECT_RELPATH_REGEXES
+    EXES
+    EXES_AUTO
+    EXES_PREFIX
+    EXES_BASE_DIRS
+    EXES_GLOBS
+    EXES_ACCEPT_RELPATH_REGEXES
+    EXES_REJECT_RELPATH_REGEXES
   )
   #
   # Single-value arguments default values
@@ -100,12 +107,12 @@ function(cmake_helpers_library name)
   #
   # Multiple-value arguments default values
   #
+  get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+  get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   set(_cmake_helpers_config_args)
   set(_cmake_helpers_sources)
   set(_cmake_helpers_sources_auto                         TRUE)
   set(_cmake_helpers_sources_prefix                       src)
-  get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
-  get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   if(_srcdir STREQUAL _bindir)
     set(_cmake_helpers_sources_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/src)
     set(_cmake_helpers_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -116,6 +123,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_sources_globs                        *.c *.cpp *.cxx)
   set(_cmake_helpers_sources_accept_relpath_regexes)
   set(_cmake_helpers_sources_reject_relpath_regexes)
+
   set(_cmake_helpers_headers)
   set(_cmake_helpers_headers_auto                         TRUE)
   set(_cmake_helpers_headers_prefix                       include)
@@ -123,15 +131,22 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_headers_accept_relpath_regexes)
   set(_cmake_helpers_headers_reject_relpath_regexes)
   set(_cmake_helpers_private_headers_relpath_regexes      "/internal" "/_" "^_")
+
   set(_cmake_helpers_tests)
   set(_cmake_helpers_tests_auto                           TRUE)
   set(_cmake_helpers_tests_prefix                         src)
-  get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
-  get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   set(_cmake_helpers_tests_base_dirs                      ${CMAKE_CURRENT_SOURCE_DIR}/test)
   set(_cmake_helpers_tests_globs                          *.c *.cpp *.cxx)
   set(_cmake_helpers_tests_accept_relpath_regexes)
   set(_cmake_helpers_tests_reject_relpath_regexes)
+
+  set(_cmake_helpers_exes)
+  set(_cmake_helpers_exes_auto                            TRUE)
+  set(_cmake_helpers_exes_prefix                          src)
+  set(_cmake_helpers_exes_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+  set(_cmake_helpers_exes_globs                           *.c *.cpp *.cxx)
+  set(_cmake_helpers_exes_accept_relpath_regexes)
+  set(_cmake_helpers_exes_reject_relpath_regexes)
   #
   # Parse Arguments
   #
@@ -214,11 +229,7 @@ function(cmake_helpers_library name)
       #
       set(_cmake_helpers_library_types STATIC SHARED)
     endif()
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/library] Enable library component")
-    endif()
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_librarycomponent TRUE)
-    set(_have_librarycomponent TRUE)
   endif()
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
@@ -282,6 +293,18 @@ function(cmake_helpers_library name)
     endif()
     _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
+  endif()
+  #
+  # Exes discovery
+  #
+  if((NOT _cmake_helpers_exes) AND _cmake_helpers_exes_auto)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] ----------------")
+      message(STATUS "[${PROJECT_NAME}/library] Discovering exes")
+      message(STATUS "[${PROJECT_NAME}/library] ----------------")
+    endif()
+    _cmake_helpers_files_find(exes "${_cmake_helpers_exes_base_dirs}" "${_cmake_helpers_exes_prefix}" "${_cmake_helpers_exes_accept_relpath_regexes}" "${_cmake_helpers_exes_reject_relpath_regexes}" _cmake_helpers_exes)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_exes ${_cmake_helpers_exes})
   endif()
   #
   # Get private headers out of header files
@@ -451,11 +474,7 @@ function(cmake_helpers_library name)
   endif()
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers COMPONENT HeaderComponent)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/library] Enabling header component")
-    endif()
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
-    set(_have_headercomponent TRUE)
   endif()
 
   cmake_helpers_call(install
@@ -778,6 +797,23 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       #
       get_filename_component(_filename_we ${_cmake_helpers_test} NAME_WE)
       cmake_helpers_test(${_filename_we} ${_cmake_helpers_test})
+    endforeach()
+  endif()
+  #
+  # Generate exes
+  #
+  if(_cmake_helpers_exes)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] --------------")
+      message(STATUS "[${PROJECT_NAME}/library] Creating exes")
+      message(STATUS "[${PROJECT_NAME}/library] --------------")
+    endif()
+    foreach(_cmake_helpers_exe ${_cmake_helpers_exes})
+      #
+      # We assume one filename without extension is the name of the exe
+      #
+      get_filename_component(_filename_we ${_cmake_helpers_exe} NAME_WE)
+      cmake_helpers_exe(${_filename_we} ${_cmake_helpers_exe})
     endforeach()
   endif()
   #
