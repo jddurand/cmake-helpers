@@ -138,7 +138,7 @@ function(cmake_helpers_library name)
       endif()
       set(${_var} ${CMAKE_HELPERS_${_option}})
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY "${_var}" "${${_var}}")
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_var} ${${_var}})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] ... ${_var}=${${_var}}")
     endif()
@@ -183,6 +183,7 @@ function(cmake_helpers_library name)
       message(STATUS "[library] -------------------")
     endif()
     _cmake_helpers_files_find(sources "${_cmake_helpers_sources_base_dirs}" "${_cmake_helpers_sources_prefix}" "${_cmake_helpers_sources_accept_relpath_regexes}" "${_cmake_helpers_sources_reject_relpath_regexes}" _cmake_helpers_sources)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources ${_cmake_helpers_sources})
   endif()
   #
   # Decide targets
@@ -191,26 +192,27 @@ function(cmake_helpers_library name)
     #
     # It can only be INTERFACE
     #
-    set(_library_types INTERFACE)
+    set(_cmake_helpers_library_types INTERFACE)
   else()
     if(_cmake_helpers_module)
       #
       # MODULE
       #
-      set(_library_types MODULE)
+      set(_cmake_helpers_library_types MODULE)
     else()
       #
       # STATIC and SHARED
       # We INTENTIONALY put STATIC before SHARED because pkgconfig will need STATIC properties
       #
-      set(_library_types STATIC SHARED)
+      set(_cmake_helpers_library_types STATIC SHARED)
     endif()
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] Enable library component")
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY CMAKE_HELPERS_HAVE_LIBRARYCOMPONENT TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_librarycomponent TRUE)
     set(_have_librarycomponent TRUE)
   endif()
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
   # Create targets
   #
@@ -220,7 +222,7 @@ function(cmake_helpers_library name)
     message(STATUS "[library] ----------------")
   endif()
   set(_targets)
-  foreach(_library_type ${_library_types})
+  foreach(_library_type ${_cmake_helpers_library_types})
     if(_library_type STREQUAL "STATIC")
       set(_target ${name}${_cmake_helpers_static_library_suffix})
     else()
@@ -258,6 +260,7 @@ function(cmake_helpers_library name)
       message(STATUS "[library] -------------------")
     endif()
     _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_headers)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
   endif()
   #
   # Get private headers out of header files
@@ -402,7 +405,7 @@ function(cmake_helpers_library name)
     message(STATUS "[library] Setting include directories")
     message(STATUS "[library] ---------------------------")
   endif()
-  if("INTERFACE" IN_LIST _library_types)
+  if("INTERFACE" IN_LIST _cmake_helpers_library_types)
     foreach(_include_dir ${_cmake_helpers_headers_base_dirs})
       cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_include_dir}>)
       cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_INTERFACE:${_include_dir}>)
@@ -430,7 +433,7 @@ function(cmake_helpers_library name)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[library] Enabling header component")
     endif()
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY CMAKE_HELPERS_HAVE_HEADERCOMPONENT TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
     set(_have_headercomponent TRUE)
   endif()
 
@@ -904,18 +907,6 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       list(APPEND CPACK_COMPONENTS_ALL ApplicationComponent)
     endif()
   endif()
-
-cmake_helpers_call(get_property _cmake_helpers_sources_auto_defined DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto DEFINED)
-if(_cmake_helpers_sources_auto_defined)
-  message(STATUS "[library] _cmake_helpers_sources_auto is defined")
-  cmake_helpers_call(get_property _cmake_helpers_sources_auto DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto SET)
-  message(STATUS "[library] _cmake_helpers_sources_auto is ${_cmake_helpers_sources_auto}")
-else()
-  message(STATUS "[library] _cmake_helpers_sources_auto is not defined")
-endif()
-    
-cmake_helpers_call(get_property _cmake_helpers_sources_auto_defined DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources_auto SET)
-message(STATUS "_cmake_helpers_sources_auto direct fetch gives ${_cmake_helpers_sources_auto}")
 endfunction()
 
 function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_regexes output_var)
