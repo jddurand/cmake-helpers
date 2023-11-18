@@ -35,6 +35,7 @@ function(cmake_helpers_library name)
     EXPORT_HEADER_FILE_NAME
     EXPORT_HEADER_STATIC_DEFINE
     NTRACE
+    PACKAGE
     PACKAGE_VENDOR
     PACKAGE_DESCRIPTION_SUMMARY
     PACKAGE_LICENSE
@@ -92,6 +93,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_export_header_file_name              include/${PROJECT_NAME}/export.h)
   set(_cmake_helpers_export_header_static_define          ${PROJECT_NAME}_STATIC)
   set(_cmake_helpers_ntrace                               TRUE)
+  set(_cmake_helpers_package                              TRUE)
   set(_cmake_helpers_package_vendor                       " ")
   set(_cmake_helpers_package_description_summary          "${_cmake_helpers_namespace}")
   set(_cmake_helpers_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
@@ -777,6 +779,12 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       get_filename_component(_filename_we ${_cmake_helpers_test} NAME_WE)
       cmake_helpers_test(${_filename_we} ${_cmake_helpers_test})
     endforeach()
+  endif()
+  #
+  # Generate package
+  #
+  if(_cmake_helpers_package)
+    cmake_helpers_package()
   endif()
 endfunction()
 

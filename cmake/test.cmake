@@ -23,7 +23,7 @@ function(cmake_helpers_test name)
   # Add a test using all library targets
   #
   foreach(_target ${_cmake_helpers_targets})
-    cmake_helpers_call(get_target_property _type ${_target} TYPE)
+    get_target_property(_type ${_target} TYPE)
     if(_type STREQUAL "STATIC_LIBRARY")
       set(_test "${name}${_cmake_helpers_static_library_suffix}")
     else()
