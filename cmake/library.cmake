@@ -56,6 +56,13 @@ function(cmake_helpers_library name)
     HEADERS_ACCEPT_RELPATH_REGEXES
     HEADERS_REJECT_RELPATH_REGEXES
     PRIVATE_HEADERS_RELPATH_REGEXES
+    TESTS
+    TESTS_AUTO
+    TESTS_PREFIX
+    TESTS_BASE_DIRS
+    TESTS_GLOBS
+    TESTS_ACCEPT_RELPATH_REGEXES
+    TESTS_REJECT_RELPATH_REGEXES
   )
   #
   # Single-value arguments default values
@@ -114,6 +121,15 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_headers_accept_relpath_regexes)
   set(_cmake_helpers_headers_reject_relpath_regexes)
   set(_cmake_helpers_private_headers_relpath_regexes      "/internal" "/_" "^_")
+  set(_cmake_helpers_tests)
+  set(_cmake_helpers_tests_auto                           TRUE)
+  set(_cmake_helpers_tests_prefix                         src)
+  get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+  get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+  set(_cmake_helpers_tests_base_dirs                      ${CMAKE_CURRENT_SOURCE_DIR}/test)
+  set(_cmake_helpers_tests_globs                          *.c *.cpp *.cxx)
+  set(_cmake_helpers_tests_accept_relpath_regexes)
+  set(_cmake_helpers_tests_reject_relpath_regexes)
   #
   # Parse Arguments
   #
@@ -252,6 +268,18 @@ function(cmake_helpers_library name)
     endif()
     _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_headers)
     cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
+  endif()
+  #
+  # Tests discovery
+  #
+  if((NOT _cmake_helpers_tests) AND _cmake_helpers_tests_auto)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${PROJECT_NAME}/library] -------------------")
+      message(STATUS "[${PROJECT_NAME}/library] Discovering tests")
+      message(STATUS "[${PROJECT_NAME}/library] -------------------")
+    endif()
+    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_sources)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
   endif()
   #
   # Get private headers out of header files
