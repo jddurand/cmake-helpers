@@ -407,7 +407,12 @@ function(cmake_helpers_library name)
     file(WRITE ${_export_cmake_config_in} "
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+# find_dependency(Stats 2.6.4)
+
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}.cmake\"\)
+
+check_required_components(${_cmake_helpers_library_namespace})
 ")
     cmake_helpers_call(install
       EXPORT ${_cmake_helpers_library_export_cmake_name}
@@ -417,8 +422,8 @@ include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}
     include(CMakePackageConfigHelpers)
     cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
-      NO_SET_AND_CHECK_MACRO
-      NO_CHECK_REQUIRED_COMPONENTS_MACRO
+      # NO_SET_AND_CHECK_MACRO
+      # NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
     file(REMOVE ${_export_cmake_config_in})
 
