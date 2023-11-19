@@ -15,10 +15,6 @@ function(cmake_helpers_exe name)
     message(FATAL_ERROR "name argument is missing")
   endif()
   #
-  # Remember arguments
-  #
-  set(_argn ${ARGN})
-  #
   # Recuperate directory library properties
   #
   foreach(_variable
@@ -33,13 +29,19 @@ function(cmake_helpers_exe name)
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
-  set(_options INSTALL)
+  set(_options INSTALL TEST)
   set(_oneValueArgs)
-  set(_multiValueArgs)
+  set(_multiValueArgs SOURCES TEST_ARGS)
   #
   # Options default values
   #
   set(_cmake_helpers_exe_install FALSE)
+  set(_cmake_helpers_exe_test    FALSE)
+  #
+  # Multi-value options default values
+  #
+  set(_cmake_helpers_exe_sources)
+  set(_cmake_helpers_exe_test_args)
   #
   # Parse Arguments
   #
@@ -56,7 +58,7 @@ function(cmake_helpers_exe name)
       set(_output_name "${name}")
       set(_target "${_output_name}_exe")
     endif()
-    cmake_helpers_call(add_executable ${_target} ${_argn})
+    cmake_helpers_call(add_executable ${_target} ${_cmake_helpers_exe_sources})
     cmake_helpers_call(set_target_properties ${_target} PROPERTIES OUTPUT_NAME ${_output_name})
     cmake_helpers_call(target_link_libraries ${_target} ${_cmake_helper_library_target})
     if(_cmake_helpers_exe_install)
@@ -67,6 +69,10 @@ function(cmake_helpers_exe name)
 	COMPONENT ApplicationComponent
       )
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_applicationcomponent TRUE)
+    endif()
+    if(_cmake_helpers_exe_test)
+      include(CTest)
+      cmake_helpers_call(add_test NAME ${_target}_test COMMAND ${_target} ${_cmake_helpers_exe_test_args})
     endif()
   endforeach()
   #
