@@ -22,7 +22,7 @@ function(cmake_helpers_package)
       cpack_pre_build_script)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
+      message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
     endif()
   endforeach()
   #
