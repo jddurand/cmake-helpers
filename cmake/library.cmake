@@ -152,7 +152,7 @@ function(cmake_helpers_library name)
   #
   # Parse Arguments
   #
-  cmake_helpers_parse_arguments(library "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  cmake_helpers_parse_arguments(library _cmake_helpers "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   # cmake_parse_arguments(CMAKE_HELPERS "" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
   #
   # Set internal variables
