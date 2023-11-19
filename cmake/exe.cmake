@@ -73,7 +73,7 @@ function(cmake_helpers_exe name)
 	NAMESPACE ${_cmake_helpers_library_namespace}::
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
 	COMPONENT Library)
-      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_applicationcomponent TRUE)
+      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application TRUE)
     endif()
     if(_cmake_helpers_exe_test)
       include(CTest)

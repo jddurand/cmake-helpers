@@ -20,7 +20,7 @@ function(cmake_helpers_package)
   #
   # Recuperate directory have properties
   #
-  foreach(_variable have_librarycomponent have_manpagecomponent have_applicationcomponent)
+  foreach(_variable have_library have_manpage have_application)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -40,12 +40,12 @@ function(cmake_helpers_package)
     DOCUMENTGROUP_DESCRIPTION
     RUNTIMEGROUP_DISPLAY_NAME
     RUNTIMEGROUP_DESCRIPTION
-    LIBRARYCOMPONENT_DISPLAY_NAME
-    LIBRARYCOMPONENT_DESCRIPTION
-    MANPAGECOMPONENT_DISPLAY_NAME
-    MANPAGECOMPONENT_DESCRIPTION
-    APPLICATIONCOMPONENT_DISPLAY_NAME
-    APPLICATIONCOMPONENT_DESCRIPTION
+    LIBRARY_DISPLAY_NAME
+    LIBRARY_DESCRIPTION
+    MANPAGE_DISPLAY_NAME
+    MANPAGE_DESCRIPTION
+    APPLICATION_DISPLAY_NAME
+    APPLICATION_DESCRIPTION
   )
   set(_multiValueArgs)
   #
@@ -55,17 +55,17 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_package_librarygroup_display_name         "Libraries")
-  set(_cmake_helpers_package_librarygroup_description          "Libraries\n\nContains dynamic and static components")
+  set(_cmake_helpers_package_librarygroup_description          "Libraries\n\nContains libraries and header files")
   set(_cmake_helpers_package_documentgroup_display_name        "Documents")
   set(_cmake_helpers_package_documentgroup_description         "Documents\n\nContains manpages component")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nContains application component")
-  set(_cmake_helpers_package_librarycomponent_display_name     "Libraries")
-  set(_cmake_helpers_package_librarycomponent_description      "Dynamic and Static Libraries")
-  set(_cmake_helpers_package_manpagecomponent_display_name     "Man pages")
-  set(_cmake_helpers_package_manpagecomponent_description      "Documentation in the man format")
-  set(_cmake_helpers_package_applicationcomponent_display_name "Applications")
-  set(_cmake_helpers_package_applicationcomponent_description  "Executables")
+  set(_cmake_helpers_package_library_display_name              "Libraries")
+  set(_cmake_helpers_package_library_description               "Libraries and header files")
+  set(_cmake_helpers_package_manpage_display_name              "Man pages")
+  set(_cmake_helpers_package_manpage_description               "Documentation in the man format")
+  set(_cmake_helpers_package_application_display_name          "Applications")
+  set(_cmake_helpers_package_application_description           "Executables")
   #
   # Parse Arguments
   #
@@ -121,11 +121,11 @@ function(cmake_helpers_package)
   # We use environment variables to propagate CMake options
   #
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{DESTDIR} is: \\\\\\\"\\\$ENV{DESTDIR}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_PREFIX_ENV} \\\"\${CMAKE_INSTALL_PREFIX}/LibraryComponent\\\")\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_PREFIX_ENV} \\\"\${CMAKE_INSTALL_PREFIX}/Library\\\")\\n\")\n")
   FILE(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_INSTALL_PREFIX_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_INSTALL_PREFIX_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_LIBDIR_ENV} \\\"\${CMAKE_INSTALL_LIBDIR}\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_INSTALL_LIBDIR_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_INSTALL_LIBDIR_ENV}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/LibraryComponent/lib/cmake\\\" NORMALIZE)\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/lib/cmake\\\" NORMALIZE)\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \\\"\\\${CMAKE_MODULE_ROOT_PATH_ENV}\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV})\\n\")\n")
@@ -136,17 +136,17 @@ function(cmake_helpers_package)
   #
   # Groups
   #
-  if(_cmake_helpers_have_librarycomponent)
+  if(_cmake_helpers_have_library)
     set(_cmake_helpers_package_can_librarygroup TRUE)
   else()
     set(_cmake_helpers_package_can_librarygroup FALSE)
   endif()
-  if(_cmake_helpers_have_manpagecomponent)
+  if(_cmake_helpers_have_manpage)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_applicationcomponent)
+  if(_cmake_helpers_have_application)
     set(_cmake_helpers_package_can_runtimegroup TRUE)
   else()
     set(_cmake_helpers_package_can_runtimegroup FALSE)
@@ -178,29 +178,29 @@ function(cmake_helpers_package)
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  if(_cmake_helpers_have_librarycomponent)
-    cmake_helpers_call(cpack_add_component LibraryComponent
-      DISPLAY_NAME ${_cmake_helpers_package_librarycomponent_display_name}
-      DESCRIPTION ${_cmake_helpers_package_librarycomponent_description}
+  if(_cmake_helpers_have_library)
+    cmake_helpers_call(cpack_add_component Library
+      DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
+      DESCRIPTION ${_cmake_helpers_package_library_description}
       GROUP LibraryGroup
     )
-    list(APPEND CPACK_COMPONENTS_ALL LibraryComponent)
+    list(APPEND CPACK_COMPONENTS_ALL Library)
   endif()
-  if(_cmake_helpers_have_manpagecomponent)
-    cmake_helpers_call(cpack_add_component ManpageComponent
-      DISPLAY_NAME ${_cmake_helpers_package_manpagecomponent_display_name}
-      DESCRIPTION ${_cmake_helpers_package_manpagecomponent_description}
+  if(_cmake_helpers_have_manpage)
+    cmake_helpers_call(cpack_add_component Manpage
+      DISPLAY_NAME ${_cmake_helpers_package_manpage_display_name}
+      DESCRIPTION ${_cmake_helpers_package_manpage_description}
       GROUP DocumentGroup
     )
-    list(APPEND CPACK_COMPONENTS_ALL ManpageComponent)
+    list(APPEND CPACK_COMPONENTS_ALL Manpage)
   endif()
-  if(_cmake_helpers_have_applicationcomponent)
-    cmake_helpers_call(cpack_add_component ApplicationComponent
-      DISPLAY_NAME ${_cmake_helpers_package_applicationcomponent_display_name}
-      DESCRIPTION ${_cmake_helpers_package_applicationcomponent_description}
+  if(_cmake_helpers_have_application)
+    cmake_helpers_call(cpack_add_component Application
+      DISPLAY_NAME ${_cmake_helpers_package_application_display_name}
+      DESCRIPTION ${_cmake_helpers_package_application_description}
       GROUP RuntimeGroup
-      DEPENDS LibraryComponent)
-    list(APPEND CPACK_COMPONENTS_ALL ApplicationComponent)
+      DEPENDS Library)
+    list(APPEND CPACK_COMPONENTS_ALL Application)
   endif()
   #
   # End
