@@ -63,9 +63,9 @@ function(cmake_helpers_exe name)
     if(_cmake_helpers_exe_install)
       cmake_helpers_call(install
 	TARGETS ${_target}
-	EXPORT ${_cmake_helpers_library_export_cmake_name}
+	EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-	COMPONENT ApplicationComponent
+	COMPONENT Application
       )
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_applicationcomponent TRUE)
     endif()

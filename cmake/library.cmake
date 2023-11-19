@@ -39,7 +39,6 @@ function(cmake_helpers_library name)
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
-    EXPORT_CMAKE_NAME
     PKGCONFIG
     EXPORT_HEADER
     EXPORT_HEADER_BASE_NAME
@@ -350,7 +349,7 @@ function(cmake_helpers_library name)
       # For static library we want to debug information within the lib
       # For shared library we want to install the pdb file if it exists
       if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_cmake_helpers_library_target}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT LibraryComponent OPTIONAL)
+	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_cmake_helpers_library_target}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Library OPTIONAL)
       elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
 	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /Z7)
       endif()
@@ -388,17 +387,16 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   if(_cmake_helpers_public_headers)
-    set(_file_set_args FILE_SET public_headers COMPONENT HeaderComponent)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
+    set(_file_set_args FILE_SET public_headers COMPONENT Library)
   endif()
 
   cmake_helpers_call(install
     TARGETS       ${_cmake_helpers_library_targets}
-    EXPORT        ${_cmake_helpers_library_export_cmake_name}
-    RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT LibraryComponent
-    LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
-    ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
-    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT HeaderComponent
+    EXPORT        ${_cmake_helpers_library_namespace}LibraryTargets
+    RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT Library
+    LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
+    ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
+    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Library
     ${_file_set_args}
   )
 
@@ -410,13 +408,29 @@ function(cmake_helpers_library name)
 include(CMakeFindDependencyMacro)
 # find_dependency(Stats 2.6.4)
 
+set(_${_cmake_helpers_library_namespace}_supported_components Library)
+
+if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
+  foreach(_comp ${${_cmake_helpers_library_namespace}_FIND_COMPONENTS})
+    if (NOT _comp IN_LIST _${_cmake_helpers_library_namespace}_supported_components)
+      set(${_cmake_helpers_library_namespace}_FOUND False)
+      set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE "Unsupported component: ${_comp}")
+    endif()
+    include("${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}${_comp}Targets.cmake")
+  endforeach()
+else()
+  foreach(_comp ${_${_cmake_helpers_library_namespace}_supported_components})
+    include("${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}${_comp}Targets.cmake")
+  endforeach()
+endif()
+
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}.cmake\"\)
 ")
     cmake_helpers_call(install
-      EXPORT ${_cmake_helpers_library_export_cmake_name}
+      EXPORT ${_cmake_helpers_library_namespace}LibraryTargets
       NAMESPACE ${_cmake_helpers_library_namespace}::
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_project}
-      COMPONENT LibraryComponent)
+      COMPONENT Library)
     include(CMakePackageConfigHelpers)
     cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
@@ -433,7 +447,7 @@ include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}
     cmake_helpers_call(install
       FILES ${_export_cmake_config_out} ${_export_cmake_configversion_out}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
-      COMPONENT LibraryComponent
+      COMPONENT Library
     )
   #
   # Pkgconfig
@@ -462,9 +476,9 @@ endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG)")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENT Library)")
 endif()
-find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG)
+find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENT Library)
 
 #
 # It is important to do static before shared, because shared will reuse static properties
@@ -681,7 +695,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       execute_process(COMMAND \"${CMAKE_COMMAND}\" -G \"${CMAKE_GENERATOR}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -P \"${FIRE_POST_INSTALL_CMAKE_PATH}\" WORKING_DIRECTORY \"\${_destination}\")
     endif()
 "
-      # COMPONENT LibraryComponent
+      COMPONENT Library
     )
     #
     # Generate a file that will be overwriten by the post-install scripts
@@ -692,7 +706,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
 	message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
       endif()
       file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-      cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT LibraryComponent)
+      cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT Library)
     endforeach()
 
     set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
