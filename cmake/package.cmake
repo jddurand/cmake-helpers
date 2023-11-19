@@ -4,7 +4,9 @@ function(cmake_helpers_package)
   #
   set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/package")
   if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ========")
     message(STATUS "[${_cmake_helpers_logprefix}] Starting")
+    message(STATUS "[${_cmake_helpers_logprefix}] ========")
   endif()
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
@@ -191,6 +193,8 @@ function(cmake_helpers_package)
   # End
   #
   if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
     message(STATUS "[${_cmake_helpers_logprefix}] Ending")
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
   endif()
 endfunction()

@@ -10,7 +10,9 @@ function(cmake_helpers_library name)
   #
   set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/library")
   if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ========")
     message(STATUS "[${_cmake_helpers_logprefix}] Starting")
+    message(STATUS "[${_cmake_helpers_logprefix}] ========")
   endif()
   #
   # We use GNU standard for installation
@@ -710,7 +712,9 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   # End
   #
   if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
     message(STATUS "[${_cmake_helpers_logprefix}] Ending")
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
   endif()
 endfunction()
 
