@@ -411,8 +411,6 @@ include(CMakeFindDependencyMacro)
 # find_dependency(Stats 2.6.4)
 
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}.cmake\"\)
-
-check_required_components(${_cmake_helpers_library_namespace})
 ")
     cmake_helpers_call(install
       EXPORT ${_cmake_helpers_library_export_cmake_name}
@@ -422,8 +420,8 @@ check_required_components(${_cmake_helpers_library_namespace})
     include(CMakePackageConfigHelpers)
     cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
-      # NO_SET_AND_CHECK_MACRO
-      # NO_CHECK_REQUIRED_COMPONENTS_MACRO
+      NO_SET_AND_CHECK_MACRO
+      NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
     file(REMOVE ${_export_cmake_config_in})
 
@@ -464,9 +462,9 @@ endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Requiring @_cmake_helpers_library_namespace@ COMPONENTS LibraryComponent")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG)")
 endif()
-find_package(@_cmake_helpers_library_namespace@ REQUIRED COMPONENTS LibraryComponent)
+find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG)
 
 #
 # It is important to do static before shared, because shared will reuse static properties
