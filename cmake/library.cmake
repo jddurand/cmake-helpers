@@ -416,18 +416,18 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
       set(${_cmake_helpers_library_namespace}_FOUND False)
       set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE \"Unsupported component: \${_comp}\")
     endif()
-    include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
+    include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
   endforeach()
 else()
   foreach(_comp \${_${_cmake_helpers_library_namespace}_supported_components})
-    include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
+    include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
   endforeach()
 endif()
 ")
     cmake_helpers_call(install
       EXPORT ${_cmake_helpers_library_namespace}LibraryTargets
       NAMESPACE ${_cmake_helpers_library_namespace}::
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
       COMPONENT Library)
     include(CMakePackageConfigHelpers)
     cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
