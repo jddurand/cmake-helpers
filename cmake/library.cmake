@@ -1,4 +1,7 @@
 function(cmake_helpers_library name)
+  #
+  # Arguments validation
+  #
   if(NOT name)
     message(FATAL_ERROR "name argument is missing")
   endif()
@@ -6,6 +9,9 @@ function(cmake_helpers_library name)
   # Log prefix
   #
   set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/library")
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Starting")
+  endif()
   #
   # We use GNU standard for installation
   #
@@ -17,7 +23,7 @@ function(cmake_helpers_library name)
   set(_oneValueArgs
     NAMESPACE
     MODULE
-    STATIC_LIBRARY_SUFFIX
+    STATIC_SUFFIX
     WITH_POSITION_INDEPENDENT_CODE
     WITH_VISIBILITY_PRESET_HIDDEN
     WITH_VISIBILITY_INLINES_HIDDEN
@@ -62,138 +68,104 @@ function(cmake_helpers_library name)
     HEADERS_ACCEPT_RELPATH_REGEXES
     HEADERS_REJECT_RELPATH_REGEXES
     PRIVATE_HEADERS_RELPATH_REGEXES
-    TESTS
-    TESTS_AUTO
-    TESTS_PREFIX
-    TESTS_BASE_DIRS
-    TESTS_GLOBS
-    TESTS_ACCEPT_RELPATH_REGEXES
-    TESTS_REJECT_RELPATH_REGEXES
-    EXES
-    EXES_AUTO
-    EXES_PREFIX
-    EXES_BASE_DIRS
-    EXES_GLOBS
-    EXES_ACCEPT_RELPATH_REGEXES
-    EXES_REJECT_RELPATH_REGEXES
   )
   #
   # Single-value arguments default values
   #
-  set(_cmake_helpers_namespace                            ${PROJECT_NAME})
-  set(_cmake_helpers_module                               FALSE)
-  set(_cmake_helpers_static_library_suffix                _static)
-  set(_cmake_helpers_with_position_independent_code       TRUE)
-  set(_cmake_helpers_with_visibility_preset_hidden        TRUE)
-  set(_cmake_helpers_with_visibility_inlines_hidden       TRUE)
-  set(_cmake_helpers_with_msvc_minimal_headers            FALSE)
-  set(_cmake_helpers_with_msvc_silent_crt_warnings        TRUE)
-  set(_cmake_helpers_with_gnu_source_if_available         TRUE)
-  set(_cmake_helpers_with__netbsd_source_if_available     TRUE)
-  set(_cmake_helpers_with__reentrant                      TRUE)
-  set(_cmake_helpers_with__thread_safe                    TRUE)
-  set(_cmake_helpers_version                              ${PROJECT_VERSION})
-  set(_cmake_helpers_version_compatibility                SameMajorVersion)
-  set(_cmake_helpers_version_major                        ${PROJECT_VERSION_MAJOR})
-  set(_cmake_helpers_version_minor                        ${PROJECT_VERSION_MINOR})
-  set(_cmake_helpers_version_patch                        ${PROJECT_VERSION_PATCH})
-  set(_cmake_helpers_export_cmake_name                    ${PROJECT_NAME}-targets)
-  set(_cmake_helpers_pkgconfig                            TRUE)
-  set(_cmake_helpers_export_header                        TRUE)
-  set(_cmake_helpers_export_header_base_name              ${PROJECT_NAME})
-  set(_cmake_helpers_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
-  set(_cmake_helpers_export_header_file_name              include/${PROJECT_NAME}/export.h)
-  set(_cmake_helpers_export_header_static_define          ${PROJECT_NAME}_STATIC)
-  set(_cmake_helpers_ntrace                               TRUE)
-  set(_cmake_helpers_package                              TRUE)
-  set(_cmake_helpers_package_vendor                       " ")
-  set(_cmake_helpers_package_description_summary          "${_cmake_helpers_namespace}")
-  set(_cmake_helpers_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
-  set(_cmake_helpers_targets_outvar                       cmake_helpers_targets)
+  set(_cmake_helpers_library_namespace                            ${PROJECT_NAME})
+  set(_cmake_helpers_library_module                               FALSE)
+  set(_cmake_helpers_library_static_suffix                        _static)
+  set(_cmake_helpers_library_with_position_independent_code       TRUE)
+  set(_cmake_helpers_library_with_visibility_preset_hidden        TRUE)
+  set(_cmake_helpers_library_with_visibility_inlines_hidden       TRUE)
+  set(_cmake_helpers_library_with_msvc_minimal_headers            FALSE)
+  set(_cmake_helpers_library_with_msvc_silent_crt_warnings        TRUE)
+  set(_cmake_helpers_library_with_gnu_source_if_available         TRUE)
+  set(_cmake_helpers_library_with__netbsd_source_if_available     TRUE)
+  set(_cmake_helpers_library_with__reentrant                      TRUE)
+  set(_cmake_helpers_library_with__thread_safe                    TRUE)
+  set(_cmake_helpers_library_version                              ${PROJECT_VERSION})
+  set(_cmake_helpers_library_version_compatibility                SameMajorVersion)
+  set(_cmake_helpers_library_version_major                        ${PROJECT_VERSION_MAJOR})
+  set(_cmake_helpers_library_version_minor                        ${PROJECT_VERSION_MINOR})
+  set(_cmake_helpers_library_version_patch                        ${PROJECT_VERSION_PATCH})
+  set(_cmake_helpers_library_export_cmake_name                    ${PROJECT_NAME}-targets)
+  set(_cmake_helpers_library_pkgconfig                            TRUE)
+  set(_cmake_helpers_library_export_header                        TRUE)
+  set(_cmake_helpers_library_export_header_base_name              ${PROJECT_NAME})
+  set(_cmake_helpers_library_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
+  set(_cmake_helpers_library_export_header_file_name              include/${PROJECT_NAME}/export.h)
+  set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
+  set(_cmake_helpers_library_ntrace                               TRUE)
+  set(_cmake_helpers_library_package                              TRUE)
+  set(_cmake_helpers_library_package_vendor                       " ")
+  set(_cmake_helpers_library_package_description_summary          "${_cmake_helpers_library_namespace}")
+  set(_cmake_helpers_library_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
+  set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
   #
   # Multiple-value arguments default values
   #
-  get_filename_component(_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
-  get_filename_component(_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
-  set(_cmake_helpers_config_args)
-  set(_cmake_helpers_sources)
-  set(_cmake_helpers_sources_auto                         TRUE)
-  set(_cmake_helpers_sources_prefix                       src)
-  if(_srcdir STREQUAL _bindir)
-    set(_cmake_helpers_sources_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/src)
-    set(_cmake_helpers_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  get_filename_component(_cmake_helpers_library_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+  get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+  set(_cmake_helpers_library_config_args)
+  set(_cmake_helpers_library_sources)
+  set(_cmake_helpers_library_sources_auto                         TRUE)
+  set(_cmake_helpers_library_sources_prefix                       src)
+  if(_cmake_helpers_library_srcdir STREQUAL _cmake_helpers_library_bindir)
+    set(_cmake_helpers_library_sources_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    set(_cmake_helpers_library_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include)
   else()
-    set(_cmake_helpers_sources_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src)
-    set(_cmake_helpers_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
+    set(_cmake_helpers_library_sources_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src)
+    set(_cmake_helpers_library_headers_base_dirs                     ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
   endif()
-  set(_cmake_helpers_sources_globs                        *.c *.cpp *.cxx)
-  set(_cmake_helpers_sources_accept_relpath_regexes)
-  set(_cmake_helpers_sources_reject_relpath_regexes)
+  set(_cmake_helpers_library_sources_globs                        *.c *.cpp *.cxx)
+  set(_cmake_helpers_library_sources_accept_relpath_regexes)
+  set(_cmake_helpers_library_sources_reject_relpath_regexes)
 
-  set(_cmake_helpers_headers)
-  set(_cmake_helpers_headers_auto                         TRUE)
-  set(_cmake_helpers_headers_prefix                       include)
-  set(_cmake_helpers_headers_globs                        *.h *.hh *.hpp *.hxx)
-  set(_cmake_helpers_headers_accept_relpath_regexes)
-  set(_cmake_helpers_headers_reject_relpath_regexes)
-  set(_cmake_helpers_private_headers_relpath_regexes      "/internal" "/_" "^_")
-
-  set(_cmake_helpers_tests)
-  set(_cmake_helpers_tests_auto                           TRUE)
-  set(_cmake_helpers_tests_prefix                         src)
-  set(_cmake_helpers_tests_base_dirs                      ${CMAKE_CURRENT_SOURCE_DIR}/test)
-  set(_cmake_helpers_tests_globs                          *.c *.cpp *.cxx)
-  set(_cmake_helpers_tests_accept_relpath_regexes)
-  set(_cmake_helpers_tests_reject_relpath_regexes)
-
-  set(_cmake_helpers_exes)
-  set(_cmake_helpers_exes_auto                            TRUE)
-  set(_cmake_helpers_exes_prefix                          src)
-  set(_cmake_helpers_exes_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-  set(_cmake_helpers_exes_globs                           *.c *.cpp *.cxx)
-  set(_cmake_helpers_exes_accept_relpath_regexes)
-  set(_cmake_helpers_exes_reject_relpath_regexes)
+  set(_cmake_helpers_library_headers)
+  set(_cmake_helpers_library_headers_auto                         TRUE)
+  set(_cmake_helpers_library_headers_prefix                       include)
+  set(_cmake_helpers_library_headers_globs                        *.h *.hh *.hpp *.hxx)
+  set(_cmake_helpers_library_headers_accept_relpath_regexes)
+  set(_cmake_helpers_library_headers_reject_relpath_regexes)
+  set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal" "/_" "^_")
   #
   # Parse Arguments
   #
   cmake_helpers_parse_arguments(library _cmake_helpers "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
-  # Log prefix
-  #
-  set(_logprefix "cmake_helpers/${PROJECT_NAME}/${scope}")
-  #
   # Config
   #
-  if(_cmake_helpers_config_args)
+  if(_cmake_helpers_library_config_args)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Doing configuration")
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
     endif()
-    cmake_helpers_call(configure_file ${_cmake_helpers_config_args})
+    cmake_helpers_call(configure_file ${_cmake_helpers_library_config_args})
   endif()
   #
   # Sources discovery
   #
-  if((NOT _cmake_helpers_sources) AND _cmake_helpers_sources_auto)
+  if((NOT _cmake_helpers_library_sources) AND _cmake_helpers_library_sources_auto)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Discovering sources")
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
     endif()
-    _cmake_helpers_files_find(sources "${_cmake_helpers_sources_base_dirs}" "${_cmake_helpers_sources_prefix}" "${_cmake_helpers_sources_accept_relpath_regexes}" "${_cmake_helpers_sources_reject_relpath_regexes}" _cmake_helpers_sources)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_sources ${_cmake_helpers_sources})
+    _cmake_helpers_files_find(sources "${_cmake_helpers_library_sources_base_dirs}" "${_cmake_helpers_library_sources_prefix}" "${_cmake_helpers_library_sources_accept_relpath_regexes}" "${_cmake_helpers_library_sources_reject_relpath_regexes}" _cmake_helpers_library_sources)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_sources ${_cmake_helpers_library_sources})
   endif()
   #
   # Decide targets
   #
-  if(NOT _cmake_helpers_sources)
+  if(NOT _cmake_helpers_library_sources)
     #
     # It can only be INTERFACE
     #
     set(_cmake_helpers_library_types INTERFACE)
   else()
-    if(_cmake_helpers_module)
+    if(_cmake_helpers_library_module)
       #
       # MODULE
       #
@@ -205,7 +177,7 @@ function(cmake_helpers_library name)
       #
       set(_cmake_helpers_library_types STATIC SHARED)
     endif()
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_librarycomponent TRUE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_have_librarycomponent TRUE)
   endif()
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
@@ -216,21 +188,21 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] Creating targets")
     message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
   endif()
-  set(_cmake_helpers_targets)
-  foreach(_library_type ${_cmake_helpers_library_types})
-    if(_library_type STREQUAL "STATIC")
-      set(_target ${name}${_cmake_helpers_static_library_suffix})
+  set(_cmake_helpers_library_targets)
+  foreach(_cmake_helpers_library_type ${_cmake_helpers_library_types})
+    if(_cmake_helpers_library_type STREQUAL "STATIC")
+      set(_target ${name}${_cmake_helpers_library_static_suffix})
     else()
       set(_target ${name})
     endif()
-    cmake_helpers_call(add_library ${_target} ${_library_type} ${_cmake_helpers_sources})
-    list(APPEND _cmake_helpers_targets ${_target})
+    cmake_helpers_call(add_library ${_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
+    list(APPEND _cmake_helpers_library_targets ${_target})
   endforeach()
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_targets ${_cmake_helpers_targets})
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_targets ${_cmake_helpers_library_targets})
   #
   # Export
   #
-  if(_cmake_helpers_export_header)
+  if(_cmake_helpers_library_export_header)
     include(GenerateExportHeader)
     #
     # Regardless of user args, we always append the args we know because we need them
@@ -241,168 +213,127 @@ function(cmake_helpers_library name)
       message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
     endif()
     cmake_helpers_call(generate_export_header ${name}
-      BASE_NAME         ${_cmake_helpers_export_header_base_name}
-      EXPORT_MACRO_NAME ${_cmake_helpers_export_header_macro_name}
-      EXPORT_FILE_NAME  ${_cmake_helpers_export_header_file_name}
-      STATIC_DEFINE     ${_cmake_helpers_export_header_static_define})
+      BASE_NAME         ${_cmake_helpers_library_export_header_base_name}
+      EXPORT_MACRO_NAME ${_cmake_helpers_library_export_header_macro_name}
+      EXPORT_FILE_NAME  ${_cmake_helpers_library_export_header_file_name}
+      STATIC_DEFINE     ${_cmake_helpers_library_export_header_static_define})
   endif()
   #
   # Headers discovery
   #
-  if((NOT _cmake_helpers_headers) AND _cmake_helpers_headers_auto)
+  if((NOT _cmake_helpers_library_headers) AND _cmake_helpers_library_headers_auto)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Discovering headers")
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
     endif()
-    _cmake_helpers_files_find(headers "${_cmake_helpers_headers_base_dirs}" "${_cmake_helpers_headers_prefix}" "${_cmake_helpers_headers_accept_relpath_regexes}" "${_cmake_helpers_headers_reject_relpath_regexes}" _cmake_helpers_headers)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_headers ${_cmake_cmake_helpers_headers})
+    _cmake_helpers_files_find(headers "${_cmake_helpers_library_headers_base_dirs}" "${_cmake_helpers_library_headers_prefix}" "${_cmake_helpers_library_headers_accept_relpath_regexes}" "${_cmake_helpers_library_headers_reject_relpath_regexes}" _cmake_helpers_library_headers)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_headers ${_cmake_cmake_helpers_library_headers})
   endif()
   #
   # Get private headers out of header files
   #
-  if((NOT _cmake_helpers_public_headers) OR (NOT _cmake_helpers_private_headers))
-    if(NOT _cmake_helpers_public_headers)
-      set(_cmake_helpers_public_headers_do TRUE)
+  foreach(_cmake_helper_library_header ${_cmake_helpers_library_headers})
+    cmake_helpers_match_regexes("${_cmake_helpers_library_header}" "${_cmake_helpers_library_private_headers_relpath_regexes}" FALSE _cmake_helpers_library_matched)
+    if(_cmake_helpers_library_matched)
+      list(APPEND _cmake_helpers_private_headers ${_cmake_helpers_library_header})
     else()
-      set(_cmake_helpers_public_headers_do FALSE)
+      list(APPEND _cmake_helpers_public_headers ${_cmake_helpers_library_header})
     endif()
-    if(NOT _cmake_helpers_private_headers)
-      set(_cmake_helpers_private_headers_do TRUE)
-    else()
-      set(_cmake_helpers_private_headers_do FALSE)
-    endif()
-
-    foreach(_header ${_cmake_helpers_headers})
-      cmake_helpers_match_regexes("${_header}" "${_cmake_helpers_private_headers_relpath_regexes}" FALSE _matched)
-      if(_matched)
-	if(_cmake_helpers_private_headers_do)
-	  list(APPEND _cmake_helpers_private_headers ${_header})
-	endif()
-      else()
-	if(_cmake_helpers_public_headers_do)
-	  list(APPEND _cmake_helpers_public_headers ${_header})
-	endif()
-      endif()
-    endforeach()
-  endif()
+  endforeach()
   if(CMAKE_HELPERS_DEBUG)
-    foreach(_type public private)
-      message(STATUS "[${_cmake_helpers_logprefix}] ${_type} headers:")
-      foreach(_file ${_cmake_helpers_${_type}_headers})
+    foreach(_cmake_helpers_header_type public private)
+      message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_header_type} headers:")
+      foreach(_file ${_cmake_helpers_${_cmake_helpers_header_type}_headers})
 	message(STATUS "[${_cmake_helpers_logprefix}] ... ${_file}")
       endforeach()
     endforeach()
   endif()
   #
-  # Tests discovery
-  #
-  if((NOT _cmake_helpers_tests) AND _cmake_helpers_tests_auto)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Discovering tests")
-      message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
-    endif()
-    _cmake_helpers_files_find(tests "${_cmake_helpers_tests_base_dirs}" "${_cmake_helpers_tests_prefix}" "${_cmake_helpers_tests_accept_relpath_regexes}" "${_cmake_helpers_tests_reject_relpath_regexes}" _cmake_helpers_tests)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_tests ${_cmake_helpers_tests})
-  endif()
-  #
-  # Exes discovery
-  #
-  if((NOT _cmake_helpers_exes) AND _cmake_helpers_exes_auto)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Discovering exes")
-      message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
-    endif()
-    _cmake_helpers_files_find(exes "${_cmake_helpers_exes_base_dirs}" "${_cmake_helpers_exes_prefix}" "${_cmake_helpers_exes_accept_relpath_regexes}" "${_cmake_helpers_exes_reject_relpath_regexes}" _cmake_helpers_exes)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_exes ${_cmake_helpers_exes})
-  endif()
-  #
   # Targets specifics
   #
-  foreach(_target ${_cmake_helpers_targets})
-    get_target_property(_type ${_target} TYPE)
+  foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+    get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Doing ${_type} setting")
+      message(STATUS "[${_cmake_helpers_logprefix}] Doing ${_cmake_helpers_library_target_type} setting")
       message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
     endif()
     #
     # Assign headers to file sets
     # (INTERFACE case needs a file set to work properly)
     #
-    if(_type STREQUAL "INTERFACE_LIBRARY")
+    if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
       if(_cmake_helpers_public_headers)
-	cmake_helpers_call(target_sources ${_target} INTERFACE FILE_SET public_headers BASE_DIRS ${_cmake_helpers_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} INTERFACE FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
       endif()
       if(_cmake_helpers_private_headers)
-	cmake_helpers_call(target_sources ${_target} INTERFACE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} INTERFACE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
       endif()
     else()
       if(_cmake_helpers_public_headers)
-	cmake_helpers_call(target_sources ${_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
       endif()
       if(_cmake_helpers_private_headers)
-	cmake_helpers_call(target_sources ${_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
       endif()
     endif()
     #
     # Compile definitions
     #
-    if(_type STREQUAL "SHARED_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${PROJECT_NAME}_EXPORTS)
-    elseif(_type STREQUAL "STATIC_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_target} PUBLIC -D${_cmake_helpers_export_header_static_define})
-    elseif(_type STREQUAL "MODULE_LIBRARY")
-    elseif(_type STREQUAL "INTERFACE_LIBRARY")
+    if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME}_EXPORTS)
+    elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
+    elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
+    elseif(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
     endif()
     string(TOUPPER "${name}" _name_toupper)
-    if(_cmake_helpers_ntrace)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${_name_toupper}_NTRACE -DNTRACE)
+    if(_cmake_helpers_library_ntrace)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_name_toupper}_NTRACE -DNTRACE)
     endif()
-    cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${_name_toupper}_VERSION_MAJOR=${_cmake_helpers_version_major})
-    cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${_name_toupper}_VERSION_MINOR=${_cmake_helpers_version_minor})
-    cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${_name_toupper}_VERSION_PATCH=${_cmake_helpers_version_patch})
-    cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D${_name_toupper}_VERSION="${_cmake_helpers_version}")
-    if(WIN32 AND _cmake_helpers_with_msvc_minimal_headers)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -DWIN32_LEAN_AND_MEAN)
+    cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_name_toupper}_VERSION_MAJOR=${_cmake_helpers_library_version_major})
+    cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_name_toupper}_VERSION_MINOR=${_cmake_helpers_library_version_minor})
+    cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_name_toupper}_VERSION_PATCH=${_cmake_helpers_library_version_patch})
+    cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_name_toupper}_VERSION="${_cmake_helpers_library_version}")
+    if(WIN32 AND _cmake_helpers_library_with_msvc_minimal_headers)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -DWIN32_LEAN_AND_MEAN)
     endif()
-    if(WIN32 AND _cmake_helpers_with_msvc_silent_crt_warnings)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -DCRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+    if(WIN32 AND _cmake_helpers_library_with_msvc_silent_crt_warnings)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -DCRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
     endif()
-    if(_cmake_helpers_with_gnu_source_if_available AND _GNU_SOURCE)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D_GNU_SOURCE)
+    if(_cmake_helpers_library_with_gnu_source_if_available AND _GNU_SOURCE)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D_GNU_SOURCE)
     endif()
-    if(_cmake_helpers_with__netbsd_source_if_available AND (CMAKE_SYSTEM_NAME MATCHES "NetBSD"))
+    if(_cmake_helpers_library_with__netbsd_source_if_available AND (CMAKE_SYSTEM_NAME MATCHES "NetBSD"))
       #
       # On NetBSD, enable this platform features. This makes sure we always have "long long" btw.
       #
-      cmake_helpers_call(target_compile_definitions ${_target} PUBLIC -D_NETBSD_SOURCE=1) # Voluntarily public for global "long long" avaibility
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D_NETBSD_SOURCE=1) # Voluntarily public for global "long long" avaibility
     endif()
-    if(_cmake_helpers_with__reentrant)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D_REENTRANT)
+    if(_cmake_helpers_library_with__reentrant)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D_REENTRANT)
     endif()
-    if(_cmake_helpers_with__thread_safe)
-      cmake_helpers_call(target_compile_definitions ${_target} PRIVATE -D_THREAD_SAFE)
+    if(_cmake_helpers_library_with__thread_safe)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D_THREAD_SAFE)
     endif()
     #
     # Target properties
     #
-    if(_type STREQUAL "SHARED_LIBRARY")
-      cmake_helpers_call(set_target_properties ${_target} PROPERTIES VERSION ${_cmake_helpers_version} SOVERSION ${_cmake_helpers_version_major})
+    if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES VERSION ${_cmake_helpers_library_version} SOVERSION ${_cmake_helpers_library_version_major})
     endif()
     if(HAVE_C99MODIFIERS)
-      cmake_helpers_call(set_target_properties ${_target} PROPERTIES C_STANDARD 99)
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES C_STANDARD 99)
     endif()
-    if(_cmake_helpers_with_position_independent_code)
-      cmake_helpers_call(set_target_properties ${_target} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+    if(_cmake_helpers_library_with_position_independent_code)
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
     endif()
-    if(_cmake_helpers_with_visibility_preset_hidden)
-      cmake_helpers_call(set_target_properties ${_target} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden)
+    if(_cmake_helpers_library_with_visibility_preset_hidden)
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden)
     endif()
-    if(_cmake_helpers_with_visibility_inlines_hidden)
-      cmake_helpers_call(set_target_properties ${_target} PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)
+    if(_cmake_helpers_library_with_visibility_inlines_hidden)
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)
     endif()
     #
     # Compiler specifics
@@ -410,10 +341,10 @@ function(cmake_helpers_library name)
     if(MSVC)
       # For static library we want to debug information within the lib
       # For shared library we want to install the pdb file if it exists
-      if(_type STREQUAL "SHARED_LIBRARY")
-	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_target}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT LibraryComponent OPTIONAL)
-      elseif(_type STREQUAL "STATIC_LIBRARY")
-	cmake_helpers_call(target_compile_options ${_target} PRIVATE /Z7)
+      if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
+	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_cmake_helpers_library_target}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT LibraryComponent OPTIONAL)
+      elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
+	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /Z7)
       endif()
     endif()
   endforeach()
@@ -426,18 +357,18 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------------")
   endif()
   if("INTERFACE" IN_LIST _cmake_helpers_library_types)
-    foreach(_include_dir ${_cmake_helpers_headers_base_dirs})
-      cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_include_dir}>)
-      cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_INTERFACE:${_include_dir}>)
+    foreach(_cmake_helpers_library_include_dir ${_cmake_helpers_library_headers_base_dirs})
+      cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
+      cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
     endforeach()
     cmake_helpers_call(target_include_directories ${name} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   else()
-    foreach(_target ${_cmake_helpers_targets})
-      foreach(_include_dir ${_cmake_helpers_headers_base_dirs})
-	cmake_helpers_call(target_include_directories ${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_include_dir}>)
-	cmake_helpers_call(target_include_directories ${_target} PUBLIC $<BUILD_INTERFACE:${_include_dir}>)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      foreach(_cmake_helpers_library_include_dir ${_cmake_helpers_library_headers_base_dirs})
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
+	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
       endforeach()
-      cmake_helpers_call(target_include_directories ${_target} PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+      cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     endforeach()
   endif()
   #
@@ -450,12 +381,12 @@ function(cmake_helpers_library name)
   endif()
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers COMPONENT HeaderComponent)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_headercomponent TRUE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_have_headercomponent TRUE)
   endif()
 
   cmake_helpers_call(install
-    TARGETS       ${_cmake_helpers_targets}
-    EXPORT        ${_cmake_helpers_export_cmake_name}
+    TARGETS       ${_cmake_helpers_library_targets}
+    EXPORT        ${_cmake_helpers_library_export_cmake_name}
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT LibraryComponent
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT LibraryComponent
@@ -463,16 +394,16 @@ function(cmake_helpers_library name)
     ${_file_set_args}
   )
 
-    set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_namespace}Config.cmake.in)
-    set(_export_cmake_config_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_namespace}Config.cmake)
+    set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake.in)
+    set(_export_cmake_config_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake)
     file(WRITE ${_export_cmake_config_in} "
 @PACKAGE_INIT@
 
-include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_export_cmake_name}.cmake\"\)
+include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_export_cmake_name}.cmake\"\)
 ")
     cmake_helpers_call(install
-      EXPORT ${_cmake_helpers_export_cmake_name}
-      NAMESPACE ${_cmake_helpers_namespace}::
+      EXPORT ${_cmake_helpers_library_export_cmake_name}
+      NAMESPACE ${_cmake_helpers_library_namespace}::
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_project}
       COMPONENT LibraryComponent)
     include(CMakePackageConfigHelpers)
@@ -483,10 +414,10 @@ include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_export_cmake_name}.cmake\"
     )
     file(REMOVE ${_export_cmake_config_in})
 
-    set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_namespace}ConfigVersion.cmake)
+    set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
     cmake_helpers_call(write_basic_package_version_file ${_export_cmake_configversion_out}
-      VERSION ${_cmake_helpers_version}
-      COMPATIBILITY ${_cmake_helpers_version_compatibility}
+      VERSION ${_cmake_helpers_library_version}
+      COMPATIBILITY ${_cmake_helpers_library_version_compatibility}
     )
     cmake_helpers_call(install
       FILES ${_export_cmake_config_out} ${_export_cmake_configversion_out}
@@ -496,76 +427,76 @@ include(\"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_export_cmake_name}.cmake\"
   #
   # Pkgconfig
   #
-  if(_cmake_helpers_pkgconfig)
+  if(_cmake_helpers_library_pkgconfig)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Creating pkgconfig hooks")
       message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
     endif()
     file(CONFIGURE
-      OUTPUT "pc.${_cmake_helpers_namespace}/CMakeLists.txt"
+      OUTPUT "pc.${_cmake_helpers_library_namespace}/CMakeLists.txt"
       CONTENT [[
 cmake_minimum_required(VERSION 3.16)
-project(pc_@_cmake_helpers_namespace@ LANGUAGES C CXX)
+project(pc_@_cmake_helpers_library_namespace@ LANGUAGES C CXX)
 include(GNUInstallDirs)
 
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_namespace@/build] Starting")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Starting")
 endif()
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_namespace@/build] Initializing CMAKE_PREFIX_PATH with: $ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Initializing CMAKE_PREFIX_PATH with: $ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_namespace@/build] Requiring @_cmake_helpers_namespace@")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Requiring @_cmake_helpers_library_namespace@")
 endif()
-find_package(@_cmake_helpers_namespace@ REQUIRED)
+find_package(@_cmake_helpers_library_namespace@ REQUIRED)
 
 #
 # It is important to do static before shared, because shared will reuse static properties
 #
 set(_target_static)
-foreach(_subtarget @_cmake_helpers_targets@)
-  set(_target @_cmake_helpers_namespace@::${_subtarget})
-  get_target_property(_type ${_target} TYPE)
-  get_target_property(_interface_link_libraries ${_target} INTERFACE_LINK_LIBRARIES)
+foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
+  set(_cmake_helpers_library_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
+  get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+  get_target_property(_cmake_helpers_library_interface_link_libraries ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES)
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[pc.@_cmake_helpers_namespace@/build] ${_target} INTERFACE_LINK_LIBRARIES: ${_interface_link_libraries}")
+    message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_interface_link_libraries}")
   endif()
-  set(_computed_requires)
-  foreach(_interface_link_library ${_interface_link_libraries})
-    if(TARGET ${_interface_link_library})
-      string(REGEX REPLACE ".*::" "" _computed_require ${_interface_link_library})
-      list(APPEND _computed_requires ${_computed_require})
+  set(_cmake_helpers_library_computed_requires)
+  foreach(_cmake_helpers_library_interface_link_library ${_cmake_helpers_library_interface_link_libraries})
+    if(TARGET ${_cmake_helpers_library_interface_link_library})
+      string(REGEX REPLACE ".*::" "" _cmake_helpers_library_computed_require ${_cmake_helpers_library_interface_link_library})
+      list(APPEND _cmake_helpers_library_computed_requires ${_cmake_helpers_library_computed_require})
     endif()
   endforeach()
   #
   # iface produce no output file
-  # static produces ${_subtarget}@_cmake_helpers_static_library_suffix@
-  # shared produces ${_subtarget}
-  # module produces ${_subtarget}
+  # static produces ${_cmake_helpers_library_subtarget}@_cmake_helpers_library_static_suffix@
+  # shared produces ${_cmake_helpers_library_subtarget}
+  # module produces ${_cmake_helpers_library_subtarget}
   #
-  set_target_properties(${_target} PROPERTIES PC_NAME ${_subtarget})
-  if(${_type} STREQUAL "INTERFACE_LIBRARY")
-    set_target_properties(${_target} PROPERTIES PC_DESCRIPTION "@_cmake_helpers_namespace@ headers")
-  elseif(${_type} STREQUAL "SHARED_LIBRARY")
-    set_target_properties(${_target} PROPERTIES PC_DESCRIPTION "@_cmake_helpers_namespace@ dynamic library")
-  elseif(${_type} STREQUAL "MODULE_LIBRARY")
-    set_target_properties(${_target} PROPERTIES PC_DESCRIPTION "@_cmake_helpers_namespace@ module library")
-  elseif(${_type} STREQUAL "STATIC_LIBRARY")
-    set_target_properties(${_target} PROPERTIES PC_DESCRIPTION "@_cmake_helpers_namespace@ static library")
-    set(_target_static ${_target})
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_NAME ${_cmake_helpers_library_subtarget})
+  if(${_cmake_helpers_library_target_type} STREQUAL "INTERFACE_LIBRARY")
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@_cmake_helpers_library_namespace@ headers")
+  elseif(${_cmake_helpers_library_target_type} STREQUAL "SHARED_LIBRARY")
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@_cmake_helpers_library_namespace@ dynamic library")
+  elseif(${_cmake_helpers_library_target_type} STREQUAL "MODULE_LIBRARY")
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@_cmake_helpers_library_namespace@ module library")
+  elseif(${_cmake_helpers_library_target_type} STREQUAL "STATIC_LIBRARY")
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@_cmake_helpers_library_namespace@ static library")
+    set(_target_static ${_cmake_helpers_library_target})
   else()
-    message(FATAL_ERROR "Unsupported target type ${_type}")
+    message(FATAL_ERROR "Unsupported target type ${_cmake_helpers_library_target_type}")
   endif()
-  if (_computed_requires)
-    list(JOIN _computed_requires "," _pc_requires)
-    set_target_properties(${_target} PROPERTIES PC_REQUIRES "${_pc_requires}")
+  if (_cmake_helpers_library_computed_requires)
+    list(JOIN _cmake_helpers_library_computed_requires "," _cmake_helpers_library_pc_requires)
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES "${_cmake_helpers_library_pc_requires}")
   endif()
-  if(_type STREQUAL "SHARED_LIBRARY")
+  if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
     #
     # By definition the "static" target should already exist
     #
@@ -575,48 +506,48 @@ foreach(_subtarget @_cmake_helpers_targets@)
     #
     # Requires.private
     #
-    get_target_property(_pc_requires_private ${_target_static} PC_REQUIRES)
-    if(_pc_requires_private)
-      set_target_properties(${_target} PROPERTIES PC_REQUIRES_PRIVATE "${_pc_requires_private}")
+    get_target_property(_cmake_helpers_library_pc_requires_private ${_target_static} _CMAKE_HELPERS_LIBRARY_PC_REQUIRES)
+    if(_cmake_helpers_library_pc_requires_private)
+      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE "${_cmake_helpers_library_pc_requires_private}")
     endif()
     #
     # Cflags.private
     #
     get_target_property(_pc_interface_compile_definitions_private ${_target_static} INTERFACE_COMPILE_DEFINITIONS)
     if(_pc_interface_compile_definitions_private)
-      set_target_properties(${_target} PROPERTIES PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE "${_pc_interface_compile_definitions_private}")
+      set_target_properties(${_cmake_helpers_library_target} PROPERTIES PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE "${_pc_interface_compile_definitions_private}")
     endif()
     #
     # Libs.private
     #
-    get_target_property(_pc_libs_private ${_target_static} PC_LIBS)
+    get_target_property(_pc_libs_private ${_target_static} _CMAKE_HELPERS_LIBRARY_PC_LIBS)
     if(_pc_libs_private)
-      set_target_properties(${_target} PROPERTIES PC_LIBS_PRIVATE "${_pc_libs_private}")
+      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE "${_pc_libs_private}")
     endif()
   endif()
-  set_target_properties(${_target} PROPERTIES PC_VERSION "@_cmake_helpers_version@")
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES PC_VERSION "@_cmake_helpers_library_version@")
 
-  get_target_property(_location ${_target} LOCATION)
+  get_target_property(_location ${_cmake_helpers_library_target} LOCATION)
   if(_location)
     cmake_path(GET _location FILENAME _filename)
-    if((_type STREQUAL "SHARED_LIBRARY") OR (_type STREQUAL "MODULE_LIBRARY"))
+    if((_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY"))
       get_filename_component(_filename_we ${_filename} NAME_WE)
       if(NOT ("x${CMAKE_SHARED_LIBRARY_PREFIX}" STREQUAL "x"))
         string(REGEX REPLACE "^${CMAKE_SHARED_LIBRARY_PREFIX}" "" _filename_we ${_filename_we})
       endif()
-      set_target_properties(${_target} PROPERTIES PC_LIBS "-L\${libdir} -l${_filename_we}")
-    elseif(_type STREQUAL "STATIC_LIBRARY")
-      set_target_properties(${_target} PROPERTIES PC_LIBS "\${libdir}/${_filename}")
+      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "-L\${libdir} -l${_filename_we}")
+    elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
+      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "\${libdir}/${_filename}")
     endif()
   endif()
   LIST(APPEND _target_computed_dependencies ${_target_filename_we})
 endforeach()
 
-foreach(_subtarget @_cmake_helpers_targets@)
-  set(_target @_cmake_helpers_namespace@::${_subtarget})
-  set(_file ${_subtarget}.pc)
+foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
+  set(_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
+  set(_file ${_cmake_helpers_library_subtarget}.pc)
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[pc.@_cmake_helpers_namespace@/build] Generating ${_file}")
+    message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Generating ${_file}")
   endif()
   file(GENERATE OUTPUT ${_file}
      CONTENT [=[prefix=${pcfiledir}/../..
@@ -629,26 +560,26 @@ mandir=${prefix}/@CMAKE_INSTALL_MANDIR@
 man1dir=${prefix}/@CMAKE_INSTALL_MANDIR@1
 man2dir=${prefix}/@CMAKE_INSTALL_MANDIR@2
 
-Name: $<TARGET_PROPERTY:PC_NAME>
-Description: $<TARGET_PROPERTY:PC_DESCRIPTION>
+Name: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_NAME>
+Description: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION>
 Version: $<TARGET_PROPERTY:PC_VERSION>
-Requires: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_REQUIRES>>,$<TARGET_PROPERTY:PC_REQUIRES>,>
-Requires.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_REQUIRES_PRIVATE>>,$<TARGET_PROPERTY:PC_REQUIRES_PRIVATE>,>
+Requires: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>,>
+Requires.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>,>
 Cflags: -I${includedir} $<IF:$<BOOL:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>>,-D$<JOIN:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>, -D>,>
 Cflags.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>>,-I${includedir} -D$<JOIN:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>, -D>,>
-Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_LIBS>>,$<TARGET_PROPERTY:PC_LIBS>,>
-Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:PC_LIBS_PRIVATE>,>
-]=] TARGET ${_target} NEWLINE_STYLE LF)
+Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>,>
+Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>,>
+]=] TARGET ${_cmake_helpers_library_target} NEWLINE_STYLE LF)
 
 endforeach()
 ]] @ONLY NEWLINE_STYLE LF)
 
     file(CONFIGURE
-      OUTPUT "pc.${_cmake_helpers_namespace}/post-install.cmake"
+      OUTPUT "pc.${_cmake_helpers_library_namespace}/post-install.cmake"
       CONTENT [[
-set(proj "@CMAKE_CURRENT_BINARY_DIR@/pc.@_cmake_helpers_namespace@")
+set(proj "@CMAKE_CURRENT_BINARY_DIR@/pc.@_cmake_helpers_library_namespace@")
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_namespace@/post-install.cmake] Building in ${proj}/build")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/post-install.cmake] Building in ${proj}/build")
 endif()
 execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS_DEBUG=@CMAKE_HELPERS_DEBUG@ -S "${proj}" -B "${proj}/build")
 ]] @ONLY NEWLINE_STYLE LF)
@@ -684,7 +615,6 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     set(_destination "${CMAKE_INSTALL_PREFIX}")
     if(NOT ("x$ENV{DESTDIR}" STREQUAL "x"))
       file(TO_CMAKE_PATH "$ENV{DESTDIR}" _destdir)
-      set(_destination "${CMAKE_INSTALL_PREFIX}")
       string(LENGTH "${_destination}" _destination_length)
       if(_destination_length GREATER 1)
 	string(SUBSTRING "${_destination}" 0 1 _ch1)
@@ -745,8 +675,8 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     #
     # Generate a file that will be overwriten by the post-install scripts
     #
-    foreach(_target ${_cmake_helpers_targets})
-      set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_namespace}/build/${_target}.pc)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_library_namespace}/build/${_cmake_helpers_library_target}.pc)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
       endif()
@@ -754,55 +684,27 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT LibraryComponent)
     endforeach()
 
-    set(_cmake_helpers_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_namespace}.cmake)
-    file(WRITE ${_cmake_helpers_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_cpack_pre_build_script ${_cmake_helpers_cpack_pre_build_script})
-  endif()
-  #
-  # Generate tests
-  #
-  if(_cmake_helpers_tests)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] --------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Creating tests")
-      message(STATUS "[${_cmake_helpers_logprefix}] --------------")
-    endif()
-    foreach(_cmake_helpers_test ${_cmake_helpers_tests})
-      #
-      # We assume one filename without extension is the name of the test
-      #
-      get_filename_component(_filename_we ${_cmake_helpers_test} NAME_WE)
-      cmake_helpers_test(${_filename_we} ${_cmake_helpers_test})
-    endforeach()
-  endif()
-  #
-  # Generate exes
-  #
-  if(_cmake_helpers_exes)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] --------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Creating exes")
-      message(STATUS "[${_cmake_helpers_logprefix}] --------------")
-    endif()
-    foreach(_cmake_helpers_exe ${_cmake_helpers_exes})
-      #
-      # We assume one filename without extension is the name of the exe
-      #
-      get_filename_component(_filename_we ${_cmake_helpers_exe} NAME_WE)
-      cmake_helpers_exe(${_filename_we} ${_cmake_helpers_exe})
-    endforeach()
+    set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
+    file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
   endif()
   #
   # Generate package
   #
-  if(_cmake_helpers_package)
+  if(_cmake_helpers_library_package)
     cmake_helpers_package()
   endif()
   #
   # Send-out the targets
   #
-  if(_cmake_helpers_targets_outvar)
-    set(${_cmake_helpers_targets_outvar} ${_cmake_helpers_targets} PARENT_SCOPE)
+  if(_cmake_helpers_library_targets_outvar)
+    set(${_cmake_helpers_library_targets_outvar} ${_cmake_helpers_library_targets} PARENT_SCOPE)
+  endif()
+  #
+  # End
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Ending")
   endif()
 endfunction()
 
@@ -819,8 +721,8 @@ function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_r
       endif()
       file(GLOB_RECURSE _files LIST_DIRECTORIES false ${_base_dir}/${_glob})
       foreach(_file ${_files})
-	cmake_helpers_match_accept_reject_regexes(${_file} "${accept_regexes}" "${reject_regexes}" _matched)
-	if(_matched)
+	cmake_helpers_match_accept_reject_regexes(${_file} "${accept_regexes}" "${reject_regexes}" _cmake_helpers_library_matched)
+	if(_cmake_helpers_library_matched)
 	  if(CMAKE_HELPERS_DEBUG)
 	    message(STATUS "[${_cmake_helpers_logprefix}] ... ... ... file ${_file}")
 	  endif()

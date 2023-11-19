@@ -1,19 +1,30 @@
 function(cmake_helpers_package)
+  #
+  # Log prefix
+  #
+  set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/package")
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${PROJECT_NAME}/package] -------------------------")
-    message(STATUS "[${PROJECT_NAME}/package] Doing CPack configuration")
-    message(STATUS "[${PROJECT_NAME}/package] -------------------------")
+    message(STATUS "[${_cmake_helpers_logprefix}] Starting")
   endif()
   #
-  # Recuperate directory properties
+  # Arguments definitions: options, one value arguments, multivalue arguments.
+  #
+  set(_options)
+  set(_oneValueArgs VENDOR DESCRIPTION_SUMMARY LICENSE)
+  set(_multiValueArgs)
+  #
+  # Parse Arguments
+  #
+  cmake_helpers_parse_arguments(package _cmake_helpers_package "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  #
+  # Recuperate directory library properties
   #
   foreach(_variable
       namespace
       version
-      package_vendor package_description_summary package_license
       have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent
       cpack_pre_build_script)
-    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+    get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
@@ -21,16 +32,16 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(_cmake_helpers_cpack_pre_build_script)
-    list(APPEND CPACK_PRE_BUILD_SCRIPTS ${_cmake_helpers_cpack_pre_build_script})
+  if(_cmake_helpers_library_cpack_pre_build_script)
+    list(APPEND CPACK_PRE_BUILD_SCRIPTS ${_cmake_helpers_library_cpack_pre_build_script})
   endif()
   #
   # Set common CPack variables
   #
-  set(CPACK_PACKAGE_NAME                ${_cmake_helpers_namespace})
+  set(CPACK_PACKAGE_NAME                ${_cmake_helpers_library_namespace})
   set(CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
-  set(CPACK_PACKAGE_VERSION             ${_cmake_helpers_version})
+  set(CPACK_PACKAGE_VERSION             ${_cmake_helpers_library_version})
   if(EXISTS ${_cmake_helpers_package_license})
     configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
     set(CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
@@ -169,5 +180,11 @@ function(cmake_helpers_package)
       GROUP RuntimeGroup
       DEPENDS LibraryComponent)
     list(APPEND CPACK_COMPONENTS_ALL ApplicationComponent)
+  endif()
+  #
+  # End
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Ending")
   endif()
 endfunction()
