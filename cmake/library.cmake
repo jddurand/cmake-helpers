@@ -714,7 +714,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   endif()
 endfunction()
 
-function(_cmake_helpers_files_find type base_dirs prefix globs accept_regexes reject_regexes output_var)
+function(_cmake_helpers_files_find type base_dirs globs prefix accept_regexes reject_regexes output_var)
   set(_cmake_helpers_library_all_files)
   foreach(_base_dir ${base_dirs})
     if(CMAKE_HELPERS_DEBUG)
