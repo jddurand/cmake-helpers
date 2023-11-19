@@ -239,7 +239,7 @@ function(cmake_helpers_library name)
   #
   # Get private headers out of header files
   #
-  foreach(_cmake_helper_library_header ${_cmake_helpers_library_headers})
+  foreach(_cmake_helpers_library_header ${_cmake_helpers_library_headers})
     cmake_helpers_match_regexes("${_cmake_helpers_library_header}" "${_cmake_helpers_library_private_headers_relpath_regexes}" FALSE _cmake_helpers_library_matched)
     if(_cmake_helpers_library_matched)
       list(APPEND _cmake_helpers_private_headers ${_cmake_helpers_library_header})
