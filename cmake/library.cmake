@@ -39,6 +39,7 @@ function(cmake_helpers_library name)
     PACKAGE_VENDOR
     PACKAGE_DESCRIPTION_SUMMARY
     PACKAGE_LICENSE
+    TARGETS_OUTVAR
   )
   set(_multiValueArgs
     CONFIG_ARGS
@@ -104,6 +105,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_package_vendor                       " ")
   set(_cmake_helpers_package_description_summary          "${_cmake_helpers_namespace}")
   set(_cmake_helpers_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
+  set(_cmake_helpers_targets_outvar                       cmake_helpers_targets)
   #
   # Multiple-value arguments default values
   #
@@ -821,6 +823,12 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   #
   if(_cmake_helpers_package)
     cmake_helpers_package()
+  endif()
+  #
+  # Send-out the targets
+  #
+  if(_cmake_helpers_targets_outvar)
+    set(${_cmake_helpers_targets_outvar} ${_cmake_helpers_targets} PARENT_SCOPE)
   endif()
 endfunction()
 
