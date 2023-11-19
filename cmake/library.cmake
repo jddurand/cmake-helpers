@@ -461,7 +461,7 @@ set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Requiring @_cmake_helpers_library_namespace@")
 endif()
-find_package(@_cmake_helpers_library_namespace@ REQUIRED)
+find_package(@_cmake_helpers_library_namespace@ REQUIRED COMPONENTS LibraryComponent)
 
 #
 # It is important to do static before shared, because shared will reuse static properties
@@ -617,7 +617,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     # We CANNOT use CMAKE_INSTALL_PREFIX variable contrary to what is posted almost everywhere on the net: CPack will
     # will have a CMAKE_INSTALL_PREFIX different, the real and only way to know exactly where we install things is to
     # set the current working directory to ${DESTDIR}${CMAKE_INSTALL_PREFIX}, and use WORKING_DIRECTORY as the full install prefix dir.
-    # Now take case: DESTDIR does "work" on Windows is used as is, and CMake has a hook, that we replacate here
+    # Now take care: DESTDIR does not "work" on Windows if used as is, and CMake has a hook, that we replacate here
     #
     set(_hook [[
     set(_destination "${CMAKE_INSTALL_PREFIX}")
