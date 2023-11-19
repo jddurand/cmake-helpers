@@ -75,8 +75,8 @@ function(cmake_helpers_exe name)
       #
       # A tiny hool to force ctest to build the executable
       #
-      cmake_helpers_call(add_test NAME ${_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --target "${_target}")
-      cmake_helpers_call(set_tests_properties(${_target}_test PROPERTIES DEPENDS ${_target}_build)
+      cmake_helpers_call(add_test NAME ${_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --target ${_target})
+      cmake_helpers_call(set_tests_properties ${_target}_test PROPERTIES DEPENDS ${_target}_build)
     endif()
   endforeach()
   #
