@@ -33,7 +33,7 @@ function(cmake_helpers_parse_arguments scope varprefix options one_value_keyword
   #
   # Validation of arguments - only the oneValueArgs must have a value
   #
-  foreach(_option_keyword ${one_value_keywords})
+  foreach(_option ${one_value_keywords})
     set(_varname ${varprefix}_${_option})
     string(TOLOWER "${_varname}" _varname)
     if(NOT (DEFINED ${_varname}))
