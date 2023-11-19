@@ -29,6 +29,7 @@ function(cmake_helpers_parse_arguments scope varprefix options one_value_keyword
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ... ... Argument CMAKE_HELPERS_${_option}=${CMAKE_HELPERS_${_option}}")
       endif()
+      set(${_varname} ${CMAKE_HELPERS_${_option}})
       set(${_varname} ${CMAKE_HELPERS_${_option}} PARENT_SCOPE)
     endif()
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_varname} ${${_varname}})
