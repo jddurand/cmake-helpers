@@ -1,4 +1,4 @@
-function(cmake_helpers_parse_arguments scope prefix options one_value_keywords multi_value_keywords)
+function(cmake_helpers_parse_arguments scope options one_value_keywords multi_value_keywords)
   #
   # We always do the following after cmake_parse_arguments():
   # - All arguments are added to directory property
