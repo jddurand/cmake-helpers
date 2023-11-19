@@ -427,7 +427,7 @@ endif()
     cmake_helpers_call(install
       EXPORT ${_cmake_helpers_library_namespace}LibraryTargets
       NAMESPACE ${_cmake_helpers_library_namespace}::
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_project}
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
       COMPONENT Library)
     include(CMakePackageConfigHelpers)
     cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
