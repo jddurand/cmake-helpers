@@ -72,6 +72,11 @@ function(cmake_helpers_exe name)
     if(_cmake_helpers_exe_test)
       include(CTest)
       cmake_helpers_call(add_test NAME ${_target}_test COMMAND ${_target} ${_cmake_helpers_exe_test_args})
+      #
+      # A tiny hool to force ctest to build the executable
+      #
+      cmake_helpers_call(add_test NAME ${_target}_build COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR} --target ${_target})
+      cmake_helpers_call(set_tests_properties(${_target}_test PROPERTIES DEPENDS ${_target}_build)
     endif()
   endforeach()
   #
