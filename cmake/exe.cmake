@@ -23,7 +23,7 @@ function(cmake_helpers_exe name)
   #
   foreach(_variable
       targets
-      static_library_suffix
+      static_suffix
       export_cmake_name)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
@@ -50,7 +50,7 @@ function(cmake_helpers_exe name)
   foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
     get_target_property(_type ${_cmake_helper_library_target} TYPE)
     if(_type STREQUAL "STATIC_LIBRARY")
-      set(_output_name "${name}${_cmake_helpers_static_library_suffix}")
+      set(_output_name "${name}${_cmake_helpers_static_suffix}")
     else()
       set(_output_name "${name}")
     endif()
