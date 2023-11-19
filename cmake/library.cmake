@@ -459,7 +459,7 @@ endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Requiring @_cmake_helpers_library_namespace@")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Requiring @_cmake_helpers_library_namespace@ COMPONENTS LibraryComponent")
 endif()
 find_package(@_cmake_helpers_library_namespace@ REQUIRED COMPONENTS LibraryComponent)
 
