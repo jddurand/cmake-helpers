@@ -145,7 +145,14 @@ function(cmake_helpers_library name)
       message(STATUS "[${_cmake_helpers_logprefix}] Discovering sources")
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
     endif()
-    _cmake_helpers_files_find(sources "${_cmake_helpers_library_sources_base_dirs}" "${_cmake_helpers_library_sources_prefix}" "${_cmake_helpers_library_sources_accept_relpath_regexes}" "${_cmake_helpers_library_sources_reject_relpath_regexes}" _cmake_helpers_library_sources)
+    _cmake_helpers_files_find(
+      sources
+      "${_cmake_helpers_library_sources_base_dirs}"
+      "${_cmake_helpers_library_sources_globs}"
+      "${_cmake_helpers_library_sources_prefix}"
+      "${_cmake_helpers_library_sources_accept_relpath_regexes}"
+      "${_cmake_helpers_library_sources_reject_relpath_regexes}"
+      _cmake_helpers_library_sources)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_sources ${_cmake_helpers_library_sources})
   endif()
   #
@@ -219,7 +226,14 @@ function(cmake_helpers_library name)
       message(STATUS "[${_cmake_helpers_logprefix}] Discovering headers")
       message(STATUS "[${_cmake_helpers_logprefix}] -------------------")
     endif()
-    _cmake_helpers_files_find(headers "${_cmake_helpers_library_headers_base_dirs}" "${_cmake_helpers_library_headers_prefix}" "${_cmake_helpers_library_headers_accept_relpath_regexes}" "${_cmake_helpers_library_headers_reject_relpath_regexes}" _cmake_helpers_library_headers)
+    _cmake_helpers_files_find(
+      headers
+      "${_cmake_helpers_library_headers_base_dirs}"
+      "${_cmake_helpers_library_headers_globs}"
+      "${_cmake_helpers_library_headers_prefix}"
+      "${_cmake_helpers_library_headers_accept_relpath_regexes}"
+      "${_cmake_helpers_library_headers_reject_relpath_regexes}"
+      _cmake_helpers_library_headers)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_headers ${_cmake_cmake_helpers_library_headers})
   endif()
   #
@@ -700,14 +714,14 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   endif()
 endfunction()
 
-function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_regexes output_var)
-  set(_all_files)
+function(_cmake_helpers_files_find type base_dirs prefix globs accept_regexes reject_regexes output_var)
+  set(_cmake_helpers_library_all_files)
   foreach(_base_dir ${base_dirs})
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] ... dir ${_base_dir}")
+      message(STATUS "[${_cmake_helpers_logprefix}] ... base dir ${_base_dir}")
     endif()
     set(_base_dir_files)
-    foreach(_glob ${_cmake_helpers_${type}_globs})
+    foreach(_glob ${globs})
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ... ... glob ${_base_dir}/${_glob}")
       endif()
@@ -724,8 +738,8 @@ function(_cmake_helpers_files_find type base_dirs prefix accept_regexes reject_r
     endforeach()
     if(_base_dir_files)
       cmake_helpers_call(source_group TREE ${_base_dir} PREFIX ${prefix} FILES ${_base_dir_files})
-      list(APPEND _all_files ${_base_dir_files})
+      list(APPEND _cmake_helpers_library_all_files ${_base_dir_files})
     endif()
   endforeach()
-  set(${output_var} ${_all_files} PARENT_SCOPE)
+  set(${output_var} ${_cmake_helpers_library_all_files} PARENT_SCOPE)
 endfunction()
