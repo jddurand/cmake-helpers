@@ -3,6 +3,10 @@ function(cmake_helpers_library name)
     message(FATAL_ERROR "name argument is missing")
   endif()
   #
+  # Log prefix
+  #
+  set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/library")
+  #
   # We use GNU standard for installation
   #
   include(GNUInstallDirs)
@@ -153,6 +157,10 @@ function(cmake_helpers_library name)
   # Parse Arguments
   #
   cmake_helpers_parse_arguments(library _cmake_helpers "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  #
+  # Log prefix
+  #
+  set(_logprefix "cmake_helpers/${PROJECT_NAME}/${scope}")
   #
   # Config
   #
