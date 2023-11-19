@@ -103,51 +103,51 @@ function(cmake_helpers_package)
   #
   # Groups
   #
-  if(_cmake_helpers_have_headercomponent)
-    set(_cmake_helpers_can_developmentgroup TRUE)
+  if(_cmake_helpers_library_have_headercomponent)
+    set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
-    set(_cmake_helpers_can_developmentgroup FALSE)
+    set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_librarycomponent)
-    set(_cmake_helpers_can_librarygroup TRUE)
+  if(_cmake_helpers_library_have_librarycomponent)
+    set(_cmake_helpers_package_can_librarygroup TRUE)
   else()
-    set(_cmake_helpers_can_librarygroup FALSE)
+    set(_cmake_helpers_package_can_librarygroup FALSE)
   endif()
-  if(_cmake_helpers_have_manpagecomponent)
-    set(_cmake_helpers_can_documentgroup TRUE)
+  if(_cmake_helpers_library_have_manpagecomponent)
+    set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
-    set(_cmake_helpers_can_documentgroup FALSE)
+    set(_cmake_helpers_package_can_documentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_applicationcomponent)
-    set(_cmake_helpers_can_runtimegroup TRUE)
+  if(_cmake_helpers_library_have_applicationcomponent)
+    set(_cmake_helpers_package_can_runtimegroup TRUE)
   else()
-    set(_cmake_helpers_can_runtimegroup FALSE)
+    set(_cmake_helpers_package_can_runtimegroup FALSE)
   endif()
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] Development group : ${_cmake_helpers_can_developmentgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Library group     : ${_cmake_helpers_can_librarygroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Document group    : ${_cmake_helpers_can_documentgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Runtime group     : ${_cmake_helpers_can_runtimegroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Development group : ${_cmake_helpers_package_can_developmentgroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Library group     : ${_cmake_helpers_package_can_librarygroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Document group    : ${_cmake_helpers_package_can_documentgroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Runtime group     : ${_cmake_helpers_package_can_runtimegroup}")
   endif()
-  if(_cmake_helpers_can_developmentgroup)
+  if(_cmake_helpers_package_can_developmentgroup)
     cmake_helpers_call(cpack_add_component_group DevelopmentGroup
       DISPLAY_NAME "Development"
       DESCRIPTION "Development\n\nContains header and CMake components"
       EXPANDED)
   endif()
-  if(_cmake_helpers_can_librarygroup)
+  if(_cmake_helpers_package_can_librarygroup)
     cmake_helpers_call(cpack_add_component_group LibraryGroup
       DISPLAY_NAME "Libraries"
       DESCRIPTION "Libraries\n\nContains dynamic and static components"
       EXPANDED)
   endif()
-  if(_cmake_helpers_can_documentgroup)
+  if(_cmake_helpers_package_can_documentgroup)
     cmake_helpers_call(cpack_add_component_group DocumentGroup
       DISPLAY_NAME "Documents"
       DESCRIPTION "Documents\n\nContains manpages component"
       EXPANDED)
   endif()
-  if(_cmake_helpers_can_runtimegroup)
+  if(_cmake_helpers_package_can_runtimegroup)
     cmake_helpers_call(cpack_add_component_group RuntimeGroup
       DISPLAY_NAME "Runtime"
       DESCRIPTION "Runtime\n\nContains application component"
@@ -157,7 +157,7 @@ function(cmake_helpers_package)
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  if(_cmake_helpers_have_headercomponent)
+  if(_cmake_helpers_library_have_headercomponent)
     cmake_helpers_call(cpack_add_component HeaderComponent
       DISPLAY_NAME "Headers"
       DESCRIPTION "C/C++ Headers"
@@ -165,7 +165,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL HeaderComponent)
   endif()
-  if(_cmake_helpers_have_librarycomponent)
+  if(_cmake_helpers_library_have_librarycomponent)
     cmake_helpers_call(cpack_add_component LibraryComponent
       DISPLAY_NAME "Libraries"
       DESCRIPTION "Dynamic and Static Libraries"
@@ -173,7 +173,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL LibraryComponent)
   endif()
-  if(_cmake_helpers_have_manpagecomponent)
+  if(_cmake_helpers_library_have_manpagecomponent)
     cmake_helpers_call(cpack_add_component ManpageComponent
       DISPLAY_NAME "Man pages"
       DESCRIPTION "Documentation in the man format"
@@ -181,7 +181,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL ManpageComponent)
   endif()
-  if(_cmake_helpers_have_applicationcomponent)
+  if(_cmake_helpers_library_have_applicationcomponent)
     cmake_helpers_call(cpack_add_component ApplicationComponent
       DISPLAY_NAME "Applications"
       DESCRIPTION "Executables"
