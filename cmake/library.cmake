@@ -45,10 +45,6 @@ function(cmake_helpers_library name)
     EXPORT_HEADER_FILE_NAME
     EXPORT_HEADER_STATIC_DEFINE
     NTRACE
-    PACKAGE
-    PACKAGE_VENDOR
-    PACKAGE_DESCRIPTION_SUMMARY
-    PACKAGE_LICENSE
     TARGETS_OUTVAR
   )
   set(_multiValueArgs
@@ -97,10 +93,6 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_export_header_file_name              include/${PROJECT_NAME}/export.h)
   set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
   set(_cmake_helpers_library_ntrace                               TRUE)
-  set(_cmake_helpers_library_package                              TRUE)
-  set(_cmake_helpers_library_package_vendor                       " ")
-  set(_cmake_helpers_library_package_description_summary          "${_cmake_helpers_library_namespace}")
-  set(_cmake_helpers_library_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
   #
   # Multiple-value arguments default values

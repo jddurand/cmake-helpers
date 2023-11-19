@@ -13,10 +13,6 @@ function(cmake_helpers_package)
   set(_oneValueArgs VENDOR DESCRIPTION_SUMMARY LICENSE)
   set(_multiValueArgs)
   #
-  # Parse Arguments
-  #
-  cmake_helpers_parse_arguments(package _cmake_helpers_package "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
-  #
   # Recuperate directory library properties
   #
   foreach(_variable
@@ -29,6 +25,16 @@ function(cmake_helpers_package)
       message(STATUS "[${PROJECT_NAME}/package] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
   endforeach()
+  #
+  # Single-value arguments default values
+  #
+  set(_cmake_helpers_package_vendor                       " ")
+  set(_cmake_helpers_package_description_summary          "${_cmake_helpers_library_namespace}")
+  set(_cmake_helpers_package_license                      ${PROJECT_SOURCE_DIR}/LICENSE)
+  #
+  # Parse Arguments
+  #
+  cmake_helpers_parse_arguments(package _cmake_helpers_package "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
   # Set CPack hooks
   #
