@@ -18,6 +18,7 @@ function(cmake_helpers_exe name)
   # Recuperate directory library properties
   #
   foreach(_variable
+      namespace
       targets
       static_suffix
       export_cmake_name)
