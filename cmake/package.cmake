@@ -11,14 +11,19 @@ function(cmake_helpers_package)
   #
   # Recuperate directory library properties
   #
-  foreach(_variable
-      namespace
-      version
-      have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent
-      cpack_pre_build_script)
+  foreach(_variable namespace version cpack_pre_build_script)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
+    endif()
+  endforeach()
+  #
+  # Recuperate directory have properties
+  #
+  foreach(_variable have_headercomponent have_librarycomponent have_manpagecomponent have_applicationcomponent)
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
   endforeach()
   #
@@ -139,22 +144,22 @@ function(cmake_helpers_package)
   #
   # Groups
   #
-  if(_cmake_helpers_library_have_headercomponent)
+  if(_cmake_helpers_have_headercomponent)
     set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_library_have_librarycomponent)
+  if(_cmake_helpers_have_librarycomponent)
     set(_cmake_helpers_package_can_librarygroup TRUE)
   else()
     set(_cmake_helpers_package_can_librarygroup FALSE)
   endif()
-  if(_cmake_helpers_library_have_manpagecomponent)
+  if(_cmake_helpers_have_manpagecomponent)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
   endif()
-  if(_cmake_helpers_library_have_applicationcomponent)
+  if(_cmake_helpers_have_applicationcomponent)
     set(_cmake_helpers_package_can_runtimegroup TRUE)
   else()
     set(_cmake_helpers_package_can_runtimegroup FALSE)
@@ -193,7 +198,7 @@ function(cmake_helpers_package)
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  if(_cmake_helpers_library_have_headercomponent)
+  if(_cmake_helpers_have_headercomponent)
     cmake_helpers_call(cpack_add_component HeaderComponent
       DISPLAY_NAME ${_cmake_helpers_package_headercomponent_display_name}
       DESCRIPTION ${_cmake_helpers_package_headercomponent_description}
@@ -201,7 +206,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL HeaderComponent)
   endif()
-  if(_cmake_helpers_library_have_librarycomponent)
+  if(_cmake_helpers_have_librarycomponent)
     cmake_helpers_call(cpack_add_component LibraryComponent
       DISPLAY_NAME ${_cmake_helpers_package_librarycomponent_display_name}
       DESCRIPTION ${_cmake_helpers_package_librarycomponent_description}
@@ -209,7 +214,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL LibraryComponent)
   endif()
-  if(_cmake_helpers_library_have_manpagecomponent)
+  if(_cmake_helpers_have_manpagecomponent)
     cmake_helpers_call(cpack_add_component ManpageComponent
       DISPLAY_NAME ${_cmake_helpers_package_manpagecomponent_display_name}
       DESCRIPTION ${_cmake_helpers_package_manpagecomponent_description}
@@ -217,7 +222,7 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL ManpageComponent)
   endif()
-  if(_cmake_helpers_library_have_applicationcomponent)
+  if(_cmake_helpers_have_applicationcomponent)
     cmake_helpers_call(cpack_add_component ApplicationComponent
       DISPLAY_NAME ${_cmake_helpers_package_applicationcomponent_display_name}
       DESCRIPTION ${_cmake_helpers_package_applicationcomponent_description}
