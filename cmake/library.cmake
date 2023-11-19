@@ -153,41 +153,6 @@ function(cmake_helpers_library name)
   # Parse Arguments
   #
   cmake_helpers_parse_arguments(library _cmake_helpers "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
-  # cmake_parse_arguments(CMAKE_HELPERS "" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
-  #
-  # Set internal variables
-  #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${PROJECT_NAME}/library] --------")
-    message(STATUS "[${PROJECT_NAME}/library] Options:")
-    message(STATUS "[${PROJECT_NAME}/library] --------")
-  endif()
-  foreach(_option ${_oneValueArgs} ${_multiValueArgs})
-    set(_name CMAKE_HELPERS_${_option})
-    set(_var _${_name})
-    string(TOLOWER "${_var}" _var)
-    if(DEFINED CMAKE_HELPERS_${_option})
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${PROJECT_NAME}/library] ... ... Argument CMAKE_HELPERS_${_option}=${CMAKE_HELPERS_${_option}}")
-      endif()
-      set(${_var} ${CMAKE_HELPERS_${_option}})
-    endif()
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_var} ${${_var}})
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${PROJECT_NAME}/library] ... ${_var}=${${_var}}")
-    endif()
-  endforeach()
-  #
-  # Validation of arguments - only the oneValueArgs must have a value
-  #
-  foreach(_oneValueArg ${_oneValueArgs})
-    set(_name CMAKE_HELPERS_${_oneValueArg})
-    set(_var _${_name})
-    string(TOLOWER "${_var}" _var)
-    if(NOT (DEFINED ${_var}))
-      message(FATAL_ERROR "${_var} is missing")
-    endif()
-  endforeach()
   #
   # Config
   #

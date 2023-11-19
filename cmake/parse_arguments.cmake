@@ -7,7 +7,7 @@ function(cmake_helpers_parse_arguments scope varprefix options one_value_keyword
   #
   # Parse Arguments
   #
-  cmake_parse_arguments(CMAKE_HELPERS "${options}" "${one_value_keywords}" "${multi_value_keywords}" "${ARGN}")
+  cmake_parse_arguments(CMAKE_HELPERS "${options}" "${one_value_keywords}" "${multi_value_keywords}" ${ARGN})
   #
   # Set internal variables
   #
