@@ -73,7 +73,7 @@ function(cmake_helpers_pod)
       set(_cmake_helpers_pod_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod_gzip_output}
-	COMMAND ${${_cmake_helpers_pod_pod2man}} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
+	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_pod_gzip_output}
 	DEPENDS ${_cmake_helpers_pod_input}
       )
