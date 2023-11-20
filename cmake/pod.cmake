@@ -70,9 +70,8 @@ function(cmake_helpers_pod)
     find_program(GZIP gzip)
     if(GZIP)
       #
-      # Create a custom command that generates the gzipped manpage.
-      # We explicitely create two custom commands so that both
-      # pod output and gzipped output are automaticalled flagged as GENERATED.
+      # Create tuples of custom command/targets.
+      # Doing so automaticalled flaggs output files as GENERATED and add them to the clean target.
       #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       cmake_helpers_call(add_custom_command
@@ -80,24 +79,24 @@ function(cmake_helpers_pod)
 	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
 	DEPENDS ${_cmake_helpers_pod_input}
       )
+      set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
+      add_custom_target(${_cmake_helpers_pod_target} DEPENDS ${_cmake_helpers_pod_output})
+
       set(_cmake_helpers_pod_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod_gzip_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_pod_gzip_output}
 	DEPENDS ${_cmake_helpers_pod_output}
       )
-      #
-      # Create a custom target that depends on the gzipped manpage
-      #
       set(_cmake_helpers_pod_gzip_target cmake_helpers_pod_${_cmake_helpers_pod_name}_gz)
-      add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_gzip_output})
+      add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_target})
       #
       # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
       #
       set(_cmake_helpers_pod_iface_target cmake_helpers_pod_${_cmake_helpers_pod_name}_iface)
       cmake_helpers_call(add_library ${_cmake_helpers_pod_iface_target} INTERFACE)
       #
-      # Add dependency to the target of the generated file
+      # Add generated files as dependencies to the target. This will make them candidates for clean automatically.
       #
       cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_iface_target} ${_cmake_helpers_pod_gzip_target})
       #
