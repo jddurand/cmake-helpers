@@ -131,7 +131,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_pods)
   set(_cmake_helpers_library_pods_auto                            TRUE)
   set(_cmake_helpers_library_pods_prefix                          include)
-  set(_cmake_helpers_library_pods_globs                           *.pod
+  set(_cmake_helpers_library_pods_globs                           *.pod)
   set(_cmake_helpers_library_pods_accept_relpath_regexes)
   set(_cmake_helpers_library_pods_reject_relpath_regexes)
   #
