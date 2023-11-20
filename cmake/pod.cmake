@@ -86,6 +86,10 @@ function(cmake_helpers_pod)
 	cmake_helpers_call(add_library ${_cmake_helpers_pod_target} INTERFACE)
       endif()
       #
+      # Add dependency to the generated file
+      #
+      cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_target} ${_cmake_helpers_gzip_output})
+      #
       # We fake the gzip as beeing of type HEADERS
       #
       cmake_helpers_call(target_sources ${_cmake_helpers_pod_target} INTERFACE FILE_SET manpages BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_gzip_output})
