@@ -69,8 +69,8 @@ function(cmake_helpers_pod)
       #
       # Create a custom command that generates the gzipped manpage
       #
-      set(_cmake_helpers_pod_output ${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section})
-      set(_cmake_helpers_gzip_output ${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz)
+      set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      set(_cmake_helpers_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_gzip_output}
