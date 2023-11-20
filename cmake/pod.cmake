@@ -11,7 +11,10 @@ function(cmake_helpers_pod)
   #
   # Recuperate directory library properties
   #
-  foreach(_variable namespace version)
+  foreach(_variable
+      namespace
+      targets
+      version)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
@@ -92,7 +95,13 @@ function(cmake_helpers_pod)
       #
       cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_iface_target} ${_cmake_helpers_pod_gzip_target})
       #
-      # Add the generated files to the clean rule
+      # Add this iface as a dependency to all library targets so that it is always triggered
+      #
+      foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
+	cmake_helpers_call(add_dependencies ${_cmake_helper_library_target} ${_cmake_helpers_pod_iface_target})
+      endforeach()
+      #
+      # Add the generated files to the clean rule (not all generators support this)
       #
       cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod_iface_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod_gzip_output} ${_cmake_helpers_pod_output})
       #
