@@ -107,7 +107,7 @@ function(cmake_helpers_pod)
       #
       # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} sources and fake it as being HEADERS
       #
-      cmake_helpers_call(target_sources ${_cmake_helpers_pod_target} PUBLIC ${_cmake_helpers_gzip_output})
+      cmake_helpers_call(target_sources ${_cmake_helpers_pod_target} PRIVATE ${_cmake_helpers_gzip_output})
       #
       # Create an install rule for this target
       #
