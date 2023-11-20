@@ -94,7 +94,7 @@ function(cmake_helpers_pod)
       #
       # Add the generated files to the clean rule
       #
-      cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod_iface_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod_gzip_output} ${_cmake_helpers_pod_output})
+      cmake_helpers_call(set_property DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod_gzip_output} ${_cmake_helpers_pod_output})
       #
       # We fake the gzip as beeing of type HEADERS
       #
