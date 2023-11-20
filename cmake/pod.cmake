@@ -66,9 +66,22 @@ function(cmake_helpers_pod)
   if(_cmake_helpers_pod_pod2man)
     find_program(GZIP gzip)
     if(GZIP)
-      if(NOT (TARGET cmake_helpers_pod))
-	cmake_helpers_call(add_custom_target cmake_helpers_pod)
+      if(NOT (TARGET cmake_helpers_doc_iface))
+	#
+	# We create an doc INTERFACE library, which we will depend on all document generator targets
+	#
+	cmake_helpers_call(add_library cmake_helpers_doc_iface INTERFACE)
       endif()
+      if(NOT (TARGET cmake_helpers_pod_iface))
+	#
+	# We create an pod INTERFACE library, and make cmake_helpers_doc_iface depend on it
+	#
+	cmake_helpers_call(add_library cmake_helpers_pod_iface INTERFACE)
+	cmake_helpers_call(add_dependencies cmake_helpers_doc_iface cmake_helpers_pod_iface)
+      endif()
+      #
+      # Add a custom command to generate the man page
+      #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod_output}
@@ -77,27 +90,30 @@ function(cmake_helpers_pod)
 	COMMAND ${${_cmake_helpers_pod_pod2man}}
 	ARGS --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
       )
-      set(_cmake_helpers_man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      #
+      # Add a custom command to generate the gzipped man page
+      #
+      set(_cmake_helpers_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
-	OUTPUT ${_cmake_helpers_man_output}
+	OUTPUT ${_cmake_helpers_gzip_output}
 	DEPENDS ${_cmake_helpers_pod_output}
-	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_man_output}
-	)
-      set(_cmake_helpers_pod_target "man_${_cmake_helpers_pod_name}")
-      cmake_helpers_call(add_custom_target ${_cmake_helpers_pod_target}	DEPENDS ${_cmake_helpers_man_output})
-      cmake_helpers_call(install
-	FILES ${_cmake_helpers_man_output}
-	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
-	DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section}
-        COMPONENT Man
+	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
       )
+      #
+      # Add the gzip GENERATED file to cmake_helpers_pod_iface sources and fake them as being HEADERS.
+      #
+      cmake_helpers_call(target_sources cmake_helpers_pod_iface INTERFACE FILE_SET manpages BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_gzip_output})
+      #
+      # Create an install rule once for pods
+      #
       if(NOT _cmake_helpers_have_manpage)
 	set(_cmake_helpers_have_manpage TRUE)
 	cmake_helpers_call(install
-	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
-	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
-	  COMPONENT Documentation)
+	  TARGETS        cmake_helpers_pod_iface
+	  EXPORT         ${_cmake_helpers_library_namespace}DocumentationTargets
+	  NAMESPACE      ${_cmake_helpers_library_namespace}::
+	  FILE_SET       manpages COMPONENT Documentation
+	)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_manpage ${_cmake_helpers_have_manpage})
       endif()
     endif()
