@@ -87,6 +87,7 @@ function(cmake_helpers_pod)
       cmake_helpers_call(add_custom_target ${_cmake_helpers_pod_target}	DEPENDS ${_cmake_helpers_man_output})
       cmake_helpers_call(install
 	FILES ${_cmake_helpers_man_output}
+	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
 	DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section}
         COMPONENT Man
       )
