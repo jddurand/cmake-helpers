@@ -20,7 +20,7 @@ function(cmake_helpers_pod)
   #
   # Recuperate directory have properties
   #
-  foreach(_variable have_manpage)
+  foreach(_variable have_documentation)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -99,15 +99,15 @@ function(cmake_helpers_pod)
       # Target install
       #
       cmake_helpers_call(install
-	TARGETS       ${_cmake_helpers_pod_iface_target}
-	EXPORT        ${_cmake_helpers_library_namespace}DocumentationTargets
-	INCLUDES      DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
-	FILE_SET      manpage
+	TARGETS        ${_cmake_helpers_pod_iface_target}
+	EXPORT         ${_cmake_helpers_library_namespace}DocumentationTargets
+	PUBLIC_HEADERS DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
+	FILE_SET       manpage
       )
       #
-      # Set the property _cmake_helpers_have_manpage
+      # Set the property _cmake_helpers_have_documentation
       #
-      if(NOT _cmake_helpers_have_manpage)
+      if(NOT _cmake_helpers_have_documentation)
 	#
 	# Export install
 	#
@@ -117,8 +117,8 @@ function(cmake_helpers_pod)
 	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
 	  COMPONENT Documentation
 	)
-	set(_cmake_helpers_have_manpage TRUE)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_manpage ${_cmake_helpers_have_manpage})
+	set(_cmake_helpers_have_documentation TRUE)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_documentation ${_cmake_helpers_have_documentation})
       endif()
     endif()
   endif()

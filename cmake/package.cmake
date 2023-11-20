@@ -20,7 +20,7 @@ function(cmake_helpers_package)
   #
   # Recuperate directory have properties
   #
-  foreach(_variable have_library have_manpage have_application)
+  foreach(_variable have_library have_documentation have_application)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -42,8 +42,8 @@ function(cmake_helpers_package)
     RUNTIMEGROUP_DESCRIPTION
     LIBRARY_DISPLAY_NAME
     LIBRARY_DESCRIPTION
-    MANPAGE_DISPLAY_NAME
-    MANPAGE_DESCRIPTION
+    DOCUMENTATION_DISPLAY_NAME
+    DOCUMENTATION_DESCRIPTION
     APPLICATION_DISPLAY_NAME
     APPLICATION_DESCRIPTION
   )
@@ -62,8 +62,8 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
   set(_cmake_helpers_package_library_description               "Libraries and header files")
-  set(_cmake_helpers_package_manpage_display_name              "Man pages")
-  set(_cmake_helpers_package_manpage_description               "Documentation in the man format")
+  set(_cmake_helpers_package_documentation_display_name        "Documentation")
+  set(_cmake_helpers_package_documentation_description         "Documentation")
   set(_cmake_helpers_package_application_display_name          "Applications")
   set(_cmake_helpers_package_application_description           "Executables")
   #
@@ -141,7 +141,7 @@ function(cmake_helpers_package)
   else()
     set(_cmake_helpers_package_can_librarygroup FALSE)
   endif()
-  if(_cmake_helpers_have_manpage)
+  if(_cmake_helpers_have_documentation)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
@@ -186,13 +186,13 @@ function(cmake_helpers_package)
     )
     list(APPEND CPACK_COMPONENTS_ALL Library)
   endif()
-  if(_cmake_helpers_have_manpage)
-    cmake_helpers_call(cpack_add_component Manpage
-      DISPLAY_NAME ${_cmake_helpers_package_manpage_display_name}
-      DESCRIPTION ${_cmake_helpers_package_manpage_description}
+  if(_cmake_helpers_have_documentation)
+    cmake_helpers_call(cpack_add_component Documentation
+      DISPLAY_NAME ${_cmake_helpers_package_documentation_display_name}
+      DESCRIPTION ${_cmake_helpers_package_documentation_description}
       GROUP DocumentGroup
     )
-    list(APPEND CPACK_COMPONENTS_ALL Manpage)
+    list(APPEND CPACK_COMPONENTS_ALL Documentation)
   endif()
   if(_cmake_helpers_have_application)
     cmake_helpers_call(cpack_add_component Application
