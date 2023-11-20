@@ -616,7 +616,7 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
 endforeach()
 
 foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
-  set(_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
+  set(_cmake_helpers_library_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
   set(_file ${_cmake_helpers_library_subtarget}.pc)
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Generating ${_file}")
