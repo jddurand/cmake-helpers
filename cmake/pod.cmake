@@ -52,17 +52,18 @@ function(cmake_helpers_pod)
   # Look for pre-requesites: pod2man and gzip
   #
   find_program(POD2MAN pod2man)
-  #
-  # Special case of WIN32
   if(POD2MAN)
     set(_cmake_helpers_pod_pod2man ${POD2MAN})
-  else()
+  elseif(WIN32)
+    #
+    # Special case of WIN32
+    #
     find_program(POD2MAN_BAT pod2man.bat)
     if(POD2MAN_BAT)
       set(_cmake_helpers_pod_pod2man ${POD2MAN_BAT})
     endif()
   endif()
-  if(${_cmake_helpers_pod_pod2man})
+  if(_cmake_helpers_pod_pod2man)
     find_program(GZIP gzip)
     if(GZIP)
       if(NOT (TARGET cmake_helpers_pod))
