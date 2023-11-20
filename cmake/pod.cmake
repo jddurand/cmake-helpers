@@ -80,7 +80,7 @@ function(cmake_helpers_pod)
 	cmake_helpers_call(add_dependencies cmake_helpers_doc_iface cmake_helpers_pod_iface)
       endif()
       #
-      # Add a custom command to generate the man page
+      # Add a custom command to do pod > man
       #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       cmake_helpers_call(add_custom_command
@@ -91,7 +91,7 @@ function(cmake_helpers_pod)
 	ARGS --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
       )
       #
-      # Add a custom command to generate the gzipped man page
+      # Add a custom command to do man > man.gz
       #
       set(_cmake_helpers_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
@@ -100,20 +100,27 @@ function(cmake_helpers_pod)
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
       )
       #
-      # Add the gzip GENERATED file to cmake_helpers_pod_iface sources and fake them as being HEADERS.
+      # Add a custom target that depends on the generated file ${_cmake_helpers_gzip_output}
       #
-      cmake_helpers_call(target_sources cmake_helpers_pod_iface INTERFACE FILE_SET manpages BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_gzip_output})
+      set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
+      add_custom_target(${_cmake_helpers_pod_target} DEPENDS ${_cmake_helpers_gzip_output})
       #
-      # Create an install rule once for pods
+      # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} sources and fake it as being HEADERS
+      #
+      cmake_helpers_call(target_sources ${${_cmake_helpers_pod_target}} PUBLIC ${_cmake_helpers_gzip_output})
+      #
+      # Create an install rule for this target
+      #
+      cmake_helpers_call(install
+	TARGETS        ${_cmake_helpers_pod_target}
+	EXPORT         ${_cmake_helpers_library_namespace}DocumentationTargets
+	NAMESPACE      ${_cmake_helpers_library_namespace}::
+      )
+      #
+      # Set the property _cmake_helpers_have_manpage
       #
       if(NOT _cmake_helpers_have_manpage)
 	set(_cmake_helpers_have_manpage TRUE)
-	cmake_helpers_call(install
-	  TARGETS        cmake_helpers_pod_iface
-	  EXPORT         ${_cmake_helpers_library_namespace}DocumentationTargets
-	  NAMESPACE      ${_cmake_helpers_library_namespace}::
-	  FILE_SET       manpages COMPONENT Documentation
-	)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_manpage ${_cmake_helpers_have_manpage})
       endif()
     endif()
