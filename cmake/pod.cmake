@@ -67,12 +67,13 @@ function(cmake_helpers_pod)
     find_program(GZIP gzip)
     if(GZIP)
       #
-      # Create a custom target that generates the gzipped manpage
+      # Create a custom command that generates the gzipped manpage
       #
-      set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
-      set(_cmake_helpers_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      set(_cmake_helpers_pod_output ${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section})
+      set(_cmake_helpers_gzip_output ${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz)
       set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
-      add_custom_target(${_cmake_helpers_pod_target}
+      cmake_helpers_call(add_custom_command
+	OUTPUT ${_cmake_helpers_gzip_output}
 	COMMAND ${${_cmake_helpers_pod_pod2man}} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
 	DEPENDS ${_cmake_helpers_pod_input}
