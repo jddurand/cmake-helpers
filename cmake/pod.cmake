@@ -73,6 +73,9 @@ function(cmake_helpers_pod)
       # Create tuples of custom command/targets.
       # Doing so automaticalled flaggs output files as GENERATED and add them to the clean target.
       #
+      # pod > man
+      # Dependency is on the pod file
+      #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod_output}
@@ -81,15 +84,18 @@ function(cmake_helpers_pod)
       )
       set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
       add_custom_target(${_cmake_helpers_pod_target} DEPENDS ${_cmake_helpers_pod_output})
-
+      #
+      # man > man.gz
+      # Dependency is on the pod > man target
+      #
       set(_cmake_helpers_pod_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod_gzip_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_pod_gzip_output}
-	DEPENDS ${_cmake_helpers_pod_output}
+	DEPENDS ${_cmake_helpers_pod_target}
       )
       set(_cmake_helpers_pod_gzip_target cmake_helpers_pod_${_cmake_helpers_pod_name}_gz)
-      add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_target})
+      add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_gzip_output})
       #
       # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
       #
