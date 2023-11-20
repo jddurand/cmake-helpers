@@ -70,50 +70,52 @@ function(cmake_helpers_pod)
       # Create a custom command that generates the gzipped manpage
       #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
-      set(_cmake_helpers_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
-      set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
+      set(_cmake_helpers_pod_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       cmake_helpers_call(add_custom_command
-	OUTPUT ${_cmake_helpers_gzip_output}
+	OUTPUT ${_cmake_helpers_pod_gzip_output}
 	COMMAND ${${_cmake_helpers_pod_pod2man}} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod_output}
-	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
+	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_pod_gzip_output}
 	DEPENDS ${_cmake_helpers_pod_input}
       )
       #
+      # Create a custom target that depends on the gzipped manpage
+      #
+      set(_cmake_helpers_pod_gzip_target cmake_helpers_pod_${_cmake_helpers_pod_name}_gz)
+      add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_gzip_output})
+      #
       # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
       #
-      set(_cmake_helpers_pod_target cmake_helpers_pod)
-      if(NOT (TARGET ${_cmake_helpers_pod_target}))
-	cmake_helpers_call(add_library ${_cmake_helpers_pod_target} INTERFACE)
-      endif()
+      set(_cmake_helpers_pod_iface_target cmake_helpers_pod_${_cmake_helpers_pod_name}_iface)
+      cmake_helpers_call(add_library ${_cmake_helpers_pod_iface_target} INTERFACE)
       #
-      # Add dependency to the generated file
+      # Add dependency to the target of the generated file
       #
-      cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_target} ${_cmake_helpers_gzip_output})
+      cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_iface_target} ${_cmake_helpers_pod_gzip_target})
       #
       # We fake the gzip as beeing of type HEADERS
       #
-      cmake_helpers_call(target_sources ${_cmake_helpers_pod_target} INTERFACE FILE_SET manpages BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_gzip_output})
+      cmake_helpers_call(target_sources ${_cmake_helpers_pod_iface_target} INTERFACE FILE_SET manpage BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_pod_gzip_output})
       #
       # Target install
       #
       cmake_helpers_call(install
-	TARGETS       ${_cmake_helpers_pod_target}
+	TARGETS       ${_cmake_helpers_pod_iface_target}
 	EXPORT        ${_cmake_helpers_library_namespace}DocumentationTargets
-	FILE_SET      manpages COMPONENT Documentation
-      )
-      #
-      # Export install
-      #
-      cmake_helpers_call(install
-	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
-	NAMESPACE ${_cmake_helpers_library_namespace}::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
-	COMPONENT Documentation
+	FILE_SET      manpage COMPONENT Documentation
       )
       #
       # Set the property _cmake_helpers_have_manpage
       #
       if(NOT _cmake_helpers_have_manpage)
+	#
+	# Export install
+	#
+	cmake_helpers_call(install
+	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
+	  NAMESPACE ${_cmake_helpers_library_namespace}::
+	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+	  COMPONENT Documentation
+	)
 	set(_cmake_helpers_have_manpage TRUE)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_manpage ${_cmake_helpers_have_manpage})
       endif()
