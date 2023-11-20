@@ -99,10 +99,9 @@ function(cmake_helpers_pod)
       # Target install
       #
       cmake_helpers_call(install
-	TARGETS       ${_cmake_helpers_pod_iface_target}
-	EXPORT        ${_cmake_helpers_library_namespace}DocumentationTargets
-	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
-	FILE_SET      manpage
+	TARGETS  ${_cmake_helpers_pod_iface_target}
+	EXPORT   ${_cmake_helpers_library_namespace}DocumentationTargets
+	FILE_SET manpage DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
       )
       #
       # Set the property _cmake_helpers_have_documentation
