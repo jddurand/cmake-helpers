@@ -109,6 +109,10 @@ function(cmake_helpers_pod)
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
       )
       #
+      # Add gzip output as a dependency
+      #
+      cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_target} ${_cmake_helpers_gzip_output})
+      #
       # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} as a resource
       #
       cmake_helpers_call(set_target_properties ${_cmake_helpers_pod_target}
