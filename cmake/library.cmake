@@ -39,7 +39,6 @@ function(cmake_helpers_library name)
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
-    PKGCONFIG
     EXPORT_HEADER
     EXPORT_HEADER_BASE_NAME
     EXPORT_HEADER_MACRO_NAME
@@ -87,7 +86,6 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_version_minor                        ${PROJECT_VERSION_MINOR})
   set(_cmake_helpers_library_version_patch                        ${PROJECT_VERSION_PATCH})
   set(_cmake_helpers_library_export_cmake_name                    ${PROJECT_NAME}-targets)
-  set(_cmake_helpers_library_pkgconfig                            TRUE)
   set(_cmake_helpers_library_export_header                        TRUE)
   set(_cmake_helpers_library_export_header_base_name              ${PROJECT_NAME})
   set(_cmake_helpers_library_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
@@ -447,10 +445,6 @@ endif()
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
       COMPONENT Library
     )
-  #
-  # Pkgconfig
-  #
-  if(_cmake_helpers_library_pkgconfig)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Creating pkgconfig hooks")
@@ -710,27 +704,20 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
     file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
-  endif()
-  #
-  # Generate package
-  #
-  if(_cmake_helpers_library_package)
-    cmake_helpers_package()
-  endif()
-  #
-  # Send-out the targets
-  #
-  if(_cmake_helpers_library_targets_outvar)
-    set(${_cmake_helpers_library_targets_outvar} ${_cmake_helpers_library_targets} PARENT_SCOPE)
-  endif()
-  #
-  # End
-  #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] ======")
-    message(STATUS "[${_cmake_helpers_logprefix}] Ending")
-    message(STATUS "[${_cmake_helpers_logprefix}] ======")
-  endif()
+    #
+    # Send-out the targets
+    #
+    if(_cmake_helpers_library_targets_outvar)
+      set(${_cmake_helpers_library_targets_outvar} ${_cmake_helpers_library_targets} PARENT_SCOPE)
+    endif()
+    #
+    # End
+    #
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] ======")
+      message(STATUS "[${_cmake_helpers_logprefix}] Ending")
+      message(STATUS "[${_cmake_helpers_logprefix}] ======")
+    endif()
 endfunction()
 
 function(_cmake_helpers_files_find type base_dirs globs prefix accept_regexes reject_regexes output_var)

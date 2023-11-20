@@ -28,6 +28,15 @@ function(cmake_helpers_exe name)
     endif()
   endforeach()
   #
+  # Recuperate directory have properties
+  #
+  foreach(_variable have_application)
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
+    endif()
+  endforeach()
+  #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
   set(_options INSTALL TEST)
@@ -68,12 +77,17 @@ function(cmake_helpers_exe name)
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	COMPONENT Application
       )
-      cmake_helpers_call(install
-	EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
-	NAMESPACE ${_cmake_helpers_library_namespace}::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
-	COMPONENT Library)
-      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application TRUE)
+      #
+      ## Call for install of the export once
+      #
+      if(NOT _cmake_helpers_have_application)
+	cmake_helpers_call(install
+	  EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
+	  NAMESPACE ${_cmake_helpers_library_namespace}::
+	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+	  COMPONENT Library)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application TRUE)
+      endif()
     endif()
     if(_cmake_helpers_exe_test)
       include(CTest)
