@@ -80,6 +80,15 @@ function(cmake_helpers_pod)
 	cmake_helpers_call(add_dependencies cmake_helpers_doc_iface cmake_helpers_pod_iface)
       endif()
       #
+      # We create an INTERFACE library specific for this man page
+      #
+      set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
+      cmake_helpers_call(add_library ${_cmake_helpers_pod_target} INTERFACE)
+      #
+      # We say that cmake_helpers_pod_iface depend on this target
+      #
+      cmake_helpers_call(add_dependencies cmake_helpers_pod_iface ${_cmake_helpers_pod_target})
+      #
       # Add a custom command to do pod > man
       #
       set(_cmake_helpers_pod_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
@@ -99,11 +108,6 @@ function(cmake_helpers_pod)
 	DEPENDS ${_cmake_helpers_pod_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod_output} > ${_cmake_helpers_gzip_output}
       )
-      #
-      # Add a custom target that depends on the generated file ${_cmake_helpers_gzip_output}
-      #
-      set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
-      add_custom_target(${_cmake_helpers_pod_target} DEPENDS ${_cmake_helpers_gzip_output})
       #
       # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} as a resource
       #
