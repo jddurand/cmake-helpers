@@ -105,16 +105,23 @@ function(cmake_helpers_pod)
       set(_cmake_helpers_pod_target cmake_helpers_pod_${_cmake_helpers_pod_name})
       add_custom_target(${_cmake_helpers_pod_target} DEPENDS ${_cmake_helpers_gzip_output})
       #
-      # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} sources and fake it as being HEADERS
+      # Add the gzip GENERATED file to ${_cmake_helpers_pod_target} as a resource
       #
-      cmake_helpers_call(target_sources ${_cmake_helpers_pod_target} PRIVATE ${_cmake_helpers_gzip_output})
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_pod_target}
+	PROPERTIES RESOURCE ${_cmake_helpers_gzip_output})
       #
-      # Create an install rule for this target
+      # Install rules
       #
       cmake_helpers_call(install
 	TARGETS        ${_cmake_helpers_pod_target}
 	EXPORT         ${_cmake_helpers_library_namespace}DocumentationTargets
-	NAMESPACE      ${_cmake_helpers_library_namespace}::
+	RESOURCE       DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section}
+      )
+      cmake_helpers_call(install
+	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
+	NAMESPACE ${_cmake_helpers_library_namespace}::
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+	COMPONENT Documentation
       )
       #
       # Set the property _cmake_helpers_have_manpage
