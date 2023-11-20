@@ -64,6 +64,13 @@ function(cmake_helpers_library name)
     HEADERS_ACCEPT_RELPATH_REGEXES
     HEADERS_REJECT_RELPATH_REGEXES
     PRIVATE_HEADERS_RELPATH_REGEXES
+    PODS
+    PODS_AUTO
+    PODS_PREFIX
+    PODS_BASE_DIRS
+    PODS_GLOBS
+    PODS_ACCEPT_RELPATH_REGEXES
+    PODS_REJECT_RELPATH_REGEXES
   )
   #
   # Single-value arguments default values
@@ -120,6 +127,13 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_headers_accept_relpath_regexes)
   set(_cmake_helpers_library_headers_reject_relpath_regexes)
   set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal" "/_" "^_")
+  set(_cmake_helpers_library_pods_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  set(_cmake_helpers_library_pods)
+  set(_cmake_helpers_library_pods_auto                            TRUE)
+  set(_cmake_helpers_library_pods_prefix                          include)
+  set(_cmake_helpers_library_pods_globs                           *.pod
+  set(_cmake_helpers_library_pods_accept_relpath_regexes)
+  set(_cmake_helpers_library_pods_reject_relpath_regexes)
   #
   # Parse Arguments
   #
@@ -253,6 +267,25 @@ function(cmake_helpers_library name)
 	message(STATUS "[${_cmake_helpers_logprefix}] ... ${_file}")
       endforeach()
     endforeach()
+  endif()
+  #
+  # Man pages discovery
+  #
+  if((NOT _cmake_helpers_library_pods) AND _cmake_helpers_library_pods_auto)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
+      message(STATUS "[${_cmake_helpers_logprefix}] Discovering pods")
+      message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
+    endif()
+    _cmake_helpers_files_find(
+      pods
+      "${_cmake_helpers_library_pods_base_dirs}"
+      "${_cmake_helpers_library_pods_globs}"
+      "${_cmake_helpers_library_pods_prefix}"
+      "${_cmake_helpers_library_pods_accept_relpath_regexes}"
+      "${_cmake_helpers_library_pods_reject_relpath_regexes}"
+      _cmake_helpers_library_pods)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_pods ${_cmake_cmake_helpers_library_pods})
   endif()
   #
   # Targets specifics
