@@ -47,7 +47,7 @@ function(cmake_helpers_pod)
   #
   # Parse Arguments
   #
-  cmake_helpers_parse_arguments(package _cmake_pod_package "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  cmake_helpers_parse_arguments(package _cmake_helpers_pod "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
   # Look for pre-requesites: pod2man and gzip
   #
