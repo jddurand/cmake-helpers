@@ -81,12 +81,13 @@ function(cmake_helpers_exe name)
       ## Call for install of the export once
       #
       if(NOT _cmake_helpers_have_application)
+	set(_cmake_helpers_have_application TRUE)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
 	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
 	  COMPONENT Library)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application TRUE)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application ${_cmake_helpers_have_application})
       endif()
     endif()
     if(_cmake_helpers_exe_test)
