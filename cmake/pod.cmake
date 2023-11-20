@@ -83,10 +83,6 @@ function(cmake_helpers_pod)
       set(_cmake_helpers_pod_gzip_target cmake_helpers_pod_${_cmake_helpers_pod_name}_gz)
       add_custom_target(${_cmake_helpers_pod_gzip_target} DEPENDS ${_cmake_helpers_pod_gzip_output})
       #
-      # Add the generated files to the clean rule
-      #
-      cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod_gzip_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod_gzip_output} ${_cmake_helpers_pod_output})
-      #
       # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
       #
       set(_cmake_helpers_pod_iface_target cmake_helpers_pod_${_cmake_helpers_pod_name}_iface)
@@ -95,6 +91,10 @@ function(cmake_helpers_pod)
       # Add dependency to the target of the generated file
       #
       cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_iface_target} ${_cmake_helpers_pod_gzip_target})
+      #
+      # Add the generated files to the clean rule
+      #
+      cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod_iface_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod_gzip_output} ${_cmake_helpers_pod_output})
       #
       # We fake the gzip as beeing of type HEADERS
       #
