@@ -101,7 +101,8 @@ function(cmake_helpers_pod)
       cmake_helpers_call(install
 	TARGETS       ${_cmake_helpers_pod_iface_target}
 	EXPORT        ${_cmake_helpers_library_namespace}DocumentationTargets
-	FILE_SET      manpage COMPONENT Documentation
+	INCLUDES      DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
+	FILE_SET      manpage
       )
       #
       # Set the property _cmake_helpers_have_manpage
