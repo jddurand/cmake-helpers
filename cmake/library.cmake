@@ -384,17 +384,20 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] Setting install rules")
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
-  if(_cmake_helpers_public_headers)
-    set(_file_set_args FILE_SET public_headers COMPONENT Library)
-  endif()
-
   cmake_helpers_call(install
     TARGETS       ${_cmake_helpers_library_targets}
     EXPORT        ${_cmake_helpers_library_namespace}LibraryTargets
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT Library
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
-    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Library
+  )
+  if(_cmake_helpers_public_headers)
+    set(_file_set_args FILE_SET public_headers COMPONENT Header)
+  endif()
+  cmake_helpers_call(install
+    TARGETS       ${_cmake_helpers_library_targets}
+    EXPORT        ${_cmake_helpers_library_namespace}HeaderTargets
+    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Header
     ${_file_set_args}
   )
 
