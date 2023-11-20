@@ -429,7 +429,7 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   if(_cmake_helpers_public_headers)
-    set(_file_set_args FILE_SET public_headers COMPONENT Library)
+    set(_file_set_args FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Library)
   endif()
 
   cmake_helpers_call(install
@@ -438,7 +438,6 @@ function(cmake_helpers_library name)
     RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT Library
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
-    INCLUDES      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Library
     ${_file_set_args}
   )
 
