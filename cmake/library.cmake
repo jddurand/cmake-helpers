@@ -502,7 +502,7 @@ endif()
   )
   file(REMOVE ${_export_cmake_config_in})
 
-  set(_export_cmake_configversion_out ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
+  set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
   cmake_helpers_call(write_basic_package_version_file ${_export_cmake_configversion_out}
     VERSION ${_cmake_helpers_library_version}
     COMPATIBILITY ${_cmake_helpers_library_version_compatibility}
