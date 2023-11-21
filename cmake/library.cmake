@@ -46,6 +46,12 @@ function(cmake_helpers_library name)
     EXPORT_HEADER_STATIC_DEFINE
     NTRACE
     TARGETS_OUTVAR
+    INSTALL_BINDIR
+    INSTALL_INCLUDEDIR
+    INSTALL_DOCDIR
+    INSTALL_LIBDIR
+    INSTALL_MANDIR
+    INSTALL_CMAKEDIR
   )
   set(_multiValueArgs
     CONFIG_ARGS
@@ -100,6 +106,12 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
+  set(_cmake_helpers_library_install_bindir                       ${CMAKE_INSTALL_BINDIR})
+  set(_cmake_helpers_library_install_includedir                   ${CMAKE_INSTALL_INCLUDEDIR})
+  set(_cmake_helpers_library_install_docdir                       ${CMAKE_INSTALL_DOCDIR})
+  set(_cmake_helpers_library_install_libdir                       ${CMAKE_INSTALL_LIBDIR})
+  set(_cmake_helpers_library_install_mandir                       ${CMAKE_INSTALL_MANDIR})
+  set(_cmake_helpers_library_install_cmakedir                     ${CMAKE_INSTALL_LIBDIR}/cmake)
   #
   # Multiple-value arguments default values
   #
@@ -391,7 +403,7 @@ function(cmake_helpers_library name)
       # For static library we want to debug information within the lib
       # For shared library we want to install the pdb file if it exists
       if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_cmake_helpers_library_target}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Library OPTIONAL)
+	cmake_helpers_call(install FILES $<TARGET_PDB_FILE:${_cmake_helpers_library_target}> DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library OPTIONAL)
       elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
 	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /Z7)
       endif()
@@ -410,14 +422,14 @@ function(cmake_helpers_library name)
       cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
       cmake_helpers_call(target_include_directories ${name} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
     endforeach()
-    cmake_helpers_call(target_include_directories ${name} INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    cmake_helpers_call(target_include_directories ${name} INTERFACE $<INSTALL_INTERFACE:${_cmake_helpers_library_install_includedir}>)
   else()
     foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
       foreach(_cmake_helpers_library_include_dir ${_cmake_helpers_library_headers_base_dirs})
 	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
 	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
       endforeach()
-      cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+      cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<INSTALL_INTERFACE:${_cmake_helpers_library_install_includedir}>)
     endforeach()
   endif()
   #
@@ -429,15 +441,15 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   if(_cmake_helpers_public_headers)
-    set(_file_set_args FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Library)
+    set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Library)
   endif()
 
   cmake_helpers_call(install
     TARGETS       ${_cmake_helpers_library_targets}
     EXPORT        ${_cmake_helpers_library_namespace}LibraryTargets
-    RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}     COMPONENT Library
-    LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
-    ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}     COMPONENT Library
+    RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir}     COMPONENT Library
+    LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
+    ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
     ${_file_set_args}
   )
 
@@ -480,24 +492,24 @@ endif()
   cmake_helpers_call(install
     EXPORT ${_cmake_helpers_library_namespace}LibraryTargets
     NAMESPACE ${_cmake_helpers_library_namespace}::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+    DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
     COMPONENT Library)
   include(CMakePackageConfigHelpers)
   cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+    INSTALL_DESTINATION ${_cmake_helpers_library_install_cmakedir}
     NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
   )
   file(REMOVE ${_export_cmake_config_in})
 
-  set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
+  set(_export_cmake_configversion_out ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
   cmake_helpers_call(write_basic_package_version_file ${_export_cmake_configversion_out}
     VERSION ${_cmake_helpers_library_version}
     COMPATIBILITY ${_cmake_helpers_library_version_compatibility}
   )
   cmake_helpers_call(install
     FILES ${_export_cmake_config_out} ${_export_cmake_configversion_out}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+    DESTINATION ${_cmake_helpers_library_install_cmakedir}
     COMPONENT Library
   )
   if(CMAKE_HELPERS_DEBUG)
@@ -624,13 +636,13 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
   file(GENERATE OUTPUT ${_file}
      CONTENT [=[prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
-bindir=${exec_prefix}/@CMAKE_INSTALL_BINDIR@
-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
-docdir=${prefix}/@CMAKE_INSTALL_DOCDIR@
-libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
-mandir=${prefix}/@CMAKE_INSTALL_MANDIR@
-man1dir=${prefix}/@CMAKE_INSTALL_MANDIR@1
-man2dir=${prefix}/@CMAKE_INSTALL_MANDIR@2
+bindir=${exec_prefix}/@_cmake_helpers_library_install_bindir@
+includedir=${prefix}/@_cmake_helpers_library_install_includedir@
+docdir=${prefix}/@_cmake_helpers_library_install_docdir@
+libdir=${exec_prefix}/@_cmake_helpers_library_install_libdir@
+mandir=${prefix}/@_cmake_helpers_library_install_mandir@
+man1dir=${prefix}/@_cmake_helpers_library_install_mandir@1
+man2dir=${prefix}/@_cmake_helpers_library_install_mandir@2
 
 Name: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_NAME>
 Description: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION>
@@ -667,9 +679,9 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_INSTALL_PREFIX: \\\"\${CMAKE_INSTALL_PREFIX}\\\"\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
-  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_INSTALL_LIBDIR \"\$ENV{CMAKE_INSTALL_LIBDIR_ENV}\")\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(_cmake_helpers_library_install_libdir \"\$ENV{_cmake_helpers_library_install_libdir_ENV}\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
-  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_INSTALL_LIBDIR: \\\"\${CMAKE_INSTALL_LIBDIR}\\\"\")\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] _cmake_helpers_library_install_libdir: \\\"\${_cmake_helpers_library_install_libdir}\\\"\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_MODULE_ROOT_PATH \"\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
@@ -732,13 +744,13 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     # We do not want to run this when it is CPack
     #
     if (NOT CPACK_IS_RUNNING)
-      # We need to re-evaluate GNUInstallDirs to get CMAKE_INSTALL_LIBDIR
+      # We need to re-evaluate GNUInstallDirs to get _cmake_helpers_library_install_libdir
       set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\")
       set(CMAKE_SIZEOF_VOID_P \"${CMAKE_SIZEOF_VOID_P}\")
       include(GNUInstallDirs)
       set(ENV{CMAKE_INSTALL_PREFIX_ENV} \"${CMAKE_INSTALL_PREFIX}\") # Variable may be empty
-      set(ENV{CMAKE_INSTALL_LIBDIR_ENV} \"${CMAKE_INSTALL_LIBDIR}\") # Variable may be empty
-      set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \"\${_destination}/${CMAKE_INSTALL_LIBDIR}/cmake\")
+      set(ENV{_cmake_helpers_library_install_libdir_ENV} \"${_cmake_helpers_library_install_libdir}\") # Variable may be empty
+      set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \"\${_destination}/${_cmake_helpers_library_install_cmakedir}\")
       execute_process(COMMAND \"${CMAKE_COMMAND}\" -G \"${CMAKE_GENERATOR}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -P \"${FIRE_POST_INSTALL_CMAKE_PATH}\" WORKING_DIRECTORY \"\${_destination}\")
     endif()
 "
@@ -753,7 +765,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
     endif()
     file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT Library)
+    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_libdir}/pkgconfig COMPONENT Library)
   endforeach()
 
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)

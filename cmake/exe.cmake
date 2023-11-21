@@ -21,7 +21,10 @@ function(cmake_helpers_exe name)
       namespace
       targets
       static_suffix
-      export_cmake_name)
+      export_cmake_name
+      install_bindir
+      install_libdir
+      install_cmakedir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
@@ -74,7 +77,7 @@ function(cmake_helpers_exe name)
       cmake_helpers_call(install
 	TARGETS ${_target}
 	EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	RUNTIME DESTINATION ${_cmake_helpers_library_install_bindir}
 	COMPONENT Application
       )
       #
@@ -85,7 +88,7 @@ function(cmake_helpers_exe name)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+	  DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
 	  COMPONENT Library)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application ${_cmake_helpers_have_application})
       endif()

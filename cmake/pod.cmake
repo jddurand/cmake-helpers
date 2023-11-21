@@ -14,7 +14,9 @@ function(cmake_helpers_pod)
   foreach(_variable
       namespace
       targets
-      version)
+      version
+      install_mandir
+      install_cmakedir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
@@ -125,7 +127,7 @@ function(cmake_helpers_pod)
       cmake_helpers_call(install
 	TARGETS  ${_cmake_helpers_pod_iface_target}
 	EXPORT   ${_cmake_helpers_library_namespace}DocumentationTargets
-	FILE_SET manpage DESTINATION ${CMAKE_INSTALL_MANDIR}/man${_cmake_helpers_pod_section} COMPONENT Documentation
+	FILE_SET manpage DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Documentation
       )
       #
       # Set the property _cmake_helpers_have_documentation
@@ -137,7 +139,7 @@ function(cmake_helpers_pod)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${_cmake_helpers_library_namespace}
+	  DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
 	  COMPONENT Documentation
 	)
 	set(_cmake_helpers_have_documentation TRUE)
