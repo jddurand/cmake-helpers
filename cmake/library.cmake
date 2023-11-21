@@ -441,15 +441,16 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   if(_cmake_helpers_public_headers)
-    set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Library)
+    set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header TRUE)
   endif()
 
   cmake_helpers_call(install
     TARGETS       ${_cmake_helpers_library_targets}
     EXPORT        ${_cmake_helpers_library_namespace}LibraryTargets
-    RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir}     COMPONENT Library
-    LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
-    ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
+    RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library
+    LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
+    ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
     ${_file_set_args}
   )
 
@@ -461,9 +462,24 @@ function(cmake_helpers_library name)
 include(CMakeFindDependencyMacro)
 # find_dependency(Stats 2.6.4)
 
-set(_${_cmake_helpers_library_namespace}_supported_components Library Application Documentation)
+set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Documentation)
 
 if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
+  #
+  # We provide a virtual component that is Development. If it is set, we remove it and
+  # enforce Library plus Header
+  #
+  list(FIND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"Development\" _index)
+  if(_index GREATER_EQUAL -1)
+    list(REMOVE_ITEM ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"Development\")
+    foreach(_wanted Library Header)
+      list(FIND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"\${_wanted}\" _index)
+      if(_index LESS 0)
+        list(APPEND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"\${_wanted}\")
+      endif()
+    endforeach()
+  endif()
+
   foreach(_comp \${${_cmake_helpers_library_namespace}_FIND_COMPONENTS})
     if (NOT _comp IN_LIST _${_cmake_helpers_library_namespace}_supported_components)
       set(${_cmake_helpers_library_namespace}_FOUND False)

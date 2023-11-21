@@ -24,7 +24,11 @@ function(cmake_helpers_package)
   #
   # Recuperate directory have properties
   #
-  foreach(_variable have_library have_documentation have_application)
+  foreach(_variable
+      have_library
+      have_header
+      have_documentation
+      have_application)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -38,14 +42,16 @@ function(cmake_helpers_package)
     VENDOR
     DESCRIPTION_SUMMARY
     LICENSE
-    LIBRARYGROUP_DISPLAY_NAME
-    LIBRARYGROUP_DESCRIPTION
+    DEVELOPMENTGROUP_DISPLAY_NAME
+    DEVELOPMENTGROUP_DESCRIPTION
     DOCUMENTGROUP_DISPLAY_NAME
     DOCUMENTGROUP_DESCRIPTION
     RUNTIMEGROUP_DISPLAY_NAME
     RUNTIMEGROUP_DESCRIPTION
     LIBRARY_DISPLAY_NAME
     LIBRARY_DESCRIPTION
+    HEADER_DISPLAY_NAME
+    HEADER_DESCRIPTION
     DOCUMENTATION_DISPLAY_NAME
     DOCUMENTATION_DESCRIPTION
     APPLICATION_DISPLAY_NAME
@@ -58,14 +64,16 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_vendor                            " ")
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
-  set(_cmake_helpers_package_librarygroup_display_name         "Libraries")
-  set(_cmake_helpers_package_librarygroup_description          "Libraries\n\nLibraries and header files")
+  set(_cmake_helpers_package_developmentgroup_display_name     "Development")
+  set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries and headers")
   set(_cmake_helpers_package_documentgroup_display_name        "Documents")
-  set(_cmake_helpers_package_documentgroup_description         "Documents\n\nDocumentation")
+  set(_cmake_helpers_package_documentgroup_description         "Documents\n\nDocumentation in various formats")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
-  set(_cmake_helpers_package_library_description               "Libraries and header files")
+  set(_cmake_helpers_package_library_description               "Libraries")
+  set(_cmake_helpers_package_header_display_name               "Headers")
+  set(_cmake_helpers_package_header_description                "Headers")
   set(_cmake_helpers_package_documentation_display_name        "Documentation")
   set(_cmake_helpers_package_documentation_description         "Documentation")
   set(_cmake_helpers_package_application_display_name          "Applications")
@@ -140,10 +148,10 @@ function(cmake_helpers_package)
   #
   # Groups
   #
-  if(_cmake_helpers_have_library)
-    set(_cmake_helpers_package_can_librarygroup TRUE)
+  if(_cmake_helpers_have_library OR _cmake_helpers_have_header)
+    set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
-    set(_cmake_helpers_package_can_librarygroup FALSE)
+    set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
   if(_cmake_helpers_have_documentation)
     set(_cmake_helpers_package_can_documentgroup TRUE)
@@ -156,14 +164,14 @@ function(cmake_helpers_package)
     set(_cmake_helpers_package_can_runtimegroup FALSE)
   endif()
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] Library group     : ${_cmake_helpers_package_can_librarygroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Development group : ${_cmake_helpers_package_can_developmentgroup}")
     message(STATUS "[${_cmake_helpers_logprefix}] Document group    : ${_cmake_helpers_package_can_documentgroup}")
     message(STATUS "[${_cmake_helpers_logprefix}] Runtime group     : ${_cmake_helpers_package_can_runtimegroup}")
   endif()
-  if(_cmake_helpers_package_can_librarygroup)
-    cmake_helpers_call(cpack_add_component_group LibraryGroup
-      DISPLAY_NAME ${_cmake_helpers_package_librarygroup_display_name}
-      DESCRIPTION ${_cmake_helpers_package_librarygroup_description}
+  if(_cmake_helpers_package_can_developmentgroup)
+    cmake_helpers_call(cpack_add_component_group DevelopmentGroup
+      DISPLAY_NAME ${_cmake_helpers_package_developmentgroup_display_name}
+      DESCRIPTION ${_cmake_helpers_package_developmentgroup_description}
       EXPANDED)
   endif()
   if(_cmake_helpers_package_can_documentgroup)
@@ -186,9 +194,17 @@ function(cmake_helpers_package)
     cmake_helpers_call(cpack_add_component Library
       DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
       DESCRIPTION ${_cmake_helpers_package_library_description}
-      GROUP LibraryGroup
+      GROUP DevelopmentGroup
     )
     list(APPEND CPACK_COMPONENTS_ALL Library)
+  endif()
+  if(_cmake_helpers_have_header)
+    cmake_helpers_call(cpack_add_component Header
+      DISPLAY_NAME ${_cmake_helpers_package_header_display_name}
+      DESCRIPTION ${_cmake_helpers_package_header_description}
+      GROUP DevelopmentGroup
+    )
+    list(APPEND CPACK_COMPONENTS_ALL Header)
   endif()
   if(_cmake_helpers_have_documentation)
     cmake_helpers_call(cpack_add_component Documentation
