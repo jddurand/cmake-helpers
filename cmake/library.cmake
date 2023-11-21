@@ -442,6 +442,11 @@ function(cmake_helpers_library name)
   endif()
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header)
+    cmake_helpers_call(install
+      TARGETS       ${_cmake_helpers_library_targets}
+      EXPORT        ${_cmake_helpers_library_namespace}HeaderTargets
+      ${_file_set_args}
+    )
     set(_cmake_helpers_have_header TRUE)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header ${_cmake_helpers_have_header})
   else()
@@ -454,7 +459,6 @@ function(cmake_helpers_library name)
     RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library
     LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
     ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
-    ${_file_set_args}
   )
 
   set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake.in)
