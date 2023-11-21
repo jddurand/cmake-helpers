@@ -26,6 +26,10 @@ function(cmake_helpers_package)
   #
   foreach(_variable
       have_library
+      have_interface_library
+      have_static_library
+      have_dynamic_library
+      have_module_library
       have_header
       have_documentation
       have_application)
@@ -65,13 +69,24 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_package_developmentgroup_display_name     "Development")
-  set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries and headers")
+  set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries and Headers components")
   set(_cmake_helpers_package_documentgroup_display_name        "Documents")
   set(_cmake_helpers_package_documentgroup_description         "Documents\n\nDocumentation in various formats")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
-  set(_cmake_helpers_package_library_description               "Libraries")
+  if(_cmake_helpers_have_interface_library)
+    set(_cmake_helpers_package_library_description             "Library interface")
+  elseif(_cmake_helpers_have_module_library)
+    set(_cmake_helpers_package_library_description             "Module plugin")
+  elseif(_cmake_helpers_have_static_library OR _cmake_helpers_have_dynamic_library)
+    #
+    # When static is produced, shared is always produced
+    #
+    set(_cmake_helpers_package_library_description             "Dynamic and static libraries")
+  else()
+    message(FATAL_ERROR "Unsupported configuration: no library is produced")
+  endif()
   set(_cmake_helpers_package_header_display_name               "Headers")
   set(_cmake_helpers_package_header_description                "Headers")
   set(_cmake_helpers_package_documentation_display_name        "Documentation")
@@ -191,12 +206,17 @@ function(cmake_helpers_package)
   #
   set(CPACK_COMPONENTS_ALL)
   if(_cmake_helpers_have_library)
-    cmake_helpers_call(cpack_add_component Library
-      DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
-      DESCRIPTION ${_cmake_helpers_package_library_description}
-      GROUP DevelopmentGroup
-    )
-    list(APPEND CPACK_COMPONENTS_ALL Library)
+    if(NOT _cmake_helpers_have_interface_library)
+      #
+      # When this is an interface, there is binary produced, only headers
+      #
+      cmake_helpers_call(cpack_add_component Library
+	DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
+	DESCRIPTION ${_cmake_helpers_package_library_description}
+	GROUP DevelopmentGroup
+      )
+      list(APPEND CPACK_COMPONENTS_ALL Library)
+    endif()
   endif()
   if(_cmake_helpers_have_header)
     cmake_helpers_call(cpack_add_component Header

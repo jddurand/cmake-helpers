@@ -183,23 +183,31 @@ function(cmake_helpers_library name)
   #
   # Decide targets
   #
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library FALSE)
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library FALSE)
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_dynamic_library FALSE)
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_library FALSE)
   if(NOT _cmake_helpers_library_sources)
     #
     # It can only be INTERFACE
     #
     set(_cmake_helpers_library_types INTERFACE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library TRUE)
   else()
     if(_cmake_helpers_library_module)
       #
       # MODULE
       #
       set(_cmake_helpers_library_types MODULE)
+      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_library TRUE)
     else()
       #
       # STATIC and SHARED
       # We INTENTIONALY put STATIC before SHARED because pkgconfig will need STATIC properties
       #
       set(_cmake_helpers_library_types STATIC SHARED)
+      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library TRUE)
+      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_dynamic_library TRUE)
     endif()
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library TRUE)
   endif()
