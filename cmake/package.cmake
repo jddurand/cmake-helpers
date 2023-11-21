@@ -88,11 +88,11 @@ function(cmake_helpers_package)
     message(FATAL_ERROR "Unsupported configuration: no library is produced")
   endif()
   set(_cmake_helpers_package_header_display_name               "Headers")
-  set(_cmake_helpers_package_header_description                "Headers")
+  set(_cmake_helpers_package_header_description                "Header files")
   set(_cmake_helpers_package_documentation_display_name        "Documentation")
-  set(_cmake_helpers_package_documentation_description         "Documentation")
+  set(_cmake_helpers_package_documentation_description         "Documentation in various formats")
   set(_cmake_helpers_package_application_display_name          "Applications")
-  set(_cmake_helpers_package_application_description           "Executables")
+  set(_cmake_helpers_package_application_description           "Runtime executables")
   #
   # Parse Arguments
   #
