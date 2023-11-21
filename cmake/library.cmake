@@ -442,11 +442,6 @@ function(cmake_helpers_library name)
   endif()
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header)
-    cmake_helpers_call(install
-      TARGETS       ${_cmake_helpers_library_targets}
-      EXPORT        ${_cmake_helpers_library_namespace}HeaderTargets
-      ${_file_set_args}
-    )
     set(_cmake_helpers_have_header TRUE)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header ${_cmake_helpers_have_header})
   else()
@@ -455,10 +450,11 @@ function(cmake_helpers_library name)
 
   cmake_helpers_call(install
     TARGETS       ${_cmake_helpers_library_targets}
-    EXPORT        ${_cmake_helpers_library_namespace}LibraryTargets
+    EXPORT        ${_cmake_helpers_library_namespace}DevelopmentTargets
     RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library
     LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
     ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
+    ${_file_set_args}
   )
 
   set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake.in)
@@ -492,7 +488,15 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
       set(${_cmake_helpers_library_namespace}_FOUND False)
       set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE \"Unsupported component: \${_comp}\")
     endif()
-    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
+    #
+    # Component Library and Header are in the DevelopmentTargets file
+    #
+    if((\${_comp} STREQUAL \"Library\") OR (\${_comp} STREQUAL \"Header\"))
+      set(_targets \"DevelopmentTargets\")
+    else()
+      set(_targets \"${_comp}Targets\")
+    endif()
+    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_targets}.cmake\")
     if(EXISTS \${_include})
       include(\${_include})
     else()
@@ -502,7 +506,15 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
   endforeach()
 else()
   foreach(_comp \${_${_cmake_helpers_library_namespace}_supported_components})
-    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
+    #
+    # Component Library and Header are in the DevelopmentTargets file
+    #
+    if((\${_comp} STREQUAL \"Library\") OR (\${_comp} STREQUAL \"Header\"))
+      set(_targets \"DevelopmentTargets\")
+    else()
+      set(_targets \"${_comp}Targets\")
+    endif()
+    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}/${_cmake_helpers_library_namespace}\${_targets}.cmake\")
     if(EXISTS \${_include})
       include(\${_include})
     else()
@@ -513,17 +525,10 @@ else()
 endif()
 ")
   cmake_helpers_call(install
-    EXPORT ${_cmake_helpers_library_namespace}LibraryTargets
+    EXPORT ${_cmake_helpers_library_namespace}DevelopmentTargets
     NAMESPACE ${_cmake_helpers_library_namespace}::
     DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
     COMPONENT Library)
-  if(_cmake_helpers_have_header)
-    cmake_helpers_call(install
-      EXPORT ${_cmake_helpers_library_namespace}HeaderTargets
-      NAMESPACE ${_cmake_helpers_library_namespace}::
-      DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
-      COMPONENT Header)
-  endif()
   include(CMakePackageConfigHelpers)
   cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
     INSTALL_DESTINATION ${_cmake_helpers_library_install_cmakedir}
