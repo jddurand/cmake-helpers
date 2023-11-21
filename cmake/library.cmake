@@ -442,16 +442,10 @@ function(cmake_helpers_library name)
   endif()
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header)
-    cmake_helpers_call(install
-      EXPORT                              ${_cmake_helpers_library_namespace}HeaderTargets
-      FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header
-    )
-    cmake_helpers_call(install
-      EXPORT ${_cmake_helpers_library_namespace}HeaderTargets
-      NAMESPACE ${_cmake_helpers_library_namespace}::
-      DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
-      COMPONENT Header)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header TRUE)
+    set(_cmake_helpers_have_header TRUE)
+    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header ${_cmake_helpers_have_header})
+  else()
+    set(_cmake_helpers_have_header FALSE)
   endif()
 
   cmake_helpers_call(install
@@ -460,6 +454,7 @@ function(cmake_helpers_library name)
     RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library
     LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
     ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
+    ${_file_set_args}
   )
 
   set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake.in)
@@ -518,6 +513,13 @@ endif()
     NAMESPACE ${_cmake_helpers_library_namespace}::
     DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
     COMPONENT Library)
+  if(_cmake_helpers_have_header)
+    cmake_helpers_call(install
+      EXPORT ${_cmake_helpers_library_namespace}HeaderTargets
+      NAMESPACE ${_cmake_helpers_library_namespace}::
+      DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
+      COMPONENT Header)
+  endif()
   include(CMakePackageConfigHelpers)
   cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
     INSTALL_DESTINATION ${_cmake_helpers_library_install_cmakedir}
