@@ -96,7 +96,7 @@ function(cmake_helpers_package)
   #
   # Parse Arguments
   #
-  cmake_helpers_parse_arguments(package _cmake_helpers_package "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  cmake_helpers_parse_arguments(package _cmake_helpers_package "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
   # Set CPack hooks
   #
