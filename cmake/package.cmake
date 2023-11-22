@@ -208,7 +208,7 @@ function(cmake_helpers_package)
   if(_cmake_helpers_have_library)
     if(NOT _cmake_helpers_have_interface_library)
       #
-      # When this is an interface, there is binary produced, only headers
+      # When this is an interface, there is no binary produced, only headers
       #
       cmake_helpers_call(cpack_add_component Library
 	DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
