@@ -157,10 +157,6 @@ function(cmake_helpers_package)
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV})\\n\")\n")
   #
-  # We take control on the components
-  #
-  set(CPACK_COMPONENTS_ALL)
-  #
   # Include CPack - from now on we will have access to CPACK own macros
   #
   include(CPack)
@@ -208,6 +204,7 @@ function(cmake_helpers_package)
   #
   # Components
   #
+  set(CPACK_COMPONENTS_ALL)
   if(_cmake_helpers_have_library)
     if(NOT _cmake_helpers_have_interface_library)
       #
