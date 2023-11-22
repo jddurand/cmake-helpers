@@ -157,11 +157,29 @@ function(cmake_helpers_package)
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV})\\n\")\n")
   #
+  # Components
+  #
+  set(CPACK_COMPONENTS_ALL)
+  if(_cmake_helpers_have_library)
+    if(NOT _cmake_helpers_have_interface_library)
+      list(APPEND CPACK_COMPONENTS_ALL Library)
+    endif()
+  endif()
+  if(_cmake_helpers_have_header)
+    list(APPEND CPACK_COMPONENTS_ALL Header)
+  endif()
+  if(_cmake_helpers_have_documentation)
+    list(APPEND CPACK_COMPONENTS_ALL Documentation)
+  endif()
+  if(_cmake_helpers_have_application)
+    list(APPEND CPACK_COMPONENTS_ALL Application)
+  endif()
+  #
   # Include CPack - from now on we will have access to CPACK own macros
   #
   include(CPack)
   #
-  # Groups
+  # Add Groups
   #
   if(_cmake_helpers_have_library OR _cmake_helpers_have_header)
     set(_cmake_helpers_package_can_developmentgroup TRUE)
@@ -202,9 +220,8 @@ function(cmake_helpers_package)
       EXPANDED)
   endif()
   #
-  # Components
+  # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
   #
-  set(CPACK_COMPONENTS_ALL)
   if(_cmake_helpers_have_library)
     if(NOT _cmake_helpers_have_interface_library)
       #
@@ -215,7 +232,6 @@ function(cmake_helpers_package)
 	DESCRIPTION ${_cmake_helpers_package_library_description}
 	GROUP DevelopmentGroup
       )
-      list(APPEND CPACK_COMPONENTS_ALL Library)
     endif()
   endif()
   if(_cmake_helpers_have_header)
@@ -224,7 +240,6 @@ function(cmake_helpers_package)
       DESCRIPTION ${_cmake_helpers_package_header_description}
       GROUP DevelopmentGroup
     )
-    list(APPEND CPACK_COMPONENTS_ALL Header)
   endif()
   if(_cmake_helpers_have_documentation)
     cmake_helpers_call(cpack_add_component Documentation
@@ -232,7 +247,6 @@ function(cmake_helpers_package)
       DESCRIPTION ${_cmake_helpers_package_documentation_description}
       GROUP DocumentGroup
     )
-    list(APPEND CPACK_COMPONENTS_ALL Documentation)
   endif()
   if(_cmake_helpers_have_application)
     cmake_helpers_call(cpack_add_component Application
@@ -240,7 +254,6 @@ function(cmake_helpers_package)
       DESCRIPTION ${_cmake_helpers_package_application_description}
       GROUP RuntimeGroup
       DEPENDS Library)
-    list(APPEND CPACK_COMPONENTS_ALL Application)
   endif()
   #
   # End
