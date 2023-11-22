@@ -42,8 +42,8 @@ function(cmake_helpers_exe name)
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
-  set(_options INSTALL TEST)
-  set(_oneValueArgs)
+  set(_options)
+  set(_oneValueArgs INSTALL TEST)
   set(_multiValueArgs SOURCES TEST_ARGS)
   #
   # Options default values
