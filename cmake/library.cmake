@@ -357,7 +357,7 @@ function(cmake_helpers_library name)
     elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
     elseif(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
     else()
-      message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_target_type}");
+      message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_target_type}")
     endif()
 
     string(TOUPPER "${name}" _name_toupper)
