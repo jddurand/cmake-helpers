@@ -16,8 +16,8 @@ function(cmake_helpers_package)
       version
       cpack_pre_build_script
       install_libdir
-      library_install_cmakedir
-      library_install_pkgconfigdir)
+      install_cmakedir
+      install_pkgconfigdir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
