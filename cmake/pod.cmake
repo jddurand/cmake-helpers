@@ -23,15 +23,6 @@ function(cmake_helpers_pod)
     endif()
   endforeach()
   #
-  # Recuperate directory have properties
-  #
-  foreach(_variable have_documentation)
-    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
-    endif()
-  endforeach()
-  #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
   set(_options)
@@ -127,12 +118,12 @@ function(cmake_helpers_pod)
       cmake_helpers_call(install
 	TARGETS  ${_cmake_helpers_pod_iface_target}
 	EXPORT   ${_cmake_helpers_library_namespace}DocumentationTargets
-	FILE_SET manpage DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Documentation
+	FILE_SET manpage DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Man
       )
       #
-      # Set the property _cmake_helpers_have_documentation
+      # Set the property _cmake_helpers_have_man
       #
-      if(NOT _cmake_helpers_have_documentation)
+      if(NOT _cmake_helpers_have_man)
 	#
 	# Export install
 	#
@@ -140,10 +131,10 @@ function(cmake_helpers_pod)
 	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
 	  DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
-	  COMPONENT Documentation
+	  COMPONENT Man
 	)
-	set(_cmake_helpers_have_documentation TRUE)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_documentation ${_cmake_helpers_have_documentation})
+	set(_cmake_helpers_have_man TRUE)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man ${_cmake_helpers_have_man})
       endif()
     endif()
   endif()

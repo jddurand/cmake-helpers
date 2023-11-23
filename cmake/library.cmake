@@ -495,7 +495,7 @@ function(cmake_helpers_library name)
 include(CMakeFindDependencyMacro)
 # find_dependency(Stats 2.6.4)
 
-set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Documentation)
+set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Document)
 
 if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
   #

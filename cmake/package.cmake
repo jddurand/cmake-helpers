@@ -33,7 +33,7 @@ function(cmake_helpers_package)
       have_dynamic_library
       have_module_library
       have_header
-      have_documentation
+      have_man
       have_application)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
@@ -58,8 +58,8 @@ function(cmake_helpers_package)
     LIBRARY_DESCRIPTION
     HEADER_DISPLAY_NAME
     HEADER_DESCRIPTION
-    DOCUMENTATION_DISPLAY_NAME
-    DOCUMENTATION_DESCRIPTION
+    MAN_DISPLAY_NAME
+    MAN_DESCRIPTION
     APPLICATION_DISPLAY_NAME
     APPLICATION_DESCRIPTION
   )
@@ -91,8 +91,8 @@ function(cmake_helpers_package)
   endif()
   set(_cmake_helpers_package_header_display_name               "Headers")
   set(_cmake_helpers_package_header_description                "Header files")
-  set(_cmake_helpers_package_documentation_display_name        "Documentation")
-  set(_cmake_helpers_package_documentation_description         "Documentation in various formats")
+  set(_cmake_helpers_package_man_display_name                  "Man")
+  set(_cmake_helpers_package_man_description                   "Documentation in the man format")
   set(_cmake_helpers_package_application_display_name          "Applications")
   set(_cmake_helpers_package_application_description           "Runtime executables")
   #
@@ -172,8 +172,8 @@ function(cmake_helpers_package)
   if(_cmake_helpers_have_header)
     list(APPEND CPACK_COMPONENTS_ALL Header)
   endif()
-  if(_cmake_helpers_have_documentation)
-    list(APPEND CPACK_COMPONENTS_ALL Documentation)
+  if(_cmake_helpers_have_man)
+    list(APPEND CPACK_COMPONENTS_ALL Document)
   endif()
   if(_cmake_helpers_have_application)
     list(APPEND CPACK_COMPONENTS_ALL Application)
@@ -190,7 +190,7 @@ function(cmake_helpers_package)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_documentation)
+  if(_cmake_helpers_have_man)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
@@ -240,10 +240,10 @@ function(cmake_helpers_package)
       GROUP DevelopmentGroup
     )
   endif()
-  if(_cmake_helpers_have_documentation)
-    cmake_helpers_call(cpack_add_component Documentation
-      DISPLAY_NAME ${_cmake_helpers_package_documentation_display_name}
-      DESCRIPTION ${_cmake_helpers_package_documentation_description}
+  if(_cmake_helpers_have_man)
+    cmake_helpers_call(cpack_add_component Man
+      DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
+      DESCRIPTION ${_cmake_helpers_package_man_description}
       GROUP DocumentGroup
     )
   endif()
