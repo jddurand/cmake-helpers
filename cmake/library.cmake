@@ -577,6 +577,21 @@ endif()
     DESTINATION ${_cmake_helpers_library_install_cmakedir}
     COMPONENT Library
   )
+  #
+  # Generate a file that will be overwriten by the post-install scripts
+  #
+  foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+    set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_library_namespace}/build/${_cmake_helpers_library_target}.pc)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
+    endif()
+    file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
+    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_pkgconfigdir} COMPONENT Library)
+  endforeach()
+  #
+  # It is important to intall the pkgconfig hooks after the install rule, because withing a directory
+  # install rules are executed in order
+  #
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
     message(STATUS "[${_cmake_helpers_logprefix}] Creating pkgconfig hooks")
@@ -826,17 +841,8 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     COMPONENT Library
   )
   #
-  # Generate a file that will be overwriten by the post-install scripts
+  # CPack specific pre-build script
   #
-  foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-    set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_library_namespace}/build/${_cmake_helpers_library_target}.pc)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
-    endif()
-    file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_pkgconfigdir} COMPONENT Library)
-  endforeach()
-
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
   file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
