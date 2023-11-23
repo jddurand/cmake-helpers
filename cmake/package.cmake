@@ -15,7 +15,9 @@ function(cmake_helpers_package)
       namespace
       version
       cpack_pre_build_script
-      install_libdir)
+      install_libdir
+      library_install_cmakedir
+      library_install_pkgconfigdir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
@@ -145,25 +147,27 @@ function(cmake_helpers_package)
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"include(GNUInstallDirs)\\n\")\n")
   #
-  # We use environment variables to propagate CMake options
+  # We use environment variables to propagate CMake options - it is not wrong to hardcode "Library" because this is the name
+  # of the component in which we have done file(WRITE ...)
   #
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{DESTDIR} is: \\\\\\\"\\\$ENV{DESTDIR}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_PREFIX_ENV} \\\"\${CMAKE_INSTALL_PREFIX}/Library\\\")\\n\")\n")
   FILE(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_INSTALL_PREFIX_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_INSTALL_PREFIX_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{_cmake_helpers_library_install_libdir_ENV} \\\"\${_cmake_helpers_library_install_libdir}\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{_cmake_helpers_library_install_libdir_ENV} set to: \\\\\\\"\\\$ENV{_cmake_helpers_library_install_libdir_ENV}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/lib/cmake\\\" NORMALIZE)\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${_cmake_helpers_library_install_cmakedir}\\\" NORMALIZE)\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \\\"\\\${CMAKE_MODULE_ROOT_PATH_ENV}\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_PKGCONFIG_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${_cmake_helpers_library_install_pkgconfigdir}\\\" NORMALIZE)\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} \\\"\\\${CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\")\\n\")\n")
+  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
   file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV})\\n\")\n")
   #
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
   if(_cmake_helpers_have_library)
-    if(NOT _cmake_helpers_have_interface_library)
-      list(APPEND CPACK_COMPONENTS_ALL Library)
-    endif()
+    list(APPEND CPACK_COMPONENTS_ALL Library)
   endif()
   if(_cmake_helpers_have_header)
     list(APPEND CPACK_COMPONENTS_ALL Header)
@@ -223,16 +227,11 @@ function(cmake_helpers_package)
   # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
   #
   if(_cmake_helpers_have_library)
-    if(NOT _cmake_helpers_have_interface_library)
-      #
-      # When this is an interface, there is no binary produced, only headers
-      #
-      cmake_helpers_call(cpack_add_component Library
-	DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
-	DESCRIPTION ${_cmake_helpers_package_library_description}
-	GROUP DevelopmentGroup
-      )
-    endif()
+    cmake_helpers_call(cpack_add_component Library
+      DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
+      DESCRIPTION ${_cmake_helpers_package_library_description}
+      GROUP DevelopmentGroup
+    )
   endif()
   if(_cmake_helpers_have_header)
     cmake_helpers_call(cpack_add_component Header

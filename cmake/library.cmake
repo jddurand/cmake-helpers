@@ -52,6 +52,7 @@ function(cmake_helpers_library name)
     INSTALL_LIBDIR
     INSTALL_MANDIR
     INSTALL_CMAKEDIR
+    INSTALL_PKGCONFIGDIR
   )
   set(_multiValueArgs
     CONFIG_ARGS
@@ -111,7 +112,8 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_install_docdir                       ${CMAKE_INSTALL_DOCDIR})
   set(_cmake_helpers_library_install_libdir                       ${CMAKE_INSTALL_LIBDIR})
   set(_cmake_helpers_library_install_mandir                       ${CMAKE_INSTALL_MANDIR})
-  set(_cmake_helpers_library_install_cmakedir                     ${CMAKE_INSTALL_LIBDIR}/cmake)
+  set(_cmake_helpers_library_install_cmakedir                     ${_cmake_helpers_library_install_libdir}/cmake)
+  set(_cmake_helpers_library_install_pkgconfigdir                 ${_cmake_helpers_library_install_libdir}/pkgconfig)
   #
   # Multiple-value arguments default values
   #
@@ -209,8 +211,11 @@ function(cmake_helpers_library name)
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library TRUE)
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_dynamic_library TRUE)
     endif()
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library TRUE)
   endif()
+  #
+  # We always produce a library
+  #
+  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library TRUE)
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
   # Create targets
@@ -482,8 +487,8 @@ function(cmake_helpers_library name)
     ${_file_set_args}
   )
 
-  set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake.in)
-  set(_export_cmake_config_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}Config.cmake)
+  set(_export_cmake_config_in ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}Config.cmake.in)
+  set(_export_cmake_config_out ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}Config.cmake)
   file(WRITE ${_export_cmake_config_in} "
 @PACKAGE_INIT@
 
@@ -562,7 +567,7 @@ endif()
   )
   file(REMOVE ${_export_cmake_config_in})
 
-  set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
+  set(_export_cmake_configversion_out ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}ConfigVersion.cmake)
   cmake_helpers_call(write_basic_package_version_file ${_export_cmake_configversion_out}
     VERSION ${_cmake_helpers_library_version}
     COMPATIBILITY ${_cmake_helpers_library_version_compatibility}
@@ -593,6 +598,11 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Initializing CMAKE_PREFIX_PATH with: $ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
 endif()
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
+
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Initializing CMAKE_PKGCONFIG_DIR with: $ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}")
+endif()
+set(CMAKE_PKGCONFIG_DIR "$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENTS Library)")
@@ -689,7 +699,7 @@ endforeach()
 
 foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
   set(_cmake_helpers_library_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
-  set(_file ${_cmake_helpers_library_subtarget}.pc)
+  set(_file "${CMAKE_PKGCONFIG_DIR}/${_cmake_helpers_library_subtarget}.pc")
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Generating ${_file}")
   endif()
@@ -744,8 +754,10 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] _cmake_helpers_library_install_libdir: \\\"\${_cmake_helpers_library_install_libdir}\\\"\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_MODULE_ROOT_PATH \"\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\")\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_PKGCONFIG_ROOT_PATH \"\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_MODULE_ROOT_PATH: \\\"\${CMAKE_MODULE_ROOT_PATH}\\\"\")\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_PKGCONFIG_ROOT_PATH: \\\"\${CMAKE_PKGCONFIG_ROOT_PATH}\\\"\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] Including ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "include(${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake)\n")
@@ -811,6 +823,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       set(ENV{CMAKE_INSTALL_PREFIX_ENV} \"${CMAKE_INSTALL_PREFIX}\") # Variable may be empty
       set(ENV{_cmake_helpers_library_install_libdir_ENV} \"${_cmake_helpers_library_install_libdir}\") # Variable may be empty
       set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \"\${_destination}/${_cmake_helpers_library_install_cmakedir}\")
+      set(ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} \"\${_destination}/${_cmake_helpers_library_install_pkgconfigdir}\")
       execute_process(COMMAND \"${CMAKE_COMMAND}\" -G \"${CMAKE_GENERATOR}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -P \"${FIRE_POST_INSTALL_CMAKE_PATH}\" WORKING_DIRECTORY \"\${_destination}\")
     endif()
 "
@@ -825,7 +838,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
     endif()
     file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_libdir}/pkgconfig COMPONENT Library)
+    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_pkgconfigdir} COMPONENT Library)
   endforeach()
 
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
