@@ -765,6 +765,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   #
   set(_hook [[
     set(_destination "${CMAKE_INSTALL_PREFIX}")
+    cmake_path(CONVERT ${_destination} TO_CMAKE_PATH_LIST _destination NORMALIZE)
     if(NOT ("x$ENV{DESTDIR}" STREQUAL "x"))
       file(TO_CMAKE_PATH "$ENV{DESTDIR}" _destdir)
       string(LENGTH "${_destination}" _destination_length)
