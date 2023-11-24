@@ -56,7 +56,7 @@ function(cmake_helpers_library name)
     INSTALL_PKGCONFIGDIR
   )
   set(_multiValueArgs
-    FIND_DEPENDS
+    FIND_DEPENDENCIES
     DEPENDS_PRIVATE
     DEPENDS_PUBLIC
     DEPENDS_INTERFACE
@@ -125,7 +125,7 @@ function(cmake_helpers_library name)
   #
   get_filename_component(_cmake_helpers_library_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
-  set(_cmake_helpers_library_find_depends)
+  set(_cmake_helpers_library_find_dependencies)
   set(_cmake_helpers_library_depends_private)
   set(_cmake_helpers_library_depends_public)
   set(_cmake_helpers_library_depends_interface)
@@ -165,18 +165,19 @@ function(cmake_helpers_library name)
   #
   # Check find dependencies
   #
-  if(_cmake_helpers_library_find_depends)
+  if(_cmake_helpers_library_find_dependencies)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
       message(STATUS "[${_cmake_helpers_logprefix}] Finding dependencies")
       message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
     endif()
     include(CMakeFindDependencyMacro)
-    foreach(_cmake_helpers_library_find_depend ${_cmake_helpers_library_find_depends})
+    foreach(_cmake_helpers_library_find_dependency ${_cmake_helpers_library_find_dependencies})
       #
       # _find_depend is splitted using the space
       #
-      separate_arguments(_cmake_helpers_library_find_depend UNIX_COMMAND _args)
+      separate_arguments(_cmake_helpers_library_find_dependency UNIX_COMMAND _args)
+      message(STATUS "find_dependency(${_args})")
       find_dependency(${_args})
     endforeach()
   endif()
@@ -521,7 +522,7 @@ function(cmake_helpers_library name)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-foreach(_find_depend ${_cmake_helpers_library_find_depends})
+foreach(_find_depend ${_cmake_helpers_library_find_dependencies})
   #
   # _find_depend is splitted using the space
   #
