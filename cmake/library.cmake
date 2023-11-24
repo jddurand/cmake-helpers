@@ -54,7 +54,6 @@ function(cmake_helpers_library name)
     INSTALL_HTMLDIR
     INSTALL_CMAKEDIR
     INSTALL_PKGCONFIGDIR
-    EXTRA_SETUP_DELEGATE
   )
   set(_multiValueArgs
     CONFIG_ARGS
@@ -117,7 +116,6 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_install_htmldir                      ${_cmake_helpers_library_install_docdir}/html)
   set(_cmake_helpers_library_install_cmakedir                     ${_cmake_helpers_library_install_libdir}/cmake)
   set(_cmake_helpers_library_install_pkgconfigdir                 ${_cmake_helpers_library_install_libdir}/pkgconfig)
-  set(_cmake_helpers_library_extra_setup_delegate)
   #
   # Multiple-value arguments default values
   #
@@ -850,12 +848,6 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
   file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
-  #
-  # Extra setup
-  #
-  if(_cmake_helpers_library_extra_setup_delegate)
-    ${_cmake_helpers_library_extra_setup_delegate}(${_cmake_helpers_library_targets})
-  endif()
   #
   # Send-out the targets
   #
