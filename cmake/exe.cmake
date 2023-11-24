@@ -98,7 +98,7 @@ function(cmake_helpers_exe name)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
+	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	  COMPONENT Library)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application ${_cmake_helpers_have_application})
       endif()

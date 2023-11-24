@@ -147,7 +147,7 @@ function(cmake_helpers_pod)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
+	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	  COMPONENT Man
 	)
 	set(_cmake_helpers_have_man TRUE)
@@ -229,7 +229,7 @@ function(cmake_helpers_pod)
       cmake_helpers_call(install
 	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
 	NAMESPACE ${_cmake_helpers_library_namespace}::
-	DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
+	DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	COMPONENT Html
       )
       set(_cmake_helpers_have_html TRUE)

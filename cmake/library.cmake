@@ -559,7 +559,7 @@ endif()
   cmake_helpers_call(install
     EXPORT ${_cmake_helpers_library_namespace}DevelopmentTargets
     NAMESPACE ${_cmake_helpers_library_namespace}::
-    DESTINATION ${_cmake_helpers_library_install_cmakedir}/${_cmake_helpers_library_namespace}
+    DESTINATION ${_cmake_helpers_library_install_cmakedir}
     COMPONENT Library)
   include(CMakePackageConfigHelpers)
   cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
