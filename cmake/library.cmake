@@ -177,8 +177,7 @@ function(cmake_helpers_library name)
       # _find_depend is splitted using the space
       #
       separate_arguments(_args UNIX_COMMAND "${_cmake_helpers_library_find_dependency}")
-      message(STATUS "find_dependency(${_args})")
-      find_dependency(${_args})
+      cmake_helpers_call(find_dependency ${_args})
     endforeach()
   endif()
   #
