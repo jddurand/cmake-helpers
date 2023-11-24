@@ -24,7 +24,6 @@ function(cmake_helpers_library name)
   set(_options)
   set(_oneValueArgs
     NAMESPACE
-    DEPENDS
     MODULE
     STATIC_SUFFIX
     WITH_POSITION_INDEPENDENT_CODE
@@ -57,6 +56,7 @@ function(cmake_helpers_library name)
     INSTALL_PKGCONFIGDIR
   )
   set(_multiValueArgs
+    DEPENDS
     CONFIG_ARGS
     SOURCES
     SOURCES_AUTO
@@ -85,7 +85,6 @@ function(cmake_helpers_library name)
   # Single-value arguments default values
   #
   set(_cmake_helpers_library_namespace                            ${PROJECT_NAME})
-  set(_cmake_helpers_library_depends)
   set(_cmake_helpers_library_module                               FALSE)
   set(_cmake_helpers_library_static_suffix                        _static)
   set(_cmake_helpers_library_with_position_independent_code       TRUE)
@@ -123,6 +122,7 @@ function(cmake_helpers_library name)
   #
   get_filename_component(_cmake_helpers_library_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
+  set(_cmake_helpers_library_depends)
   set(_cmake_helpers_library_config_args)
   set(_cmake_helpers_library_sources)
   set(_cmake_helpers_library_sources_auto                         TRUE)
