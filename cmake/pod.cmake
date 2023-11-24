@@ -46,7 +46,9 @@ function(cmake_helpers_pod)
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_pod "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
-  # Look for pre-requesites: pod2man/pod2html and gzip
+  # =========
+  # Man pages
+  # =========
   #
   find_program(POD2MAN pod2man)
   if(POD2MAN)
@@ -58,18 +60,6 @@ function(cmake_helpers_pod)
     find_program(POD2MAN_BAT pod2man.bat)
     if(POD2MAN_BAT)
       set(_cmake_helpers_pod_pod2man ${POD2MAN_BAT})
-    endif()
-  endif()
-  find_program(POD2HTML pod2html)
-  if(POD2HTML)
-    set(_cmake_helpers_pod_pod2html ${POD2HTML})
-  elseif(WIN32)
-    #
-    # Special case of WIN32
-    #
-    find_program(POD2HTML_BAT pod2html.bat)
-    if(POD2HTML_BAT)
-      set(_cmake_helpers_pod_pod2html ${POD2HTML_BAT})
     endif()
   endif()
   if(_cmake_helpers_pod_pod2man)
@@ -149,6 +139,23 @@ function(cmake_helpers_pod)
 	set(_cmake_helpers_have_man TRUE)
 	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man ${_cmake_helpers_have_man})
       endif()
+    endif()
+  endif()
+  #
+  # ====
+  # Html
+  # ====
+  #
+  find_program(POD2HTML pod2html)
+  if(POD2HTML)
+    set(_cmake_helpers_pod_pod2html ${POD2HTML})
+  elseif(WIN32)
+    #
+    # Special case of WIN32
+    #
+    find_program(POD2HTML_BAT pod2html.bat)
+    if(POD2HTML_BAT)
+      set(_cmake_helpers_pod_pod2html ${POD2HTML_BAT})
     endif()
   endif()
   if(_cmake_helpers_pod_pod2html)
