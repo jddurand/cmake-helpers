@@ -172,7 +172,7 @@ function(cmake_helpers_library name)
       message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
     endif()
     include(CMakeFindDependencyMacro)
-    foreach(_cmake_helpers_library_find_dependency ${_cmake_helpers_library_find_dependencies})
+    foreach(_cmake_helpers_library_find_dependency "${_cmake_helpers_library_find_dependencies}")
       #
       # _find_depend is splitted using the space
       #
@@ -521,7 +521,7 @@ function(cmake_helpers_library name)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-foreach(_find_depend ${_cmake_helpers_library_find_dependencies})
+foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
   #
   # _find_depend is splitted using the space
   #
