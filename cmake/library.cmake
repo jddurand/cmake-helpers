@@ -526,7 +526,7 @@ foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
   # _find_depend is splitted using the space
   #
   separate_arguments(_args UNIX_COMMAND \"\${_find_depend}\")
-  find_dependency(${_args})
+  find_dependency(\${_args})
 endforeach()
 
 set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Document)
