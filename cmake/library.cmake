@@ -163,6 +163,17 @@ function(cmake_helpers_library name)
   #
   cmake_helpers_parse_arguments(library _cmake_helpers_library "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # Check find dependencies
+  #
+  include(CMakeFindDependencyMacro)
+  foreach(_cmake_helpers_library_find_depend ${_cmake_helpers_library_find_depends})
+    #
+    # _find_depend is splitted using the space
+    #
+    separate_arguments(_find_depend UNIX_COMMAND _args)
+    find_dependency(${_args})
+  endforeach()
+  #
   # Config
   #
   if(_cmake_helpers_library_config_args)
