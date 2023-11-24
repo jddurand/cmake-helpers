@@ -51,6 +51,7 @@ function(cmake_helpers_library name)
     INSTALL_DOCDIR
     INSTALL_LIBDIR
     INSTALL_MANDIR
+    INSTALL_HTMLDIR
     INSTALL_CMAKEDIR
     INSTALL_PKGCONFIGDIR
   )
@@ -99,12 +100,12 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_version_major                        ${PROJECT_VERSION_MAJOR})
   set(_cmake_helpers_library_version_minor                        ${PROJECT_VERSION_MINOR})
   set(_cmake_helpers_library_version_patch                        ${PROJECT_VERSION_PATCH})
-  set(_cmake_helpers_library_export_cmake_name                    ${PROJECT_NAME}-targets)
+  set(_cmake_helpers_library_export_cmake_name                    ${_cmake_helpers_library_namespace}-targets)
   set(_cmake_helpers_library_export_header                        TRUE)
-  set(_cmake_helpers_library_export_header_base_name              ${PROJECT_NAME})
-  set(_cmake_helpers_library_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
-  set(_cmake_helpers_library_export_header_file_name              include/${PROJECT_NAME}/export.h)
-  set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
+  set(_cmake_helpers_library_export_header_base_name              ${_cmake_helpers_library_namespace})
+  set(_cmake_helpers_library_export_header_macro_name             ${_cmake_helpers_library_namespace}_EXPORT)
+  set(_cmake_helpers_library_export_header_file_name              include/${_cmake_helpers_library_namespace}/export.h)
+  set(_cmake_helpers_library_export_header_static_define          ${_cmake_helpers_library_namespace}_STATIC)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
   set(_cmake_helpers_library_install_bindir                       ${CMAKE_INSTALL_BINDIR})
@@ -112,6 +113,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_install_docdir                       ${CMAKE_INSTALL_DOCDIR})
   set(_cmake_helpers_library_install_libdir                       ${CMAKE_INSTALL_LIBDIR})
   set(_cmake_helpers_library_install_mandir                       ${CMAKE_INSTALL_MANDIR})
+  set(_cmake_helpers_library_install_htmldir                      ${_cmake_helpers_library_install_docdir}/html)
   set(_cmake_helpers_library_install_cmakedir                     ${_cmake_helpers_library_install_libdir}/cmake)
   set(_cmake_helpers_library_install_pkgconfigdir                 ${_cmake_helpers_library_install_libdir}/pkgconfig)
   #
@@ -356,7 +358,7 @@ function(cmake_helpers_library name)
     # Compile definitions
     #
     if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME}_EXPORTS)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_namespace}_EXPORTS)
     elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
       cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
     elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
@@ -769,9 +771,9 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_MODULE_ROOT_PATH: \\\"\${CMAKE_MODULE_ROOT_PATH}\\\"\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_PKGCONFIG_ROOT_PATH: \\\"\${CMAKE_PKGCONFIG_ROOT_PATH}\\\"\")\n")
-  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] Including ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake\")\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] Including ${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_library_namespace}/post-install.cmake\")\n")
   file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
-  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "include(${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake)\n")
+  file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "include(${CMAKE_CURRENT_BINARY_DIR}/pc.${_cmake_helpers_library_namespace}/post-install.cmake)\n")
   #
   # We CANNOT use CMAKE_INSTALL_PREFIX variable contrary to what is posted almost everywhere on the net: CPack will
   # will have a CMAKE_INSTALL_PREFIX different, the real and only way to know exactly where we install things is to

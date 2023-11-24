@@ -34,6 +34,7 @@ function(cmake_helpers_package)
       have_module_library
       have_header
       have_man
+      have_html
       have_application)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
@@ -60,6 +61,8 @@ function(cmake_helpers_package)
     HEADER_DESCRIPTION
     MAN_DISPLAY_NAME
     MAN_DESCRIPTION
+    HTML_DISPLAY_NAME
+    HTML_DESCRIPTION
     APPLICATION_DISPLAY_NAME
     APPLICATION_DESCRIPTION
   )
@@ -93,6 +96,8 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_header_description                "Header files")
   set(_cmake_helpers_package_man_display_name                  "Man")
   set(_cmake_helpers_package_man_description                   "Documentation in the man format")
+  set(_cmake_helpers_package_html_display_name                 "Html")
+  set(_cmake_helpers_package_html_description                  "Documentation in the html format")
   set(_cmake_helpers_package_application_display_name          "Applications")
   set(_cmake_helpers_package_application_description           "Runtime executables")
   #
@@ -171,7 +176,10 @@ function(cmake_helpers_package)
     list(APPEND CPACK_COMPONENTS_ALL Header)
   endif()
   if(_cmake_helpers_have_man)
-    list(APPEND CPACK_COMPONENTS_ALL Document)
+    list(APPEND CPACK_COMPONENTS_ALL Man)
+  endif()
+  if(_cmake_helpers_have_html)
+    list(APPEND CPACK_COMPONENTS_ALL Html)
   endif()
   if(_cmake_helpers_have_application)
     list(APPEND CPACK_COMPONENTS_ALL Application)
@@ -188,7 +196,7 @@ function(cmake_helpers_package)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_man)
+  if(_cmake_helpers_have_man OR _cmake_helpers_have_html)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
@@ -242,6 +250,13 @@ function(cmake_helpers_package)
     cmake_helpers_call(cpack_add_component Man
       DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
       DESCRIPTION ${_cmake_helpers_package_man_description}
+      GROUP DocumentGroup
+    )
+  endif()
+  if(_cmake_helpers_have_html)
+    cmake_helpers_call(cpack_add_component Html
+      DISPLAY_NAME ${_cmake_helpers_package_html_display_name}
+      DESCRIPTION ${_cmake_helpers_package_html_description}
       GROUP DocumentGroup
     )
   endif()
