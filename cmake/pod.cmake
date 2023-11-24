@@ -32,6 +32,11 @@ function(cmake_helpers_pod)
     NAME
     SECTION
     VERSION
+    #
+    # pod file are usually very generic, like README.html etc... we do
+    # not want to generate man/man3/README.3.gz everytime.
+    #
+    MAN_PREPEND
   )
   set(_multiValueArgs)
   #
@@ -41,6 +46,7 @@ function(cmake_helpers_pod)
   set(_cmake_helpers_pod_name)
   set(_cmake_helpers_pod_section)
   set(_cmake_helpers_pod_version "${_cmake_helpers_library_}")
+  set(_cmake_helpers_pod_man_prepend "${_cmake_helpers_library_namespace}_"))
   #
   # Parse Arguments
   #
@@ -72,7 +78,11 @@ function(cmake_helpers_pod)
       # pod > man
       # Dependency is on the pod file
       #
-      set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      if(_cmake_helpers_pod_man_prepend)
+	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      else()
+	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      endif()
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod2man_output}
 	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
@@ -84,7 +94,11 @@ function(cmake_helpers_pod)
       # man > man.gz
       # Dependency is on the pod > man target
       #
-      set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      if(_cmake_helpers_pod_man_prepend)
+	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      else()
+	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      endif()
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod2man_gzip_output}
 	COMMAND ${GZIP} -c ${_cmake_helpers_pod2man_output} > ${_cmake_helpers_pod2man_gzip_output}
