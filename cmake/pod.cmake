@@ -46,7 +46,7 @@ function(cmake_helpers_pod)
   set(_cmake_helpers_pod_name)
   set(_cmake_helpers_pod_section)
   set(_cmake_helpers_pod_version "${_cmake_helpers_library_}")
-  set(_cmake_helpers_pod_man_prepend "${_cmake_helpers_library_namespace}_"))
+  set(_cmake_helpers_pod_man_prepend "${_cmake_helpers_library_namespace}_")
   #
   # Parse Arguments
   #
