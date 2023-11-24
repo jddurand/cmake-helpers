@@ -43,8 +43,15 @@ function(cmake_helpers_exe name)
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
   set(_options)
-  set(_oneValueArgs INSTALL TEST)
-  set(_multiValueArgs SOURCES TEST_ARGS)
+  set(_oneValueArgs
+    INSTALL
+    TEST
+  )
+  set(_multiValueArgs
+    SOURCES
+    TEST_ARGS
+    TARGETS_OUTVAR
+  )
   #
   # Options default values
   #
@@ -55,6 +62,7 @@ function(cmake_helpers_exe name)
   #
   set(_cmake_helpers_exe_sources)
   set(_cmake_helpers_exe_test_args)
+  set(_cmake_helpers_exe_targets_outvar)
   #
   # Parse Arguments
   #
@@ -62,6 +70,7 @@ function(cmake_helpers_exe name)
   #
   # Add an executable using all library targets
   #
+  set(_cmake_helpers_exe_targets)
   foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
     get_target_property(_type ${_cmake_helper_library_target} TYPE)
     if(_type STREQUAL "STATIC_LIBRARY")
@@ -71,6 +80,7 @@ function(cmake_helpers_exe name)
     endif()
     set(_target "${_output_name}_exe")
     cmake_helpers_call(add_executable ${_target} ${_cmake_helpers_exe_sources})
+    list(APPEND _cmake_helpers_exe_targets ${_target})
     cmake_helpers_call(set_target_properties ${_target} PROPERTIES OUTPUT_NAME ${_output_name})
     cmake_helpers_call(target_link_libraries ${_target} ${_cmake_helper_library_target})
     if(_cmake_helpers_exe_install)
@@ -103,6 +113,12 @@ function(cmake_helpers_exe name)
       cmake_helpers_call(set_tests_properties ${_target}_test PROPERTIES DEPENDS ${_target}_build)
     endif()
   endforeach()
+  #
+  # Send-out the targets
+  #
+  if(_cmake_helpers_exe_targets_outvar)
+    set(${_cmake_helpers_exe_targets_outvar} ${_cmake_helpers_exe_targets} PARENT_SCOPE)
+  endif()
   #
   # End
   #
