@@ -49,6 +49,7 @@ function(cmake_helpers_package)
     VENDOR
     DESCRIPTION_SUMMARY
     LICENSE
+    INSTALL_DIRECTORY
     DEVELOPMENTGROUP_DISPLAY_NAME
     DEVELOPMENTGROUP_DESCRIPTION
     DOCUMENTGROUP_DISPLAY_NAME
@@ -73,6 +74,7 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_vendor                            " ")
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
+  set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_developmentgroup_display_name     "Development")
   set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries and Headers components")
   set(_cmake_helpers_package_documentgroup_display_name        "Documents")
@@ -115,6 +117,7 @@ function(cmake_helpers_package)
   #
   set(CPACK_PACKAGE_NAME                ${_cmake_helpers_library_namespace})
   set(CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
   set(CPACK_PACKAGE_VERSION             ${_cmake_helpers_library_version})
   if(EXISTS ${_cmake_helpers_package_license})
