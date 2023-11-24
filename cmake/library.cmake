@@ -884,6 +884,11 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   #
   # Apply dependencies
   #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
+    message(STATUS "[${_cmake_helpers_logprefix}] Applying dependencies")
+    message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
+  endif()
   if(_cmake_helpers_library_depends_private)
     foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
       cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_depends_private})
