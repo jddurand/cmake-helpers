@@ -56,7 +56,10 @@ function(cmake_helpers_library name)
     INSTALL_PKGCONFIGDIR
   )
   set(_multiValueArgs
-    DEPENDS
+    FIND_DEPENDS
+    DEPENDS_PRIVATE
+    DEPENDS_PUBLIC
+    DEPENDS_INTERFACE
     CONFIG_ARGS
     SOURCES
     SOURCES_AUTO
@@ -122,7 +125,10 @@ function(cmake_helpers_library name)
   #
   get_filename_component(_cmake_helpers_library_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
-  set(_cmake_helpers_library_depends)
+  set(_cmake_helpers_library_find_depends)
+  set(_cmake_helpers_library_depends_private)
+  set(_cmake_helpers_library_depends_public)
+  set(_cmake_helpers_library_depends_interface)
   set(_cmake_helpers_library_config_args)
   set(_cmake_helpers_library_sources)
   set(_cmake_helpers_library_sources_auto                         TRUE)
@@ -497,11 +503,11 @@ function(cmake_helpers_library name)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-foreach(_depend ${_cmake_helpers_library_depends})
+foreach(_find_depend ${_cmake_helpers_library_find_depends})
   #
-  # _depends is splitted using the ',' keyword
+  # _find_depend is splitted using the space
   #
-  separate_arguments(_depend UNIX_COMMAND _args)
+  separate_arguments(_find_depend UNIX_COMMAND _args)
   find_dependency(${_args})
 endforeach()
 
@@ -856,6 +862,24 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
   file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
+  #
+  # Apply dependencies
+  #
+  if(_cmake_helpers_library_depends_private)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_depends_private})
+    endforeach()
+  endif()
+  if(_cmake_helpers_library_depends_public)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_depends_public})
+    endforeach()
+  endif()
+  if(_cmake_helpers_library_depends_interface)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE ${_cmake_helpers_library_depends_interface})
+    endforeach()
+  endif()
   #
   # Send-out the targets
   #
