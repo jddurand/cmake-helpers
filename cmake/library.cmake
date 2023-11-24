@@ -165,14 +165,21 @@ function(cmake_helpers_library name)
   #
   # Check find dependencies
   #
-  include(CMakeFindDependencyMacro)
-  foreach(_cmake_helpers_library_find_depend ${_cmake_helpers_library_find_depends})
-    #
-    # _find_depend is splitted using the space
-    #
-    separate_arguments(_find_depend UNIX_COMMAND _args)
-    find_dependency(${_args})
-  endforeach()
+  if(_cmake_helpers_library_find_depends)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
+      message(STATUS "[${_cmake_helpers_logprefix}] Finding dependencies")
+      message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
+    endif()
+    include(CMakeFindDependencyMacro)
+    foreach(_cmake_helpers_library_find_depend ${_cmake_helpers_library_find_depends})
+      #
+      # _find_depend is splitted using the space
+      #
+      separate_arguments(_cmake_helpers_library_find_depend UNIX_COMMAND _args)
+      find_dependency(${_args})
+    endforeach()
+  endif()
   #
   # Config
   #
