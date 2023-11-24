@@ -24,6 +24,7 @@ function(cmake_helpers_library name)
   set(_options)
   set(_oneValueArgs
     NAMESPACE
+    DEPENDS
     MODULE
     STATIC_SUFFIX
     WITH_POSITION_INDEPENDENT_CODE
@@ -84,6 +85,7 @@ function(cmake_helpers_library name)
   # Single-value arguments default values
   #
   set(_cmake_helpers_library_namespace                            ${PROJECT_NAME})
+  set(_cmake_helpers_library_depends)
   set(_cmake_helpers_library_module                               FALSE)
   set(_cmake_helpers_library_static_suffix                        _static)
   set(_cmake_helpers_library_with_position_independent_code       TRUE)
@@ -495,7 +497,13 @@ function(cmake_helpers_library name)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-# find_dependency(Stats 2.6.4)
+foreach(_depend ${_cmake_helpers_library_depends})
+  #
+  # _depends is splitted using the ',' keyword
+  #
+  separate_arguments(_depend UNIX_COMMAND _args)
+  find_dependency(${_args})
+endforeach()
 
 set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Document)
 
