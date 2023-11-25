@@ -678,10 +678,19 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
     message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_interface_link_libraries}")
   endif()
   set(_cmake_helpers_library_computed_requires)
+  set(_cmake_helpers_library_computed_extra_libs)
   foreach(_cmake_helpers_library_interface_link_library ${_cmake_helpers_library_interface_link_libraries})
     if(TARGET ${_cmake_helpers_library_interface_link_library})
+      #
+      # Pkgconfig does not understand namespace::target - we keep target only
+      #
       string(REGEX REPLACE ".*::" "" _cmake_helpers_library_computed_require ${_cmake_helpers_library_interface_link_library})
       list(APPEND _cmake_helpers_library_computed_requires ${_cmake_helpers_library_computed_require})
+    else()
+      #
+      # This is not a known target : we will put that in the Libs section
+      #
+      list(APPEND _cmake_helpers_library_computed_extra_libs ${_cmake_helpers_library_interface_link_library})
     endif()
   endforeach()
   #
@@ -739,6 +748,7 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
   set_target_properties(${_cmake_helpers_library_target} PROPERTIES PC_VERSION "@_cmake_helpers_library_version@")
 
   get_target_property(_location ${_cmake_helpers_library_target} LOCATION)
+  set(_pc_libs)
   if(_location)
     cmake_path(GET _location FILENAME _filename)
     if((_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY"))
@@ -746,12 +756,22 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
       if(NOT ("x${CMAKE_SHARED_LIBRARY_PREFIX}" STREQUAL "x"))
         string(REGEX REPLACE "^${CMAKE_SHARED_LIBRARY_PREFIX}" "" _filename_we ${_filename_we})
       endif()
-      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "-L\${libdir} -l${_filename_we}")
+      list(APPEND _pc_libs "-L\${libdir} -l${_filename_we}")
     elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
-      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "\${libdir}/${_filename}")
+      list(APPEND _pc_libs "\${libdir}/${_filename}")
     endif()
   endif()
-  LIST(APPEND _target_computed_dependencies ${_target_filename_we})
+  #
+  # Append eventual extra libs
+  #
+  list(APPEND _pc_libs ${_cmake_helpers_library_computed_extra_libs})
+  if(_pc_libs)
+    list(JOIN " " _pc_libs_string)
+    #
+    # Append extra libs to the dependencies
+    #
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS ${_pc_libs_string})
+  endif()
 endforeach()
 
 foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
