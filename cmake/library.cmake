@@ -900,7 +900,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     if(_cmake_helpers_library_depends_${_cmake_helpers_library_depend_type})
       string(TOUPPER "${_cmake_helpers_library_depend_type}" _cmake_helpers_library_depend_type_toupper)
       foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_type_toupper} ${_cmake_helpers_library_depends_${_cmake_helpers_library_depend_type}))
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_type_toupper} ${_cmake_helpers_library_depends_${_cmake_helpers_library_depend_type}})
       endforeach()
     endif()
   endforeach()
