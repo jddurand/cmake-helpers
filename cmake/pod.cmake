@@ -83,9 +83,10 @@ function(cmake_helpers_pod)
       else()
 	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       endif()
+      string(TOUPPER "${_cmake_helpers_pod_name}" _cmake_helpers_pod_name_toupper)
       cmake_helpers_call(add_custom_command
 	OUTPUT ${_cmake_helpers_pod2man_output}
-	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} -r ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
+	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} --release ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name_toupper} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
 	DEPENDS ${_cmake_helpers_pod_input}
       )
       set(_cmake_helpers_pod2man_target cmake_helpers_pod2man_${_cmake_helpers_pod_name})
