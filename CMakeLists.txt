@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR) # We require BUILD_LOCAL_INTERFACE
-project(cmake-helpers VERSION 1.0.0)
+project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 #
 # Load our includes, once
 #
