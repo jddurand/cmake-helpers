@@ -766,11 +766,11 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
   #
   list(APPEND _pc_libs ${_cmake_helpers_library_computed_extra_libs})
   if(_pc_libs)
-    list(JOIN " " _pc_libs_string)
+    list(JOIN _pc_libs " " _pc_libs_string)
     #
     # Append extra libs to the dependencies
     #
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS ${_pc_libs_string})
+    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "${_pc_libs_string}")
   endif()
 endforeach()
 
