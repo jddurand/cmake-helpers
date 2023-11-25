@@ -690,7 +690,16 @@ foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
       #
       # This is not a known target : we will put that in the Libs section
       #
-      list(APPEND _cmake_helpers_library_computed_extra_libs ${_cmake_helpers_library_interface_link_library})
+      get_filename_component(_filename_we ${_cmake_helpers_library_interface_link_library} NAME_WE)
+      #
+      # If the filename without extension is equal to the dependency, we assume it is candidate for the generic -lxxx syntax,
+      # else we put the dependency as is.
+      #
+      if(_filename_we STREQUAL _cmake_helpers_library_interface_link_library)
+        list(APPEND _cmake_helpers_library_computed_extra_libs "-l${_cmake_helpers_library_interface_link_library}")
+      else()
+        list(APPEND _cmake_helpers_library_computed_extra_libs "${_cmake_helpers_library_interface_link_library}")
+      endif()
     endif()
   endforeach()
   #
