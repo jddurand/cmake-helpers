@@ -83,6 +83,7 @@ function(cmake_helpers_library name)
     PODS_GLOBS
     PODS_ACCEPT_RELPATH_REGEXES
     PODS_REJECT_RELPATH_REGEXES
+    PODS_RENAME_README_TO_NAMESPACE
   )
   #
   # Single-value arguments default values
@@ -158,6 +159,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_pods_globs                           *.pod)
   set(_cmake_helpers_library_pods_accept_relpath_regexes)
   set(_cmake_helpers_library_pods_reject_relpath_regexes          "/test")
+  set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
   #
   # Parse Arguments
   #
@@ -348,12 +350,26 @@ function(cmake_helpers_library name)
   if(_cmake_helpers_library_pods)
     foreach(_cmake_helpers_library_pod ${_cmake_helpers_library_pods})
       get_filename_component(_filename_we ${_cmake_helpers_library_pod} NAME_WE)
-      cmake_helpers_pod(
-	INPUT ${_cmake_helpers_library_pod}
-	NAME ${_filename_we}
-	SECTION 3
-	VERSION ${_cmake_helpers_library_version}
-      )
+      if(_cmake_helpers_library_pods_rename_readme_to_namespace AND (_filename_we STREQUAL "README"))
+	#
+	# We do not want README to be produced as README.3.gz
+	#
+	cmake_helpers_pod(
+	  INPUT ${_cmake_helpers_library_pod}
+	  NAME ${_cmake_helpers_library_namespace}
+	  SECTION 3
+	  VERSION ${_cmake_helpers_library_version}
+	  MAN_PREPEND FALSE
+	)
+      else()
+	cmake_helpers_pod(
+	  INPUT ${_cmake_helpers_library_pod}
+	  NAME ${_filename_we}
+	  SECTION 3
+	  VERSION ${_cmake_helpers_library_version}
+	  MAN_PREPEND FALSE
+	)
+      endif()
     endforeach()
   endif()
   #
