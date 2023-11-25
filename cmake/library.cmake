@@ -173,6 +173,9 @@ function(cmake_helpers_library name)
     endif()
     include(CMakeFindDependencyMacro)
     foreach(_cmake_helpers_library_find_dependency "${_cmake_helpers_library_find_dependencies}")
+      if("x${_cmake_helpers_library_find_dependency}" STREQUAL "x")
+	continue()
+      endif()
       #
       # _find_depend is splitted using the space
       #
