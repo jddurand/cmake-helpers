@@ -188,14 +188,17 @@ function(cmake_helpers_package)
     list(APPEND CPACK_COMPONENTS_ALL Application)
   endif()
   #
-  # Specific to NSIS generator, the default root dir should be the one that
-  # correspond to the architecture used.
+  # Specific to NSIS generator (if any)
   #
-  if(MSVC)
-    if(CMAKE_CL_64)
-      set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
-    else()
-      set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES32")
+  if(WIN32)
+    if(MSVC)
+      if(CMAKE_CL_64)
+	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+	set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win64)")
+      else()
+	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+	set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+      endif()
     endif()
   endif()
   #
