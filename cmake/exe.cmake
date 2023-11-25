@@ -79,7 +79,14 @@ function(cmake_helpers_exe name)
       set(_output_name "${name}")
     endif()
     set(_target "${_output_name}_exe")
-    cmake_helpers_call(add_executable ${_target} ${_cmake_helpers_exe_sources})
+    #
+    # We do not want to include the executable in the ALL target if this is only for tests
+    #
+    if(_cmake_helpers_exe_test AND (NOT _cmake_helpers_exe_install))
+      cmake_helpers_call(add_executable ${_target} EXCLUDE_FROM_ALL ${_cmake_helpers_exe_sources})
+    else()
+      cmake_helpers_call(add_executable ${_target} ${_cmake_helpers_exe_sources})
+    endif()
     list(APPEND _cmake_helpers_exe_targets ${_target})
     cmake_helpers_call(set_target_properties ${_target} PROPERTIES OUTPUT_NAME ${_output_name})
     cmake_helpers_call(target_link_libraries ${_target} ${_cmake_helper_library_target})
