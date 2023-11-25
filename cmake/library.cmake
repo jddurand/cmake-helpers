@@ -522,6 +522,9 @@ function(cmake_helpers_library name)
 
 include(CMakeFindDependencyMacro)
 foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
+  if(\"x\${_find_depend}\" STREQUAL \"x\")
+    continue()
+  endif()
   #
   # _find_depend is splitted using the space
   #
