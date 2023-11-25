@@ -226,6 +226,7 @@ function(cmake_helpers_library name)
     #
     set(_cmake_helpers_library_types INTERFACE)
     set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library TRUE)
+    set(_cmake_helpers_library_is_interface TRUE)
   else()
     if(_cmake_helpers_library_module)
       #
@@ -242,6 +243,7 @@ function(cmake_helpers_library name)
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library TRUE)
       set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_dynamic_library TRUE)
     endif()
+    set(_cmake_helpers_library_is_interface FALSE)
   endif()
   #
   # We always produce a library
@@ -268,9 +270,9 @@ function(cmake_helpers_library name)
   endforeach()
   set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_targets ${_cmake_helpers_library_targets})
   #
-  # Export
+  # Export header: invalid if this is an INTERFACE only library
   #
-  if(_cmake_helpers_library_export_header)
+  if(_cmake_helpers_library_export_header AND (NOT _cmake_helpers_library_is_interface))
     include(GenerateExportHeader)
     #
     # Regardless of user args, we always append the args we know because we need them
