@@ -41,6 +41,7 @@ function(cmake_helpers_init)
   check_include_file("locale.h"       HAVE_LOCALE_H)
   check_include_file("limits.h"       HAVE_LIMITS_H)
   check_include_file("features.h"     HAVE_FEATURES_H)
+  check_include_file("langinfo.h"     HAVE_LANGINFO_H)
   #
   # Check math library
   #
