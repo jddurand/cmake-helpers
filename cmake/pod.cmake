@@ -59,10 +59,7 @@ function(cmake_helpers_pod)
   find_program(POD2MAN pod2man)
   if(POD2MAN)
     set(_cmake_helpers_pod_pod2man ${POD2MAN})
-  elseif(WIN32)
-    #
-    # Special case of WIN32
-    #
+  elseif(WIN32) # Special case of WIN32
     find_program(POD2MAN_BAT pod2man.bat)
     if(POD2MAN_BAT)
       set(_cmake_helpers_pod_pod2man ${POD2MAN_BAT})
@@ -71,6 +68,28 @@ function(cmake_helpers_pod)
   if(_cmake_helpers_pod_pod2man)
     find_program(GZIP gzip)
     if(GZIP)
+      set(_cmake_helpers_pod_gzip ${GZIP})
+    elseif(WIN32) # Special case of WIN32
+      find_program(GZIP_EXE gzip.exe)
+      if(GZIP_EXE)
+	set(_cmake_helpers_pod_gzip ${GZIP_EXE})
+      endif()
+    endif()
+    if(NOT GZIP)
+      #
+      # Give a try with 7z
+      #
+      find_program(SEVENZ 7z)
+      if(SEVENZ)
+	set(_cmake_helpers_pod_7z ${SEVENZ})
+      elseif(WIN32) # Special case of WIN32
+	find_program(SEVENZ_EXE 7z.exe)
+	if(SEVENZ_EXE)
+	  set(_cmake_helpers_pod_7z ${SEVENZ_EXE})
+	endif()
+      endif()
+    endif()
+    if(_cmake_helpers_pod_gzip OR _cmake_helpers_pod_7z)
       #
       # Create tuples of custom command/targets.
       # Doing so automaticalled flaggs output files as GENERATED and add them to the clean target.
@@ -100,11 +119,21 @@ function(cmake_helpers_pod)
       else()
 	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       endif()
-      cmake_helpers_call(add_custom_command
-	OUTPUT ${_cmake_helpers_pod2man_gzip_output}
-	COMMAND ${GZIP} -c ${_cmake_helpers_pod2man_output} > ${_cmake_helpers_pod2man_gzip_output}
-	DEPENDS ${_cmake_helpers_pod2man_target}
-      )
+      if(_cmake_helpers_pod_gzip)
+	cmake_helpers_call(add_custom_command
+	  OUTPUT ${_cmake_helpers_pod2man_gzip_output}
+	  COMMAND ${_cmake_helpers_pod_gzip} -c ${_cmake_helpers_pod2man_output} > ${_cmake_helpers_pod2man_gzip_output}
+	  DEPENDS ${_cmake_helpers_pod2man_target}
+	)
+      elseif(_cmake_helpers_pod_7z)
+	cmake_helpers_call(add_custom_command
+	  OUTPUT ${_cmake_helpers_pod2man_gzip_output}
+	  COMMAND ${_cmake_helpers_pod_7z} a -tgzip ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output}
+	  DEPENDS ${_cmake_helpers_pod2man_target}
+	)
+      else()
+	message(FATAL_ERROR "No gzip nor 7z")
+      endif()
       set(_cmake_helpers_pod2man_gzip_target cmake_helpers_pod2man_${_cmake_helpers_pod_name}_gz)
       cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2man_gzip_target} ALL DEPENDS ${_cmake_helpers_pod2man_gzip_output})
       #
