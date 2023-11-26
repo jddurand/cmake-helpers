@@ -804,9 +804,7 @@ endforeach()
 foreach(_cmake_helpers_library_subtarget @_cmake_helpers_library_targets@)
   set(_cmake_helpers_library_target @_cmake_helpers_library_namespace@::${_cmake_helpers_library_subtarget})
   set(_file "${CMAKE_PKGCONFIG_DIR}/${_cmake_helpers_library_subtarget}.pc")
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Generating ${_file}")
-  endif()
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] Generating ${_file}")
   file(GENERATE OUTPUT ${_file}
      CONTENT [=[prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
