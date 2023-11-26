@@ -120,7 +120,7 @@ function(cmake_helpers_pod)
       # Add this iface as a dependency to all library targets so that it is always triggered
       #
       foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
-	cmake_helpers_call(add_dependencies ${_cmake_helper_library_target} ${_cmake_helpers_pod2man_iface_target})
+	cmake_helpers_call(target_link_libraries ${_cmake_helper_library_target} PRIVATE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_pod2man_iface_target}>)
       endforeach()
       #
       # Add the generated files to the clean rule (not all generators support this)
@@ -202,7 +202,7 @@ function(cmake_helpers_pod)
     # Add this iface as a dependency to all library targets so that it is always triggered
     #
     foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
-      cmake_helpers_call(add_dependencies ${_cmake_helper_library_target} ${_cmake_helpers_pod2html_iface_target})
+      cmake_helpers_call(target_link_libraries ${_cmake_helper_library_target} PRIVATE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_pod2html_iface_target}>)
     endforeach()
     #
     # Add the generated files to the clean rule (not all generators support this)
