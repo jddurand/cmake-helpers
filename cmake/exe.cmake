@@ -116,6 +116,7 @@ function(cmake_helpers_exe name)
       #
       # A tiny hook to force ctest to build the executable
       #
+      message(STATUS "CTEST_CONFIGURATION_TYPE: ${CTEST_CONFIGURATION_TYPE}")
       if(CTEST_CONFIGURATION_TYPE)
 	cmake_helpers_call(add_test NAME ${_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --config "${CTEST_CONFIGURATION_TYPE}" --target ${_target})
       else()
