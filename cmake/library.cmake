@@ -868,6 +868,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   # Now take care: DESTDIR does not "work" on Windows if used as is, and CMake has a hook, that we replacate here
   #
   set(_hook [[
+
     set(_destination "${CMAKE_INSTALL_PREFIX}")
     cmake_path(CONVERT ${_destination} TO_CMAKE_PATH_LIST _destination NORMALIZE)
     if(NOT ("x$ENV{DESTDIR}" STREQUAL "x"))
@@ -908,14 +909,17 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       endif()
       string(SUBSTRING "${_destination}" ${_skip} -1 _destination)
       set(_destination "${_destdir}${_destination}")
-      cmake_path(IS_ABSOLUTE _destination _destination_is_absolute)
-      if(NOT _destination_is_absolute)
-        cmake_path(ABSOLUTE_PATH _destination NORMALIZE OUTPUT_VARIABLE _destination)
-      endif()
+    endif()
+    cmake_path(IS_ABSOLUTE _destination _destination_is_absolute)
+    if(NOT _destination_is_absolute)
+      cmake_path(ABSOLUTE_PATH _destination NORMALIZE OUTPUT_VARIABLE _destination_absolute)
+      message(STATUS "Destination changed from ${_destination} to ${_destination_absolute}")
+      set(_destination "${_destination_absolute}")
     endif()
 ]])
   install(CODE ${_hook} COMPONENT Library)
   install(CODE "
+
     set(CPACK_IS_RUNNING \$ENV{CPACK_IS_RUNNING})
     #
     # We do not want to run this when it is CPack
