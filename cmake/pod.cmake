@@ -90,7 +90,7 @@ function(cmake_helpers_pod)
 	DEPENDS ${_cmake_helpers_pod_input}
       )
       set(_cmake_helpers_pod2man_target cmake_helpers_pod2man_${_cmake_helpers_pod_name})
-      add_custom_target(${_cmake_helpers_pod2man_target} DEPENDS ${_cmake_helpers_pod2man_output})
+      cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2man_target} DEPENDS ${_cmake_helpers_pod2man_output})
       #
       # man > man.gz
       # Dependency is on the pod > man target
@@ -106,7 +106,7 @@ function(cmake_helpers_pod)
 	DEPENDS ${_cmake_helpers_pod2man_target}
       )
       set(_cmake_helpers_pod2man_gzip_target cmake_helpers_pod2man_${_cmake_helpers_pod_name}_gz)
-      add_custom_target(${_cmake_helpers_pod2man_gzip_target} DEPENDS ${_cmake_helpers_pod2man_gzip_output})
+      cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2man_gzip_target} DEPENDS ${_cmake_helpers_pod2man_gzip_output})
       #
       # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
       #
@@ -188,7 +188,7 @@ function(cmake_helpers_pod)
       DEPENDS ${_cmake_helpers_pod_input}
     )
     set(_cmake_helpers_pod2html_target cmake_helpers_pod2html_${_cmake_helpers_pod_name})
-    add_custom_target(${_cmake_helpers_pod2html_target} DEPENDS ${_cmake_helpers_pod2html_output})
+    cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2html_target} DEPENDS ${_cmake_helpers_pod2html_output})
     #
     # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
     #
