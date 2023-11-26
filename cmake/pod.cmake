@@ -119,7 +119,7 @@ function(cmake_helpers_pod)
       #
       # Add this iface as a dependency to all library targets so that it is always triggered
       #
-      foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
+      foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
 	  #
@@ -127,7 +127,7 @@ function(cmake_helpers_pod)
 	  #
 	  cmake_helpers_call(set_target_properties ${_cmake_helpers_pod2man_iface_target} PROPERTIES EXCLUDE_FROM_ALL FALSE)
 	endif()
-	cmake_helpers_call(add_dependencies ${_cmake_helper_library_target} ${_cmake_helpers_pod2man_iface_target})
+	cmake_helpers_call(add_dependencies ${_cmake_helpers_library_target} ${_cmake_helpers_pod2man_iface_target})
       endforeach()
       #
       # Add the generated files to the clean rule (not all generators support this)
@@ -208,7 +208,7 @@ function(cmake_helpers_pod)
     #
     # Add this iface as a dependency to all library targets so that it is always triggered
     #
-    foreach(_cmake_helper_library_target ${_cmake_helpers_library_targets})
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
       get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
 	#
@@ -216,7 +216,7 @@ function(cmake_helpers_pod)
 	#
 	cmake_helpers_call(set_target_properties ${_cmake_helpers_pod2html_iface_target} PROPERTIES EXCLUDE_FROM_ALL FALSE)
       endif()
-      cmake_helpers_call(add_dependencies ${_cmake_helper_library_target} ${_cmake_helpers_pod2html_iface_target})
+      cmake_helpers_call(add_dependencies ${_cmake_helpers_library_target} ${_cmake_helpers_pod2html_iface_target})
     endforeach()
     #
     # Add the generated files to the clean rule (not all generators support this)
