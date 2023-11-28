@@ -168,9 +168,9 @@ function(cmake_helpers_pod)
 	FILE_SET manpage DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Man
       )
       #
-      # Set the property _cmake_helpers_have_man
+      # Set the property _cmake_helpers_have_man_component
       #
-      if(NOT _cmake_helpers_have_man)
+      if(NOT _cmake_helpers_have_man_component)
 	#
 	# Export install
 	#
@@ -180,8 +180,8 @@ function(cmake_helpers_pod)
 	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	  COMPONENT Man
 	)
-	set(_cmake_helpers_have_man TRUE)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man ${_cmake_helpers_have_man})
+	set(_cmake_helpers_have_man_component TRUE)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man_component ${_cmake_helpers_have_man_component})
       endif()
     endif()
   endif()
@@ -250,9 +250,9 @@ function(cmake_helpers_pod)
       FILE_SET html DESTINATION ${_cmake_helpers_library_install_htmldir} COMPONENT Html
     )
     #
-    # Set the property _cmake_helpers_have_html
+    # Set the property _cmake_helpers_have_html_component
     #
-    if(NOT _cmake_helpers_have_html)
+    if(NOT _cmake_helpers_have_html_component)
       #
       # Export install
       #
@@ -262,8 +262,8 @@ function(cmake_helpers_pod)
 	DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	COMPONENT Html
       )
-      set(_cmake_helpers_have_html TRUE)
-      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html ${_cmake_helpers_have_html})
+      set(_cmake_helpers_have_html_component TRUE)
+      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html_component ${_cmake_helpers_have_html_component})
     endif()
   endif()
   #

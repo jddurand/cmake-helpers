@@ -27,15 +27,16 @@ function(cmake_helpers_package)
   # Recuperate directory have properties
   #
   foreach(_variable
-      have_library
+      have_library_component
+      have_header_component
+      have_man_component
+      have_html_component
+      have_application_component
       have_interface_library
       have_static_library
-      have_dynamic_library
+      have_shared_library
       have_module_library
-      have_header
-      have_man
-      have_html
-      have_application)
+      have_object_library)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -82,18 +83,23 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
+  set(_cmake_helpers_package_library_display_names)
   if(_cmake_helpers_have_interface_library)
-    set(_cmake_helpers_package_library_description             "Library interface")
-  elseif(_cmake_helpers_have_module_library)
-    set(_cmake_helpers_package_library_description             "Module plugin")
-  elseif(_cmake_helpers_have_static_library OR _cmake_helpers_have_dynamic_library)
-    #
-    # When static is produced, shared is always produced
-    #
-    set(_cmake_helpers_package_library_description             "Dynamic and static libraries")
-  else()
-    message(FATAL_ERROR "Unsupported configuration: no library is produced")
+    list(APPEND _cmake_helpers_package_library_display_names "Interface")
   endif()
+  if(_cmake_helpers_have_static_library)
+    list(APPEND _cmake_helpers_package_library_display_names "Shared")
+  endif()
+  if(_cmake_helpers_have_shared_library)
+    list(APPEND _cmake_helpers_package_library_display_names "Static")
+  endif()
+  if(_cmake_helpers_have_module_library)
+    list(APPEND _cmake_helpers_package_library_display_names "Module")
+  endif()
+  if(_cmake_helpers_have_object_library)
+    list(APPEND _cmake_helpers_package_library_display_names "Object")
+  endif()
+  list(JOIN _cmake_helpers_package_library_display_names ", " _cmake_helpers_package_library_description)
   set(_cmake_helpers_package_header_display_name               "Headers")
   set(_cmake_helpers_package_header_description                "Header files")
   set(_cmake_helpers_package_man_display_name                  "Man")
@@ -172,19 +178,19 @@ function(cmake_helpers_package)
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  if(_cmake_helpers_have_library)
+  if(_cmake_helpers_have_library_component)
     list(APPEND CPACK_COMPONENTS_ALL Library)
   endif()
-  if(_cmake_helpers_have_header)
+  if(_cmake_helpers_have_header_component)
     list(APPEND CPACK_COMPONENTS_ALL Header)
   endif()
-  if(_cmake_helpers_have_man)
+  if(_cmake_helpers_have_man_component)
     list(APPEND CPACK_COMPONENTS_ALL Man)
   endif()
-  if(_cmake_helpers_have_html)
+  if(_cmake_helpers_have_html_component)
     list(APPEND CPACK_COMPONENTS_ALL Html)
   endif()
-  if(_cmake_helpers_have_application)
+  if(_cmake_helpers_have_application_component)
     list(APPEND CPACK_COMPONENTS_ALL Application)
   endif()
   #
@@ -208,17 +214,17 @@ function(cmake_helpers_package)
   #
   # Add Groups
   #
-  if(_cmake_helpers_have_library OR _cmake_helpers_have_header)
+  if(_cmake_helpers_have_library_component OR _cmake_helpers_have_header_component)
     set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_man OR _cmake_helpers_have_html)
+  if(_cmake_helpers_have_man_component OR _cmake_helpers_have_html_component)
     set(_cmake_helpers_package_can_documentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_application)
+  if(_cmake_helpers_have_application_component)
     set(_cmake_helpers_package_can_runtimegroup TRUE)
   else()
     set(_cmake_helpers_package_can_runtimegroup FALSE)
@@ -249,35 +255,35 @@ function(cmake_helpers_package)
   #
   # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
   #
-  if(_cmake_helpers_have_library)
+  if(_cmake_helpers_have_library_component)
     cmake_helpers_call(cpack_add_component Library
       DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
       DESCRIPTION ${_cmake_helpers_package_library_description}
       GROUP DevelopmentGroup
     )
   endif()
-  if(_cmake_helpers_have_header)
+  if(_cmake_helpers_have_header_component)
     cmake_helpers_call(cpack_add_component Header
       DISPLAY_NAME ${_cmake_helpers_package_header_display_name}
       DESCRIPTION ${_cmake_helpers_package_header_description}
       GROUP DevelopmentGroup
     )
   endif()
-  if(_cmake_helpers_have_man)
+  if(_cmake_helpers_have_man_component)
     cmake_helpers_call(cpack_add_component Man
       DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
       DESCRIPTION ${_cmake_helpers_package_man_description}
       GROUP DocumentGroup
     )
   endif()
-  if(_cmake_helpers_have_html)
+  if(_cmake_helpers_have_html_component)
     cmake_helpers_call(cpack_add_component Html
       DISPLAY_NAME ${_cmake_helpers_package_html_display_name}
       DESCRIPTION ${_cmake_helpers_package_html_description}
       GROUP DocumentGroup
     )
   endif()
-  if(_cmake_helpers_have_application)
+  if(_cmake_helpers_have_application_component)
     cmake_helpers_call(cpack_add_component Application
       DISPLAY_NAME ${_cmake_helpers_package_application_display_name}
       DESCRIPTION ${_cmake_helpers_package_application_description}
