@@ -340,23 +340,20 @@ function(cmake_helpers_library name)
     #
     if((NOT _cmake_helpers_library_export_header_target) AND _cmake_helpers_library_export_target_from_type)
       set(_cmake_helpers_library_export_header_target ${_cmake_helpers_library_type_${_cmake_helpers_library_export_target_from_type}_name})
+      #
+      # Regardless of user args, we always append the args we know because we need them
+      #
+      if(CMAKE_HELPERS_DEBUG)
+        message(STATUS "[${_cmake_helpers_logprefix}] ------------------------------------------------------------------------")
+        message(STATUS "[${_cmake_helpers_logprefix}] Generating export header using target ${_cmake_helpers_library_export_header_target}")
+        message(STATUS "[${_cmake_helpers_logprefix}] ------------------------------------------------------------------------")
+      endif()
+      cmake_helpers_call(generate_export_header ${_cmake_helpers_library_export_header_target}
+        BASE_NAME         ${_cmake_helpers_library_export_header_base_name}
+        EXPORT_MACRO_NAME ${_cmake_helpers_library_export_header_macro_name}
+        EXPORT_FILE_NAME  ${_cmake_helpers_library_export_header_file_name}
+        STATIC_DEFINE     ${_cmake_helpers_library_export_header_static_define})
     endif()
-    if(NOT _cmake_helpers_library_export_header_target)
-      message(FATAL_ERROR "No target for generating export header")
-    endif()
-    #
-    # Regardless of user args, we always append the args we know because we need them
-    #
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] ------------------------------------------------------------------------")
-      message(STATUS "[${_cmake_helpers_logprefix}] Generating export header using target ${_cmake_helpers_library_export_header_target}")
-      message(STATUS "[${_cmake_helpers_logprefix}] ------------------------------------------------------------------------")
-    endif()
-    cmake_helpers_call(generate_export_header ${_cmake_helpers_library_export_header_target}
-      BASE_NAME         ${_cmake_helpers_library_export_header_base_name}
-      EXPORT_MACRO_NAME ${_cmake_helpers_library_export_header_macro_name}
-      EXPORT_FILE_NAME  ${_cmake_helpers_library_export_header_file_name}
-      STATIC_DEFINE     ${_cmake_helpers_library_export_header_static_define})
   endif()
   #
   # Headers discovery
