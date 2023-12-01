@@ -49,6 +49,7 @@ function(cmake_helpers_library name)
     VERSION_MAJOR
     VERSION_MINOR
     VERSION_PATCH
+    EXPORT_CMAKE_NAME
     EXPORT_HEADER
     EXPORT_HEADER_TARGET_AUTO
     EXPORT_HEADER_TARGET
@@ -125,7 +126,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_version_major                        ${PROJECT_VERSION_MAJOR})
   set(_cmake_helpers_library_version_minor                        ${PROJECT_VERSION_MINOR})
   set(_cmake_helpers_library_version_patch                        ${PROJECT_VERSION_PATCH})
-  set(_cmake_helpers_library_export_cmake_name                    ${_cmake_helpers_library_namespace}-targets)
+  set(_cmake_helpers_library_export_cmake_name                    ${_cmake_helpers_library_namespace}Targets.cmake)
   set(_cmake_helpers_library_export_header                        TRUE)
   set(_cmake_helpers_library_export_header_target_auto            TRUE)
   set(_cmake_helpers_library_export_header_target                 FALSE)
@@ -592,30 +593,23 @@ function(cmake_helpers_library name)
   endforeach()
   cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_install_targets ${_cmake_helpers_library_install_targets})
   #
-  # Remember if we have headers
-  #
-  if(_cmake_helpers_public_headers)
-    set(_cmake_helpers_have_header_component TRUE)
-  else()
-    set(_cmake_helpers_have_header_component FALSE)
-  endif()
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component ${_cmake_helpers_have_header_component})
-  #
-  # Remember if we have libraries
-  #
-  if(_cmake_helpers_library_install_targets)
-    set(_cmake_helpers_have_library_component TRUE)
-  else()
-    set(_cmake_helpers_have_library_component FALSE)
-  endif()
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component ${_cmake_helpers_have_library_component})
-  #
   # Install rule
   #
   if(_cmake_helpers_library_install_targets)
+    #
+    # Remember we have a Library component when installing
+    #
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component TRUE)
+    #
+    # Remember if we have a Header component when installing
+    #
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component TRUE)
+    #
+    # Install and export in ${_cmake_helpers_library_namespace}Targets
+    #
     cmake_helpers_call(install
       TARGETS                 ${_cmake_helpers_library_install_targets}
-      EXPORT                  ${_cmake_helpers_library_namespace}DevelopmentTargets
+      EXPORT                  ${_cmake_helpers_library_export_cmake_name}
       RUNTIME                 DESTINATION ${_cmake_helpers_library_install_bindir}     COMPONENT Library
       LIBRARY                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
       ARCHIVE                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
@@ -704,7 +698,7 @@ else()
 endif()
 ")
   cmake_helpers_call(install
-    EXPORT ${_cmake_helpers_library_namespace}DevelopmentTargets
+    EXPORT ${_cmake_helpers_library_export_cmake_name}
     NAMESPACE ${_cmake_helpers_library_namespace}::
     DESTINATION ${_cmake_helpers_library_install_cmakedir}
     COMPONENT Library)
