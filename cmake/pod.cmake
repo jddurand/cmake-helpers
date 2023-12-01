@@ -16,7 +16,6 @@ function(cmake_helpers_pod)
       targets
       version
       install_mandir
-      install_cmakedir
       install_htmldir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
@@ -91,7 +90,7 @@ function(cmake_helpers_pod)
     endif()
     if(_cmake_helpers_pod_gzip OR _cmake_helpers_pod_7z)
       #
-      # pod > man > man.gz
+      # pod -> man -> man.gz
       #
       if(_cmake_helpers_pod_man_prepend)
 	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
@@ -104,9 +103,6 @@ function(cmake_helpers_pod)
 	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       endif()
       string(TOUPPER "${_cmake_helpers_pod_name}" _cmake_helpers_pod_name_toupper)
-      #
-      # man > man.gz
-      #
       if(_cmake_helpers_pod_gzip)
 	cmake_helpers_call(add_custom_command
 	  OUTPUT ${_cmake_helpers_pod2man_gzip_output}
@@ -125,16 +121,17 @@ function(cmake_helpers_pod)
 	message(FATAL_ERROR "No gzip nor 7z")
       endif()
       #
-      # We fake the gz as beeing of type HEADERS
+      # Install rule
       #
-      foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET pods FILES ${_cmake_helpers_pod_input})
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET manpages FILES ${_cmake_helpers_pod2man_gzip_output})
-	#
-	# Add the generated files to the clean rule (not all generators support this)
-	#
-	cmake_helpers_call(set_property TARGET ${_cmake_helpers_library_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output})
-      endforeach()
+      install(FILES ${_cmake_helpers_pod2man_gzip_output} DESTINATION ${_cmake_helpers_library_install_mandir} COMPONENT Man)
+      #
+      # Remember we have man
+      #
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man_component TRUE)
+      #
+      # Add the generated files to the clean rule (not all generators support this)
+      #
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output})
     endif()
   endif()
   #
@@ -156,7 +153,7 @@ function(cmake_helpers_pod)
   endif()
   if(_cmake_helpers_pod_pod2html)
     #
-    # pod > html
+    # pod -> html
     #
     set(_cmake_helpers_pod2html_output "${CMAKE_CURRENT_BINARY_DIR}/html/${_cmake_helpers_pod_name}.html")
     cmake_helpers_call(add_custom_command
@@ -165,16 +162,17 @@ function(cmake_helpers_pod)
       DEPENDS ${_cmake_helpers_pod_input}
     )
     #
-    # We fake the html as beeing of type HEADERS
+    # Install rule
     #
-    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET pods FILES ${_cmake_helpers_pod_input})
-      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET htmls FILES ${_cmake_helpers_pod2html_output})
-      #
-      # Add the generated files to the clean rule (not all generators support this)
-      #
-      cmake_helpers_call(set_property TARGET ${_cmake_helpers_library_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2html_output})
-    endforeach()
+    install(FILES ${_cmake_helpers_pod2html_output} DESTINATION ${_cmake_helpers_library_install_htmldir} COMPONENT Html)
+    #
+    # Remember we have htlm
+    #
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html_component TRUE)
+    #
+    # Add the generated files to the clean rule (not all generators support this)
+    #
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2html_output})
   endif()
   #
   # End
