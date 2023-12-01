@@ -69,9 +69,7 @@ function(cmake_helpers_library name)
   )
   set(_multiValueArgs
     FIND_DEPENDENCIES
-    DEPENDS_PRIVATE
-    DEPENDS_PUBLIC
-    DEPENDS_INTERFACE
+    DEPENDS
     CONFIG_ARGS
     SOURCES
     SOURCES_AUTO
@@ -96,6 +94,10 @@ function(cmake_helpers_library name)
     PODS_ACCEPT_RELPATH_REGEXES
     PODS_REJECT_RELPATH_REGEXES
     PODS_RENAME_README_TO_NAMESPACE
+    #
+    # For generated files
+    MANS_PREFIX
+    HTMLS_PREFIX
   )
   #
   # Single-value arguments default values
@@ -151,9 +153,7 @@ function(cmake_helpers_library name)
   get_filename_component(_cmake_helpers_library_srcdir "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   set(_cmake_helpers_library_find_dependencies)
-  set(_cmake_helpers_library_depends_private)
-  set(_cmake_helpers_library_depends_public)
-  set(_cmake_helpers_library_depends_interface)
+  set(_cmake_helpers_library_depends)
   set(_cmake_helpers_library_config_args)
   set(_cmake_helpers_library_sources)
   set(_cmake_helpers_library_sources_auto                         TRUE)
@@ -167,23 +167,25 @@ function(cmake_helpers_library name)
   endif()
   set(_cmake_helpers_library_sources_globs                        *.c *.cpp *.cxx)
   set(_cmake_helpers_library_sources_accept_relpath_regexes)
-  set(_cmake_helpers_library_sources_reject_relpath_regexes       "/test")
+  set(_cmake_helpers_library_sources_reject_relpath_regexes       "/test/" "/3rdparty/" "^test/" "^3rdparty/")
 
   set(_cmake_helpers_library_headers)
   set(_cmake_helpers_library_headers_auto                         TRUE)
   set(_cmake_helpers_library_headers_prefix                       include)
   set(_cmake_helpers_library_headers_globs                        *.h *.hh *.hpp *.hxx)
   set(_cmake_helpers_library_headers_accept_relpath_regexes)
-  set(_cmake_helpers_library_headers_reject_relpath_regexes       "/test")
-  set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal" "/_" "^_")
+  set(_cmake_helpers_library_headers_reject_relpath_regexes       "/test/" "/3rdparty/" "^test/" "^3rdparty/")
+  set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal/" "/_" "^internal/" "^_")
   set(_cmake_helpers_library_pods_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR})
   set(_cmake_helpers_library_pods)
   set(_cmake_helpers_library_pods_auto                            TRUE)
   set(_cmake_helpers_library_pods_prefix                          pod)
   set(_cmake_helpers_library_pods_globs                           *.pod)
   set(_cmake_helpers_library_pods_accept_relpath_regexes)
-  set(_cmake_helpers_library_pods_reject_relpath_regexes          "/test")
+  set(_cmake_helpers_library_pods_reject_relpath_regexes          "/test/" "/3rdparty/" "^test/" "^3rdparty/")
   set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
+  set(_cmake_helpers_library_mans_prefix                          man)
+  set(_cmake_helpers_library_htmls_prefix                         html)
   #
   # Parse Arguments
   #
@@ -236,17 +238,18 @@ function(cmake_helpers_library name)
       "${_cmake_helpers_library_sources_prefix}"
       "${_cmake_helpers_library_sources_accept_relpath_regexes}"
       "${_cmake_helpers_library_sources_reject_relpath_regexes}"
-      _cmake_helpers_library_sources)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_sources ${_cmake_helpers_library_sources})
+      _cmake_helpers_library_sources
+      _cmake_helpers_library_relpath_sources)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_sources ${_cmake_helpers_library_sources})
   endif()
   #
   # Decide targets
   #
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library FALSE)
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library FALSE)
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_shared_library FALSE)
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_library FALSE)
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_object_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_shared_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_object_library FALSE)
   set(_cmake_helpers_library_valid_types)
   set(_cmake_helpers_library_export_header_target_from_type)
   if(_cmake_helpers_library_type_auto)
@@ -311,10 +314,10 @@ function(cmake_helpers_library name)
   foreach(_cmake_helpers_library_valid_type ${_cmake_helpers_library_valid_types})
     string(TOUPPER "${_cmake_helpers_library_valid_type}" _cmake_helpers_library_valid_type_toupper)
     list(APPEND _cmake_helpers_library_types ${_cmake_helpers_library_valid_type_toupper})
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_library_valid_type}_library TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_library_valid_type}_library TRUE)
     set(_cmake_helpers_library_type_${_cmake_helpers_library_valid_type_toupper}_name ${_cmake_helpers_library_target_name_${_cmake_helpers_library_valid_type}})
   endforeach()
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
   #
   # Create targets
   #
@@ -325,11 +328,30 @@ function(cmake_helpers_library name)
   endif()
   set(_cmake_helpers_library_targets)
   foreach(_cmake_helpers_library_type ${_cmake_helpers_library_types})
-    set(_cmake_helper_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
-    cmake_helpers_call(add_library ${_cmake_helper_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
-    list(APPEND _cmake_helpers_library_targets ${_cmake_helper_library_target})
+    set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
+    cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
+    list(APPEND _cmake_helpers_library_targets ${_cmake_helpers_library_target})
+    #
+    # FILE_SET's
+    #
+    cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
+    cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
+    cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET manpages BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/man TYPE HEADERS)
+    cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET htmls BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/html TYPE HEADERS)
+    cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET pods BASE_DIRS ${_cmake_helpers_library_pods_base_dirs} TYPE HEADERS)
+    #
+    # Source groups for generated files
+    #
+    cmake_helpers_call(source_group TREE ${CMAKE_CURRENT_BINARY_DIR}/man PREFIX ${_cmake_helpers_library_mans_prefix})
+    cmake_helpers_call(source_group TREE ${CMAKE_CURRENT_BINARY_DIR}/html PREFIX ${_cmake_helpers_library_htmls_prefix})
+    #
+    # Using the INTERFACE FILE_SET for manpages and html appended to INTERFACE_LINK_DIRECTORIES. We revisit explicitly INCLUDE_DIRECTORIES and INTERFACE_INCLUDE_DIRECTORIES.
+    #
+    cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_headers_base_dir}>)
+    cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_INTERFACE:${_cmake_helpers_library_headers_base_dir}>)
+    cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<INSTALL_INTERFACE:${_cmake_helpers_library_install_includedir}>)
   endforeach()
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_targets ${_cmake_helpers_library_targets})
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_targets ${_cmake_helpers_library_targets})
   #
   # Export header: invalid if this is an INTERFACE only library
   #
@@ -371,22 +393,29 @@ function(cmake_helpers_library name)
       "${_cmake_helpers_library_headers_prefix}"
       "${_cmake_helpers_library_headers_accept_relpath_regexes}"
       "${_cmake_helpers_library_headers_reject_relpath_regexes}"
-      _cmake_helpers_library_headers)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_headers ${_cmake_cmake_helpers_library_headers})
+      _cmake_helpers_library_headers
+      _cmake_helpers_library_relpath_headers)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_headers ${_cmake_cmake_helpers_library_headers})
   endif()
   #
   # Get private headers out of header files
   #
   set(_cmake_helpers_private_headers)
   set(_cmake_helpers_public_headers)
-  foreach(_cmake_helpers_library_header ${_cmake_helpers_library_headers})
-    cmake_helpers_match_regexes("${_cmake_helpers_library_header}" "${_cmake_helpers_library_private_headers_relpath_regexes}" FALSE _cmake_helpers_library_matched)
-    if(_cmake_helpers_library_matched)
-      list(APPEND _cmake_helpers_private_headers ${_cmake_helpers_library_header})
-    else()
-      list(APPEND _cmake_helpers_public_headers ${_cmake_helpers_library_header})
-    endif()
-  endforeach()
+  list(LENGTH _cmake_helpers_library_headers _cmake_helpers_library_headers_length)
+  if(_cmake_helpers_library_headers_length GREATER 0)
+    math(EXPR _cmake_helpers_library_headers_i_max "${_cmake_helpers_library_headers_length} - 1")
+    foreach(_i RANGE 0 ${_cmake_helpers_library_headers_i_max})
+      list(GET _cmake_helpers_library_headers ${_i} _cmake_helpers_library_header)
+      list(GET _cmake_helpers_library_relpath_headers ${_i} _cmake_helpers_library_relpath_header)
+      cmake_helpers_match_regexes("${_cmake_helpers_library_relpath_header}" "${_cmake_helpers_library_private_headers_relpath_regexes}" FALSE _cmake_helpers_library_matched)
+      if(_cmake_helpers_library_matched)
+	list(APPEND _cmake_helpers_private_headers ${_cmake_helpers_library_header})
+      else()
+	list(APPEND _cmake_helpers_public_headers ${_cmake_helpers_library_header})
+      endif()
+    endforeach()
+  endif()
   if(CMAKE_HELPERS_DEBUG)
     foreach(_cmake_helpers_header_type public private)
       message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_header_type} headers:")
@@ -411,8 +440,9 @@ function(cmake_helpers_library name)
       "${_cmake_helpers_library_pods_prefix}"
       "${_cmake_helpers_library_pods_accept_relpath_regexes}"
       "${_cmake_helpers_library_pods_reject_relpath_regexes}"
-      _cmake_helpers_library_pods)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_pods ${_cmake_cmake_helpers_library_pods})
+      _cmake_helpers_library_pods
+      _cmake_helpers_library_relpath_pods)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_pods ${_cmake_cmake_helpers_library_pods})
   endif()
   if(_cmake_helpers_library_pods)
     foreach(_cmake_helpers_library_pod ${_cmake_helpers_library_pods})
@@ -450,23 +480,13 @@ function(cmake_helpers_library name)
       message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
     endif()
     #
-    # Assign headers to file sets
-    # (INTERFACE case needs a file set to work properly)
+    # We prepare the file sets: public_headers, private_headers, manpages, html
     #
-    if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-      if(_cmake_helpers_public_headers)
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} INTERFACE FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
-      endif()
-      if(_cmake_helpers_private_headers)
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} INTERFACE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
-      endif()
-    else()
-      if(_cmake_helpers_public_headers)
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_public_headers})
-      endif()
-      if(_cmake_helpers_private_headers)
-	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS FILES ${_cmake_helpers_private_headers})
-      endif()
+    if(_cmake_helpers_public_headers)
+      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers FILES ${_cmake_helpers_public_headers})
+    endif()
+    if(_cmake_helpers_private_headers)
+      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers FILES ${_cmake_helpers_private_headers})
     endif()
     #
     # Compile definitions
@@ -562,19 +582,6 @@ function(cmake_helpers_library name)
         #
       endif()
     endif()
-    if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-      foreach(_cmake_helpers_library_include_dir ${_cmake_helpers_library_headers_base_dirs})
-        cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
-        cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} INTERFACE $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
-      endforeach()
-      cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} INTERFACE $<INSTALL_INTERFACE:${_cmake_helpers_library_install_includedir}>)
-    else()
-      foreach(_cmake_helpers_library_include_dir ${_cmake_helpers_library_headers_base_dirs})
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_include_dir}>)
-	cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<BUILD_INTERFACE:${_cmake_helpers_library_include_dir}>)
-      endforeach()
-      cmake_helpers_call(target_include_directories ${_cmake_helpers_library_target} PUBLIC $<INSTALL_INTERFACE:${_cmake_helpers_library_install_includedir}>)
-    endif()
   endforeach()
   #
   # Install rules
@@ -587,7 +594,7 @@ function(cmake_helpers_library name)
   if(_cmake_helpers_public_headers)
     set(_file_set_args FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header)
     set(_cmake_helpers_have_header_component TRUE)
-    set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component ${_cmake_helpers_have_header_component})
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component ${_cmake_helpers_have_header_component})
   else()
     set(_cmake_helpers_have_header_component FALSE)
   endif()
@@ -604,15 +611,17 @@ function(cmake_helpers_library name)
       list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
     endif()
   endforeach()
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_install_targets ${_cmake_helpers_library_install_targets})
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_install_targets ${_cmake_helpers_library_install_targets})
   if(_cmake_helpers_library_install_targets)
     cmake_helpers_call(install
-      TARGETS       ${_cmake_helpers_library_install_targets}
-      EXPORT        ${_cmake_helpers_library_namespace}DevelopmentTargets
-      RUNTIME       DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library
-      LIBRARY       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
-      ARCHIVE       DESTINATION ${_cmake_helpers_library_install_libdir} COMPONENT Library
-      ${_file_set_args}
+      TARGETS                 ${_cmake_helpers_library_install_targets}
+      EXPORT                  ${_cmake_helpers_library_namespace}DevelopmentTargets
+      RUNTIME                 DESTINATION ${_cmake_helpers_library_install_bindir}                                  COMPONENT Library
+      LIBRARY                 DESTINATION ${_cmake_helpers_library_install_libdir}                                  COMPONENT Library
+      ARCHIVE                 DESTINATION ${_cmake_helpers_library_install_libdir}                                  COMPONENT Library
+      FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir}                              COMPONENT Header
+      FILE_SET htmls          DESTINATION ${_cmake_helpers_library_install_htmldir}                                 COMPONENT Html
+      FILE_SET manpages       DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Man
     )
   endif()
 
@@ -1021,7 +1030,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   #
   set(_cmake_helpers_library_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${_cmake_helpers_library_namespace}.cmake)
   file(WRITE ${_cmake_helpers_library_cpack_pre_build_script} "# Content of this file is overwriten during install or package phase")
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_cpack_pre_build_script ${_cmake_helpers_library_cpack_pre_build_script})
   #
   # Apply dependencies
   #
@@ -1030,14 +1039,16 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     message(STATUS "[${_cmake_helpers_logprefix}] Applying dependencies")
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
-  foreach(_cmake_helpers_library_depend_type private public interface)
-    if(_cmake_helpers_library_depends_${_cmake_helpers_library_depend_type})
-      string(TOUPPER "${_cmake_helpers_library_depend_type}" _cmake_helpers_library_depend_type_toupper)
-      foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_type_toupper} ${_cmake_helpers_library_depends_${_cmake_helpers_library_depend_type}})
-      endforeach()
-    endif()
-  endforeach()
+  if(_cmake_helpers_library_depends)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+      if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE ${_cmake_helpers_library_depends})
+      else()
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_depends})
+      endif()
+    endforeach()
+  endif()
   #
   # The the boolean saying we have a library component
   #
@@ -1046,7 +1057,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   else()
     set(_cmake_helpers_have_library_component FALSE)
   endif()
-  set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component ${_cmake_helpers_have_library_component})
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component ${_cmake_helpers_have_library_component})
   #
   # Send-out the targets
   #
@@ -1063,8 +1074,9 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
   endif()
 endfunction()
 
-function(_cmake_helpers_files_find type base_dirs globs prefix accept_regexes reject_regexes output_var)
+function(_cmake_helpers_files_find type base_dirs globs prefix accept_relpath_regexes reject_relpath_regexes output_var relpath_output_var)
   set(_cmake_helpers_library_all_files)
+  set(_cmake_helpers_library_all_relfiles)
   foreach(_base_dir ${base_dirs})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ... base dir ${_base_dir}")
@@ -1076,12 +1088,14 @@ function(_cmake_helpers_files_find type base_dirs globs prefix accept_regexes re
       endif()
       file(GLOB_RECURSE _files LIST_DIRECTORIES false ${_base_dir}/${_glob})
       foreach(_file ${_files})
-	cmake_helpers_match_accept_reject_regexes(${_file} "${accept_regexes}" "${reject_regexes}" _cmake_helpers_library_matched)
+	cmake_path(RELATIVE_PATH _file BASE_DIRECTORY ${_base_dir} OUTPUT_VARIABLE _relfile)
+	cmake_helpers_match_accept_reject_regexes(${_relfile} "${accept_relpath_regexes}" "${reject_relpath_regexes}" _cmake_helpers_library_matched)
 	if(_cmake_helpers_library_matched)
 	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[${_cmake_helpers_logprefix}] ... ... ... file ${_file}")
+	    message(STATUS "[${_cmake_helpers_logprefix}] ... ... ... relfile ${_relfile}")
 	  endif()
 	  list(APPEND _base_dir_files ${_file})
+	  list(APPEND _cmake_helpers_library_all_relfiles ${_relfile})
 	endif()
       endforeach()
     endforeach()
@@ -1091,4 +1105,5 @@ function(_cmake_helpers_files_find type base_dirs globs prefix accept_regexes re
     endif()
   endforeach()
   set(${output_var} ${_cmake_helpers_library_all_files} PARENT_SCOPE)
+  set(${relpath_output_var} ${_cmake_helpers_library_all_relfiles} PARENT_SCOPE)
 endfunction()

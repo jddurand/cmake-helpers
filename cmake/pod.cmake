@@ -91,98 +91,50 @@ function(cmake_helpers_pod)
     endif()
     if(_cmake_helpers_pod_gzip OR _cmake_helpers_pod_7z)
       #
-      # Create tuples of custom command/targets.
-      # Doing so automaticalled flaggs output files as GENERATED and add them to the clean target.
-      #
-      # pod > man
-      # Dependency is on the pod file
+      # pod > man > man.gz
       #
       if(_cmake_helpers_pod_man_prepend)
-	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       else()
-	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+	set(_cmake_helpers_pod2man_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      endif()
+      if(_cmake_helpers_pod_man_prepend)
+	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
+      else()
+	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/man/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
       endif()
       string(TOUPPER "${_cmake_helpers_pod_name}" _cmake_helpers_pod_name_toupper)
-      cmake_helpers_call(add_custom_command
-	OUTPUT ${_cmake_helpers_pod2man_output}
-	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} --release ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name_toupper} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
-	DEPENDS ${_cmake_helpers_pod_input}
-      )
-      set(_cmake_helpers_pod2man_target cmake_helpers_pod2man_${_cmake_helpers_pod_name})
-      cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2man_target} ALL DEPENDS ${_cmake_helpers_pod2man_output})
       #
       # man > man.gz
-      # Dependency is on the pod > man target
       #
-      if(_cmake_helpers_pod_man_prepend)
-	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_man_prepend}${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
-      else()
-	set(_cmake_helpers_pod2man_gzip_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}.gz")
-      endif()
       if(_cmake_helpers_pod_gzip)
 	cmake_helpers_call(add_custom_command
 	  OUTPUT ${_cmake_helpers_pod2man_gzip_output}
+	  COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} --release ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name_toupper} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
 	  COMMAND ${_cmake_helpers_pod_gzip} -c ${_cmake_helpers_pod2man_output} > ${_cmake_helpers_pod2man_gzip_output}
-	  DEPENDS ${_cmake_helpers_pod2man_target}
+	  DEPENDS ${_cmake_helpers_pod_input}
 	)
       elseif(_cmake_helpers_pod_7z)
 	cmake_helpers_call(add_custom_command
 	  OUTPUT ${_cmake_helpers_pod2man_gzip_output}
+	  COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} --release ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name_toupper} ${_cmake_helpers_pod_input} > ${_cmake_helpers_pod2man_output}
 	  COMMAND ${_cmake_helpers_pod_7z} a -tgzip ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output}
-	  DEPENDS ${_cmake_helpers_pod2man_target}
+	  DEPENDS ${_cmake_helpers_pod_input}
 	)
       else()
 	message(FATAL_ERROR "No gzip nor 7z")
       endif()
-      set(_cmake_helpers_pod2man_gzip_target cmake_helpers_pod2man_${_cmake_helpers_pod_name}_gz)
-      cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2man_gzip_target} ALL DEPENDS ${_cmake_helpers_pod2man_gzip_output})
       #
-      # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
-      #
-      set(_cmake_helpers_pod2man_iface_target cmake_helpers_pod2man_${_cmake_helpers_pod_name}_iface)
-      cmake_helpers_call(add_library ${_cmake_helpers_pod2man_iface_target} INTERFACE)
-      #
-      # Add generated files as dependencies to the target. This will make them candidates for clean automatically.
-      #
-      cmake_helpers_call(add_dependencies ${_cmake_helpers_pod2man_iface_target} ${_cmake_helpers_pod2man_gzip_target})
-      #
-      # Add this iface as a dependency to all library targets so that it is always triggered
+      # We fake the gz as beeing of type HEADERS
       #
       foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-	cmake_helpers_call(add_dependencies ${_cmake_helpers_library_target} ${_cmake_helpers_pod2man_iface_target})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET pods FILES ${_cmake_helpers_pod_input})
+	cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET manpages FILES ${_cmake_helpers_pod2man_gzip_output})
+	#
+	# Add the generated files to the clean rule (not all generators support this)
+	#
+	cmake_helpers_call(set_property TARGET ${_cmake_helpers_library_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output})
       endforeach()
-      #
-      # Add the generated files to the clean rule (not all generators support this)
-      #
-      cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod2man_iface_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2man_gzip_output} ${_cmake_helpers_pod2man_output})
-      #
-      # We fake the gzip as beeing of type HEADERS
-      #
-      cmake_helpers_call(target_sources ${_cmake_helpers_pod2man_iface_target} INTERFACE FILE_SET manpage BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_pod2man_gzip_output})
-      #
-      # Target install
-      #
-      cmake_helpers_call(install
-	TARGETS  ${_cmake_helpers_pod2man_iface_target}
-	EXPORT   ${_cmake_helpers_library_namespace}DocumentationTargets
-	FILE_SET manpage DESTINATION ${_cmake_helpers_library_install_mandir}/man${_cmake_helpers_pod_section} COMPONENT Man
-      )
-      #
-      # Set the property _cmake_helpers_have_man_component
-      #
-      if(NOT _cmake_helpers_have_man_component)
-	#
-	# Export install
-	#
-	cmake_helpers_call(install
-	  EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
-	  NAMESPACE ${_cmake_helpers_library_namespace}::
-	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
-	  COMPONENT Man
-	)
-	set(_cmake_helpers_have_man_component TRUE)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man_component ${_cmake_helpers_have_man_component})
-      endif()
     endif()
   endif()
   #
@@ -204,67 +156,25 @@ function(cmake_helpers_pod)
   endif()
   if(_cmake_helpers_pod_pod2html)
     #
-    # Create tuples of custom command/targets.
-    # Doing so automaticalled flaggs output files as GENERATED and add them to the clean target.
-    #
     # pod > html
-    # Dependency is on the pod file
     #
-    set(_cmake_helpers_pod2html_output "${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod_name}.html")
+    set(_cmake_helpers_pod2html_output "${CMAKE_CURRENT_BINARY_DIR}/html/${_cmake_helpers_pod_name}.html")
     cmake_helpers_call(add_custom_command
       OUTPUT ${_cmake_helpers_pod2html_output}
       COMMAND ${_cmake_helpers_pod_pod2html} --infile ${_cmake_helpers_pod_input} --outfile ${_cmake_helpers_pod2html_output}
       DEPENDS ${_cmake_helpers_pod_input}
     )
-    set(_cmake_helpers_pod2html_target cmake_helpers_pod2html_${_cmake_helpers_pod_name})
-    cmake_helpers_call(add_custom_target ${_cmake_helpers_pod2html_target} ALL DEPENDS ${_cmake_helpers_pod2html_output})
-    #
-    # In order to have EXPORT mechanism working we need something that supports this keyword, an INTERFACE library will do it
-    #
-    set(_cmake_helpers_pod2html_iface_target cmake_helpers_pod2html_${_cmake_helpers_pod_name}_iface)
-    cmake_helpers_call(add_library ${_cmake_helpers_pod2html_iface_target} INTERFACE)
-    #
-    # Add generated files as dependencies to the target. This will make them candidates for clean automatically.
-    #
-    cmake_helpers_call(add_dependencies ${_cmake_helpers_pod2html_iface_target} ${_cmake_helpers_pod2html_target})
-    #
-    # Add this iface as a dependency to all library targets so that it is always triggered
-    #
-    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
-      cmake_helpers_call(add_dependencies ${_cmake_helpers_library_target} ${_cmake_helpers_pod2html_iface_target})
-    endforeach()
-    #
-    # Add the generated files to the clean rule (not all generators support this)
-    #
-    cmake_helpers_call(set_property TARGET ${_cmake_helpers_pod2html_iface_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2html_output})
     #
     # We fake the html as beeing of type HEADERS
     #
-    cmake_helpers_call(target_sources ${_cmake_helpers_pod2html_iface_target} INTERFACE FILE_SET html BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR} TYPE HEADERS FILES ${_cmake_helpers_pod2html_output})
-    #
-    # Target install
-    #
-    cmake_helpers_call(install
-      TARGETS  ${_cmake_helpers_pod2html_iface_target}
-      EXPORT   ${_cmake_helpers_library_namespace}DocumentationTargets
-      FILE_SET html DESTINATION ${_cmake_helpers_library_install_htmldir} COMPONENT Html
-    )
-    #
-    # Set the property _cmake_helpers_have_html_component
-    #
-    if(NOT _cmake_helpers_have_html_component)
+    foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
+      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET pods FILES ${_cmake_helpers_pod_input})
+      cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET htmls FILES ${_cmake_helpers_pod2html_output})
       #
-      # Export install
+      # Add the generated files to the clean rule (not all generators support this)
       #
-      cmake_helpers_call(install
-	EXPORT ${_cmake_helpers_library_namespace}DocumentationTargets
-	NAMESPACE ${_cmake_helpers_library_namespace}::
-	DESTINATION ${_cmake_helpers_library_install_cmakedir}
-	COMPONENT Html
-      )
-      set(_cmake_helpers_have_html_component TRUE)
-      set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html_component ${_cmake_helpers_have_html_component})
-    endif()
+      cmake_helpers_call(set_property TARGET ${_cmake_helpers_library_target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${_cmake_helpers_pod2html_output})
+    endforeach()
   endif()
   #
   # End
