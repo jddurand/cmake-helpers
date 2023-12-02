@@ -74,7 +74,6 @@ function(cmake_helpers_depend depname)
   if(_cmake_helpers_depend_external_project_args)
     #
     # FetchContent sequence
-    # I do not know why but EXCLUDE_FROM_ALL does not work me. I have to go manually with add_subdirectory
     #
     cmake_helpers_call(include FetchContent)
     cmake_helpers_call(FetchContent_Declare ${depname}
@@ -85,11 +84,12 @@ function(cmake_helpers_depend depname)
     string(TOLOWER "${depname}" _depname_tolower)
     if(NOT ${_depname_tolower}_POPULATED)
       cmake_helpers_call(FetchContent_Populate ${depname})
-      cmake_helpers_call(add_subdirectory
-	${${_depname_tolower}_SOURCE_DIR}
-	${${_depname_tolower}_BINARY_DIR}
-	EXCLUDE_FROM_ALL
-      )
+    endif()
+    if(NOT ${_depname_tolower}_POPULATED)
+      #
+      # This should not happen
+      #
+      message(FATAL_ERROR "Failed to populate ${depname}")
     endif()
     #
     # We voluntarily do not use FetchContent_MakeAvailable : we want to do as if the dependency
@@ -115,7 +115,10 @@ function(cmake_helpers_depend depname)
     #
     # Re-execute find_package, using original arguments (regardless if they already contain QUIET)
     #
-    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
+    block()
+      set(${depname}_ROOT ${CMAKE_CURRENT_BINARY_DIR}/_install)
+      cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
+    endblock()
   endif()
   #
   # If there is no QUIET and dependency is not found, raise a fatal error
