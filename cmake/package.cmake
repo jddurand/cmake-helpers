@@ -100,26 +100,26 @@ function(cmake_helpers_package)
     list(APPEND _cmake_helpers_package_library_display_names "Object")
   endif()
   list(LENGTH _cmake_helpers_package_library_display_names _cmake_helpers_package_library_display_names_length)
-  if(_cmake_helpers_library_headers_length EQUAL 1)
+  message(STATUS "Number of libraries: ${_cmake_helpers_package_library_display_names_length}")
+  if(_cmake_helpers_package_library_display_names_length EQUAL 1)
     #
     # Only one library
     #
     set(_cmake_helpers_package_library_description "${_cmake_helpers_package_library_display_names} library")
-  elseif(_cmake_helpers_library_headers_length GREATER 1)
+  elseif(_cmake_helpers_package_library_display_names_length GREATER 1)
     #
     # More than one library
     #
     list(GET _cmake_helpers_package_library_display_names -1 _cmake_helpers_package_library_display_name_last)
-    list(REMOVE_ITEM _cmake_helpers_package_library_display_names -1)
+    list(REMOVE_AT _cmake_helpers_package_library_display_names -1)
     list(JOIN _cmake_helpers_package_library_display_names ", " _cmake_helpers_package_library_description)
-    set(_cmake_helpers_package_library_description " and ${_cmake_helpers_package_library_display_name_last} libraries")
+    set(_cmake_helpers_package_library_description "${_cmake_helpers_package_library_description} and ${_cmake_helpers_package_library_display_name_last} libraries")
   else()
     #
     # No library
     #
     set(_cmake_helpers_package_library_description "")
   endif()
-  list(JOIN _cmake_helpers_package_library_display_names ", " _cmake_helpers_package_library_description)
   set(_cmake_helpers_package_header_display_name               "Headers")
   set(_cmake_helpers_package_header_description                "C/C++ Header files")
   set(_cmake_helpers_package_man_display_name                  "Man")
