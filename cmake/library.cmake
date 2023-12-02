@@ -142,7 +142,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_install_libdir                       ${CMAKE_INSTALL_LIBDIR})
   set(_cmake_helpers_library_install_mandir                       ${CMAKE_INSTALL_MANDIR})
   set(_cmake_helpers_library_install_htmldir                      ${_cmake_helpers_library_install_docdir}/html)
-  set(_cmake_helpers_library_install_cmakedir                     ${_cmake_helpers_library_install_libdir}/cmake/${_cmake_helpers_library_namespace})
+  set(_cmake_helpers_library_install_cmakedir                     ${_cmake_helpers_library_install_libdir}/cmake)
   set(_cmake_helpers_library_install_pkgconfigdir                 ${_cmake_helpers_library_install_libdir}/pkgconfig)
   #
   # Multiple-value arguments default values
@@ -240,11 +240,11 @@ function(cmake_helpers_library name)
   #
   # Decide targets
   #
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_library FALSE)
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_library FALSE)
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_shared_library FALSE)
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_library FALSE)
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_object_library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_interface_${_cmake_helpers_library_namespace}library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_static_${_cmake_helpers_library_namespace}library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_shared_${_cmake_helpers_library_namespace}library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_module_${_cmake_helpers_library_namespace}library FALSE)
+  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_object_${_cmake_helpers_library_namespace}library FALSE)
   set(_cmake_helpers_library_valid_types)
   set(_cmake_helpers_library_export_header_target_from_type)
   if(_cmake_helpers_library_type_auto)
@@ -309,7 +309,7 @@ function(cmake_helpers_library name)
   foreach(_cmake_helpers_library_valid_type ${_cmake_helpers_library_valid_types})
     string(TOUPPER "${_cmake_helpers_library_valid_type}" _cmake_helpers_library_valid_type_toupper)
     list(APPEND _cmake_helpers_library_types ${_cmake_helpers_library_valid_type_toupper})
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_library_valid_type}_library TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_library_valid_type}_${_cmake_helpers_library_namespace}library TRUE)
     set(_cmake_helpers_library_type_${_cmake_helpers_library_valid_type_toupper}_name ${_cmake_helpers_library_target_name_${_cmake_helpers_library_valid_type}})
   endforeach()
   cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_types ${_cmake_helpers_library_types})
@@ -561,7 +561,7 @@ function(cmake_helpers_library name)
       elseif((_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY"))
         set(_cmake_helpers_library_target_pdb_file $<TARGET_PDB_FILE:${_cmake_helpers_library_target}>)
         if(_cmake_helpers_library_target_pdb_file)
-	  cmake_helpers_call(install FILES ${_cmake_helpers_library_target_pdb_file} DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT Library OPTIONAL)
+	  cmake_helpers_call(install FILES ${_cmake_helpers_library_target_pdb_file} DESTINATION ${_cmake_helpers_library_install_bindir} COMPONENT ${_cmake_helpers_library_namespace}Library OPTIONAL)
         endif()
       else()
         #
@@ -611,12 +611,12 @@ function(cmake_helpers_library name)
     #
     # Remember we have a Library component
     #
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_${_cmake_helpers_library_namespace}component TRUE)
     #
     # Remember if we have a Header component
     #
     if(_cmake_helpers_public_headers)
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component TRUE)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_${_cmake_helpers_library_namespace}component TRUE)
     endif()
     #
     # Install and export in ${_cmake_helpers_library_export_cmake_name}
@@ -624,10 +624,10 @@ function(cmake_helpers_library name)
     cmake_helpers_call(install
       TARGETS                 ${_cmake_helpers_library_install_targets}
       EXPORT                  ${_cmake_helpers_library_export_cmake_name}
-      RUNTIME                 DESTINATION ${_cmake_helpers_library_install_bindir}     COMPONENT Library
-      LIBRARY                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
-      ARCHIVE                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT Library
-      FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT Header
+      RUNTIME                 DESTINATION ${_cmake_helpers_library_install_bindir}     COMPONENT ${_cmake_helpers_library_namespace}Library
+      LIBRARY                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT ${_cmake_helpers_library_namespace}Library
+      ARCHIVE                 DESTINATION ${_cmake_helpers_library_install_libdir}     COMPONENT ${_cmake_helpers_library_namespace}Library
+      FILE_SET public_headers DESTINATION ${_cmake_helpers_library_install_includedir} COMPONENT ${_cmake_helpers_library_namespace}Header
     )
   endif()
   #
@@ -647,8 +647,10 @@ foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
   # _find_depend is splitted using the space
   #
   separate_arguments(_args UNIX_COMMAND \"\${_find_depend}\")
+  message(STATUS \"${_cmake_helpers_library_namespace}: find_dependency(\${_args})\")
   find_dependency(\${_args})
 endforeach()
+message(STATUS \"${_cmake_helpers_library_namespace}: Continuing..\")
 
 #
 # Take care, when find_package requires a component, this is an export set from packager point of view
@@ -663,8 +665,10 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
     endif()
     set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
     if(EXISTS \${_include})
+      message(STATUS \"${_cmake_helpers_library_namespace}: include(\${_include})\")
       include(\${_include})
     else()
+      message(STATUS \"${_cmake_helpers_library_namespace}: \${_include} does not exist\")
       set(${_cmake_helpers_library_namespace}_FOUND False)
       set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE \"Component not available: \${_comp}\")
       break()
@@ -672,9 +676,12 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
   endforeach()
 else()
   foreach(_comp \${_${_cmake_helpers_library_namespace}_supported_components})
-    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_targets}.cmake\")
+    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
     if(EXISTS \${_include})
+      message(STATUS \"${_cmake_helpers_library_namespace}: include(\${_include})\")
       include(\${_include})
+    else()
+      message(STATUS \"${_cmake_helpers_library_namespace}: \${_include} does not exist\")
     endif()
   endforeach()
 endif()
@@ -683,7 +690,7 @@ endif()
     EXPORT ${_cmake_helpers_library_export_cmake_name}
     NAMESPACE ${_cmake_helpers_library_namespace}::
     DESTINATION ${_cmake_helpers_library_install_cmakedir}
-    COMPONENT Library)
+    COMPONENT ${_cmake_helpers_library_namespace}Library)
   include(CMakePackageConfigHelpers)
   cmake_helpers_call(configure_package_config_file ${_export_cmake_config_in} ${_export_cmake_config_out}
     INSTALL_DESTINATION ${_cmake_helpers_library_install_cmakedir}
@@ -700,7 +707,7 @@ endif()
   cmake_helpers_call(install
     FILES ${_export_cmake_config_out} ${_export_cmake_configversion_out}
     DESTINATION ${_cmake_helpers_library_install_cmakedir}
-    COMPONENT Library
+    COMPONENT ${_cmake_helpers_library_namespace}Library
   )
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
@@ -716,7 +723,7 @@ endif()
       message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
     endif()
     file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_pkgconfigdir} COMPONENT Library)
+    cmake_helpers_call(install FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH} DESTINATION ${_cmake_helpers_library_install_pkgconfigdir} COMPONENT ${_cmake_helpers_library_namespace}Library)
   endforeach()
   #
   # It is important to intall the pkgconfig hooks after the install rule, because withing a directory
@@ -981,7 +988,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       set(_destination "${_destination_absolute}")
     endif()
 ]])
-  install(CODE ${_hook} COMPONENT Library)
+  install(CODE ${_hook} COMPONENT ${_cmake_helpers_library_namespace}Library)
   install(CODE "
 
     set(CPACK_IS_RUNNING \$ENV{CPACK_IS_RUNNING})
@@ -999,7 +1006,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
       execute_process(COMMAND \"${CMAKE_COMMAND}\" -G \"${CMAKE_GENERATOR}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -P \"${FIRE_POST_INSTALL_CMAKE_PATH}\" WORKING_DIRECTORY \"\${_destination}\")
     endif()
 "
-    COMPONENT Library
+    COMPONENT ${_cmake_helpers_library_namespace}Library
   )
   #
   # CPack specific pre-build script

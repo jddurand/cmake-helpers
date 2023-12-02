@@ -120,7 +120,7 @@ function(cmake_helpers_pod)
 	${_cmake_helpers_library_namespace}::               # namespace
 	${_cmake_helpers_library_install_mandir}            # destination
 	${_cmake_helpers_library_install_cmakedir}          # exportDestination
-	Man                                                 # component
+	${_cmake_helpers_library_namespace}Man              # component
 	_cmake_helpers_pod2man_gzip_output_target           # target_outvar
 	
 	COMMAND ${CMAKE_COMMAND} -E rm -f ${_cmake_helpers_pod2man_output}
@@ -138,7 +138,7 @@ function(cmake_helpers_pod)
       #
       # Remember we have man
       #
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man_component TRUE)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_man_${_cmake_helpers_library_namespace}component TRUE)
       #
       # Add the generated files to the clean rule (not all generators support this)
       #
@@ -177,7 +177,7 @@ function(cmake_helpers_pod)
       ${_cmake_helpers_library_namespace}::               # namespace
       ${_cmake_helpers_library_install_htmldir}           # destination
       ${_cmake_helpers_library_install_cmakedir}          # exportDestination
-      Html                                                # component
+      ${_cmake_helpers_library_namespace}Html             # component
       _cmake_helpers_pod2html_output_target               # target_outvar
 
       COMMAND ${CMAKE_COMMAND} -E rm -f ${_cmake_helpers_pod2html_output}
@@ -194,7 +194,7 @@ function(cmake_helpers_pod)
     #
     # Remember we have html
     #
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html_component TRUE)
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_html_${_cmake_helpers_library_namespace}component TRUE)
     #
     # Add the generated files to the clean rule (not all generators support this)
     #
