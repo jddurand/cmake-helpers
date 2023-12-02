@@ -650,6 +650,9 @@ foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
   find_dependency(\${_args})
 endforeach()
 
+#
+# Take care, when find_package requires a component, this is an export set from packager point of view
+#
 set(_${_cmake_helpers_library_namespace}_supported_components Development Application Documentation)
 
 if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
