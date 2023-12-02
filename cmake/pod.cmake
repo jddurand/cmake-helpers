@@ -15,7 +15,8 @@ function(cmake_helpers_pod)
       namespace
       version
       install_mandir
-      install_htmldir)
+      install_htmldir
+      install_cmakedir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
@@ -31,6 +32,7 @@ function(cmake_helpers_pod)
     SECTION
     VERSION
     TARGET
+    EXPORT_CMAKE_NAME
   )
   set(_multiValueArgs)
   #
@@ -41,6 +43,7 @@ function(cmake_helpers_pod)
   set(_cmake_helpers_pod_section)
   set(_cmake_helpers_pod_version "${_cmake_helpers_library_}")
   set(_cmake_helpers_pod_target "POD")
+  set(_cmake_helpers_pod_export_cmake_name ${_cmake_helpers_library_namespace}DocumentationTargets)
   #
   # Parse Arguments
   #
@@ -97,7 +100,10 @@ function(cmake_helpers_pod)
       #
       # pod -> man${section} -> man${section}.gz custom target
       #
-      set(_cmake_helpers_pod2man_output "man/${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
+      if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/man)
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man)
+      endif()
+      set(_cmake_helpers_pod2man_output "${_cmake_helpers_pod_name}.${_cmake_helpers_pod_section}")
       string(TOUPPER "${_cmake_helpers_pod_name}" _cmake_helpers_pod_name_toupper)
       set(_cmake_helpers_pod2man_gzip_output "${_cmake_helpers_pod2man_output}.gz")
       if(_cmake_helpers_pod_gzip)
@@ -107,12 +113,20 @@ function(cmake_helpers_pod)
       else()
 	message(FATAL_ERROR "No gzip nor 7z")
       endif()
-      cmake_helpers_output_to_target(${_cmake_helpers_pod2man_gzip_output} _cmake_helpers_pod2man_gzip_output_target
+      cmake_helpers_output_to_target(
+	${CMAKE_CURRENT_BINARY_DIR}/man                     # workingDirectory
+	${_cmake_helpers_pod2man_gzip_output}               # output
+	${_cmake_helpers_pod_export_cmake_name}             # export
+	${_cmake_helpers_library_namespace}::               # namespace
+	${_cmake_helpers_library_install_mandir}            # destination
+	${_cmake_helpers_library_install_cmakedir}          # exportDestination
+	Man                                                 # component
+	_cmake_helpers_pod2man_gzip_output_target           # target_outvar
+	
 	COMMAND ${CMAKE_COMMAND} -E rm -f ${_cmake_helpers_pod2man_output}
 	COMMAND ${_cmake_helpers_pod_pod2man} --section ${_cmake_helpers_pod_section} --center ${_cmake_helpers_library_namespace} --release ${_cmake_helpers_library_version} --stderr --name ${_cmake_helpers_pod_name_toupper} ${_cmake_helpers_pod_input} ${_cmake_helpers_pod2man_output}
 	COMMAND ${CMAKE_COMMAND} -E rm -f ${_cmake_helpers_pod2man_gzip_output}
 	COMMAND ${_cmake_helpers_pod_gzip_command}
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	DEPENDS ${_cmake_helpers_pod_input}
 	VERBATIM
 	USES_TERMINAL
@@ -121,10 +135,6 @@ function(cmake_helpers_pod)
       # Dependency pod custom target <- man${section}.gz custom target
       #
       cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_target} ${_cmake_helpers_pod2man_gzip_output_target})
-      #
-      # File install rule
-      #
-      cmake_helpers_call(install FILES ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod2man_gzip_output} DESTINATION ${_cmake_helpers_library_install_mandir} COMPONENT Man)
       #
       # Remember we have man
       #
@@ -156,12 +166,23 @@ function(cmake_helpers_pod)
     #
     # pod -> html custom target
     #
-    set(_cmake_helpers_pod2html_output "html/${_cmake_helpers_pod_name}.html")
-    cmake_helpers_output_to_target(${_cmake_helpers_pod2html_output} _cmake_helpers_pod2html_output_target
+    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/html)
+      file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html)
+    endif()
+    set(_cmake_helpers_pod2html_output "${_cmake_helpers_pod_name}.html")
+    cmake_helpers_output_to_target(
+      ${CMAKE_CURRENT_BINARY_DIR}/html                    # workingDirectory
+      ${_cmake_helpers_pod2html_output}                   # output
+      ${_cmake_helpers_pod_export_cmake_name}             # export
+      ${_cmake_helpers_library_namespace}::               # namespace
+      ${_cmake_helpers_library_install_htmldir}           # destination
+      ${_cmake_helpers_library_install_cmakedir}          # exportDestination
+      Html                                                # component
+      _cmake_helpers_pod2html_output_target               # target_outvar
+
       COMMAND ${CMAKE_COMMAND} -E rm -f ${_cmake_helpers_pod2html_output}
       COMMAND ${_cmake_helpers_pod_pod2html} --infile ${_cmake_helpers_pod_input} --outfile ${_cmake_helpers_pod2html_output}
       COMMENT "Generating ${_cmake_helpers_pod2html_output}"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       DEPENDS ${_cmake_helpers_pod_input}
       VERBATIM
       USES_TERMINAL
@@ -170,10 +191,6 @@ function(cmake_helpers_pod)
     # Dependency pod custom target <- html custom target
     #
     cmake_helpers_call(add_dependencies ${_cmake_helpers_pod_target} ${_cmake_helpers_pod2html_output_target})
-    #
-    # File install rule
-    #
-    cmake_helpers_call(install FILES ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_pod2html_output} DESTINATION ${_cmake_helpers_library_install_htmldir} COMPONENT Html)
     #
     # Remember we have html
     #

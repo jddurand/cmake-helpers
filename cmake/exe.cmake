@@ -20,10 +20,7 @@ function(cmake_helpers_exe name)
   foreach(_variable
       namespace
       targets
-      static_suffix
-      export_cmake_name
       install_bindir
-      install_libdir
       install_cmakedir)
     get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
     if(CMAKE_HELPERS_DEBUG)
@@ -46,6 +43,7 @@ function(cmake_helpers_exe name)
   set(_oneValueArgs
     INSTALL
     TEST
+    EXPORT_CMAKE_NAME
   )
   set(_multiValueArgs
     SOURCES
@@ -56,8 +54,9 @@ function(cmake_helpers_exe name)
   #
   # Options default values
   #
-  set(_cmake_helpers_exe_install FALSE)
-  set(_cmake_helpers_exe_test    FALSE)
+  set(_cmake_helpers_exe_install           FALSE)
+  set(_cmake_helpers_exe_test              FALSE)
+  set(_cmake_helpers_exe_export_cmake_name ${_cmake_helpers_library_namespace}ApplicationTargets)
   #
   # Multi-value options default values
   #
@@ -131,7 +130,7 @@ function(cmake_helpers_exe name)
     if(_cmake_helpers_exe_install)
       cmake_helpers_call(install
 	TARGETS ${_target}
-	EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
+	EXPORT ${_cmake_helpers_exe_export_cmake_name}
 	RUNTIME DESTINATION ${_cmake_helpers_library_install_bindir}
 	COMPONENT Application
       )
@@ -141,7 +140,7 @@ function(cmake_helpers_exe name)
       if(NOT _cmake_helpers_have_application_component)
 	set(_cmake_helpers_have_application_component TRUE)
 	cmake_helpers_call(install
-	  EXPORT ${_cmake_helpers_library_namespace}ApplicationTargets
+	  EXPORT ${_cmake_helpers_exe_export_cmake_name}
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
 	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
 	  COMPONENT Library)

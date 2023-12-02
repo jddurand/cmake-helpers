@@ -53,8 +53,8 @@ function(cmake_helpers_package)
     INSTALL_DIRECTORY
     DEVELOPMENTGROUP_DISPLAY_NAME
     DEVELOPMENTGROUP_DESCRIPTION
-    DOCUMENTGROUP_DISPLAY_NAME
-    DOCUMENTGROUP_DESCRIPTION
+    DOCUMENTATIONGROUP_DISPLAY_NAME
+    DOCUMENTATIONGROUP_DESCRIPTION
     RUNTIMEGROUP_DISPLAY_NAME
     RUNTIMEGROUP_DESCRIPTION
     LIBRARY_DISPLAY_NAME
@@ -77,9 +77,9 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_library_namespace}")
   set(_cmake_helpers_package_developmentgroup_display_name     "Development")
-  set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries and Headers components")
-  set(_cmake_helpers_package_documentgroup_display_name        "Documents")
-  set(_cmake_helpers_package_documentgroup_description         "Documents\n\nDocumentation in various formats")
+  set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries, Headers and Configuration files")
+  set(_cmake_helpers_package_documentationgroup_display_name   "Documentation")
+  set(_cmake_helpers_package_documentationgroup_description    "Documentation\n\nDocumentation in various formats")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
@@ -100,7 +100,6 @@ function(cmake_helpers_package)
     list(APPEND _cmake_helpers_package_library_display_names "Object")
   endif()
   list(LENGTH _cmake_helpers_package_library_display_names _cmake_helpers_package_library_display_names_length)
-  message(STATUS "Number of libraries: ${_cmake_helpers_package_library_display_names_length}")
   if(_cmake_helpers_package_library_display_names_length EQUAL 1)
     #
     # Only one library
@@ -240,9 +239,9 @@ function(cmake_helpers_package)
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
   if(_cmake_helpers_have_man_component OR _cmake_helpers_have_html_component)
-    set(_cmake_helpers_package_can_documentgroup TRUE)
+    set(_cmake_helpers_package_can_documentationgroup TRUE)
   else()
-    set(_cmake_helpers_package_can_documentgroup FALSE)
+    set(_cmake_helpers_package_can_documentationgroup FALSE)
   endif()
   if(_cmake_helpers_have_application_component)
     set(_cmake_helpers_package_can_runtimegroup TRUE)
@@ -250,9 +249,9 @@ function(cmake_helpers_package)
     set(_cmake_helpers_package_can_runtimegroup FALSE)
   endif()
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] Development group : ${_cmake_helpers_package_can_developmentgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Document group    : ${_cmake_helpers_package_can_documentgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Runtime group     : ${_cmake_helpers_package_can_runtimegroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Development group  : ${_cmake_helpers_package_can_developmentgroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Documentation group: ${_cmake_helpers_package_can_documentationgroup}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Runtime group      : ${_cmake_helpers_package_can_runtimegroup}")
   endif()
   if(_cmake_helpers_package_can_developmentgroup)
     cmake_helpers_call(cpack_add_component_group DevelopmentGroup
@@ -260,10 +259,10 @@ function(cmake_helpers_package)
       DESCRIPTION ${_cmake_helpers_package_developmentgroup_description}
       EXPANDED)
   endif()
-  if(_cmake_helpers_package_can_documentgroup)
-    cmake_helpers_call(cpack_add_component_group DocumentGroup
-      DISPLAY_NAME ${_cmake_helpers_package_documentgroup_display_name}
-      DESCRIPTION ${_cmake_helpers_package_documentgroup_description}
+  if(_cmake_helpers_package_can_documentationgroup)
+    cmake_helpers_call(cpack_add_component_group DocumentationGroup
+      DISPLAY_NAME ${_cmake_helpers_package_documentationgroup_display_name}
+      DESCRIPTION ${_cmake_helpers_package_documentationgroup_description}
       EXPANDED)
   endif()
   if(_cmake_helpers_package_can_runtimegroup)
@@ -293,14 +292,14 @@ function(cmake_helpers_package)
     cmake_helpers_call(cpack_add_component Man
       DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
       DESCRIPTION ${_cmake_helpers_package_man_description}
-      GROUP DocumentGroup
+      GROUP DocumentationGroup
     )
   endif()
   if(_cmake_helpers_have_html_component)
     cmake_helpers_call(cpack_add_component Html
       DISPLAY_NAME ${_cmake_helpers_package_html_display_name}
       DESCRIPTION ${_cmake_helpers_package_html_description}
-      GROUP DocumentGroup
+      GROUP DocumentationGroup
     )
   endif()
   if(_cmake_helpers_have_application_component)

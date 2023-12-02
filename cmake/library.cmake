@@ -126,7 +126,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_version_major                        ${PROJECT_VERSION_MAJOR})
   set(_cmake_helpers_library_version_minor                        ${PROJECT_VERSION_MINOR})
   set(_cmake_helpers_library_version_patch                        ${PROJECT_VERSION_PATCH})
-  set(_cmake_helpers_library_export_cmake_name                    ${_cmake_helpers_library_namespace}Targets.cmake)
+  set(_cmake_helpers_library_export_cmake_name                    ${_cmake_helpers_library_namespace}DevelopmentTargets)
   set(_cmake_helpers_library_export_header                        TRUE)
   set(_cmake_helpers_library_export_header_target_auto            TRUE)
   set(_cmake_helpers_library_export_header_target                 FALSE)
@@ -579,16 +579,28 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   #
-  # We select the targets to install
+  # We select the targets to install.
+  # Take in the library components we means only components that have RUNTIME, LIBRARY or ARCHIVE files
   #
   set(_cmake_helpers_library_install_targets)
   foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
     cmake_helpers_call(get_target_property _cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
-    if((_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY") OR
-        (_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY") OR
-        (_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY") OR
-        (_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY"))
+    if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
       list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
+    elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
+      list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
+    elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
+      list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
+    elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
+      list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
+    elseif(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
+      list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
+    elseif(_cmake_helpers_library_target_type STREQUAL "OBJECT_LIBRARY")
+      #
+      # An OBJECT library is not installable
+      #
+    else()
+      message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_target_type}")
     endif()
   endforeach()
   cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_install_targets ${_cmake_helpers_library_install_targets})
@@ -597,15 +609,17 @@ function(cmake_helpers_library name)
   #
   if(_cmake_helpers_library_install_targets)
     #
-    # Remember we have a Library component when installing
+    # Remember we have a Library component
     #
     cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_library_component TRUE)
     #
-    # Remember if we have a Header component when installing
+    # Remember if we have a Header component
     #
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component TRUE)
+    if(_cmake_helpers_public_headers)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_header_component TRUE)
+    endif()
     #
-    # Install and export in ${_cmake_helpers_library_namespace}Targets
+    # Install and export in ${_cmake_helpers_library_export_cmake_name}
     #
     cmake_helpers_call(install
       TARGETS                 ${_cmake_helpers_library_install_targets}
@@ -636,38 +650,15 @@ foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
   find_dependency(\${_args})
 endforeach()
 
-set(_${_cmake_helpers_library_namespace}_supported_components Library Header Application Document)
+set(_${_cmake_helpers_library_namespace}_supported_components Development Application Documentation)
 
 if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
-  #
-  # We provide a virtual component that is Development. If it is set, we remove it and
-  # enforce Library plus Header
-  #
-  list(FIND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"Development\" _index)
-  if(_index GREATER_EQUAL -1)
-    list(REMOVE_ITEM ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"Development\")
-    foreach(_wanted Library Header)
-      list(FIND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"\${_wanted}\" _index)
-      if(_index LESS 0)
-        list(APPEND ${_cmake_helpers_library_namespace}_FIND_COMPONENTS \"\${_wanted}\")
-      endif()
-    endforeach()
-  endif()
-
   foreach(_comp \${${_cmake_helpers_library_namespace}_FIND_COMPONENTS})
     if (NOT _comp IN_LIST _${_cmake_helpers_library_namespace}_supported_components)
       set(${_cmake_helpers_library_namespace}_FOUND False)
       set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE \"Unsupported component: \${_comp}\")
     endif()
-    #
-    # Component Library and Header are in the DevelopmentTargets file
-    #
-    if((_comp STREQUAL \"Library\") OR (_comp STREQUAL \"Header\"))
-      set(_targets \"DevelopmentTargets\")
-    else()
-      set(_targets \"\${_comp}Targets\")
-    endif()
-    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_targets}.cmake\")
+    set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_comp}Targets.cmake\")
     if(EXISTS \${_include})
       include(\${_include})
     else()
@@ -678,21 +669,9 @@ if(${_cmake_helpers_library_namespace}_FIND_COMPONENTS)
   endforeach()
 else()
   foreach(_comp \${_${_cmake_helpers_library_namespace}_supported_components})
-    #
-    # Component Library and Header are in the DevelopmentTargets file
-    #
-    if((_comp STREQUAL \"Library\") OR (_comp STREQUAL \"Header\"))
-      set(_targets \"DevelopmentTargets\")
-    else()
-      set(_targets \"\${_comp}Targets\")
-    endif()
     set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${_cmake_helpers_library_namespace}\${_targets}.cmake\")
     if(EXISTS \${_include})
       include(\${_include})
-    else()
-      set(${_cmake_helpers_library_namespace}_FOUND False)
-      set(${_cmake_helpers_library_namespace}_NOT_FOUND_MESSAGE \"Component not available: \${_comp}\")
-      break()
     endif()
   endforeach()
 endif()
@@ -763,9 +742,9 @@ endif()
 set(CMAKE_PKGCONFIG_DIR "$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}")
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENTS Library)")
+  message(STATUS "[pc.@_cmake_helpers_library_namespace@/build] find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENTS Development)")
 endif()
-find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENTS Library)
+find_package(@_cmake_helpers_library_namespace@ @_cmake_helpers_library_version@ REQUIRED CONFIG COMPONENTS Development)
 
 #
 # It is important to do static before shared, because shared will reuse static properties
