@@ -104,6 +104,10 @@ function(cmake_helpers_depend depname)
     endif()
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build . ${_cmake_helpers_depend_config_args}
+      WORKING_DIRECTORY ${${_depname_tolower}_BINARY_DIR}
+      COMMAND_ERROR_IS_FATAL ANY
+    )
+    execute_process(
       COMMAND ${CMAKE_COMMAND} --install . ${_cmake_helpers_depend_config_args} --prefix ${CMAKE_CURRENT_BINARY_DIR}/_install
       WORKING_DIRECTORY ${${_depname_tolower}_BINARY_DIR}
       COMMAND_ERROR_IS_FATAL ANY
