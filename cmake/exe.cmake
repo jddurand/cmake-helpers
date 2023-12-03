@@ -30,7 +30,7 @@ function(cmake_helpers_exe name)
   #
   # Recuperate directory have properties
   #
-  foreach(_variable have_application_${_cmake_helpers_library_namespace}component)
+  foreach(_variable have_application_component)
     get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
@@ -56,7 +56,7 @@ function(cmake_helpers_exe name)
   #
   set(_cmake_helpers_exe_install           FALSE)
   set(_cmake_helpers_exe_test              FALSE)
-  set(_cmake_helpers_exe_export_cmake_name ${_cmake_helpers_library_namespace}ApplicationTargets)
+  set(_cmake_helpers_exe_export_cmake_name ApplicationTargets)
   #
   # Multi-value options default values
   #
@@ -132,19 +132,19 @@ function(cmake_helpers_exe name)
 	TARGETS ${_target}
 	EXPORT ${_cmake_helpers_exe_export_cmake_name}
 	RUNTIME DESTINATION ${_cmake_helpers_library_install_bindir}
-	COMPONENT ${_cmake_helpers_library_namespace}Application
+	COMPONENT Application
       )
       #
       ## Call for install of the export once
       #
-      if(NOT _cmake_helpers_have_application_${_cmake_helpers_library_namespace}component)
-	set(_cmake_helpers_have_application_${_cmake_helpers_library_namespace}component TRUE)
+      if(NOT _cmake_helpers_have_application_component)
+	set(_cmake_helpers_have_application_component TRUE)
 	cmake_helpers_call(install
 	  EXPORT ${_cmake_helpers_exe_export_cmake_name}
 	  NAMESPACE ${_cmake_helpers_library_namespace}::
 	  DESTINATION ${_cmake_helpers_library_install_cmakedir}
-	  COMPONENT ${_cmake_helpers_library_namespace}Application)
-	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application_${_cmake_helpers_library_namespace}component ${_cmake_helpers_have_application_${_cmake_helpers_library_namespace}component})
+	  COMPONENT Application)
+	set_property(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_application_component ${_cmake_helpers_have_application_component})
       endif()
     endif()
     if(_cmake_helpers_exe_test)
