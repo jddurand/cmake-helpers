@@ -26,6 +26,7 @@ cmake_helpers_init()
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
 option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
 option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
+option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ON)
 #
 # ... Standard include dirs
 #
@@ -61,11 +62,11 @@ endforeach()
 #
 # ... Component names and export set names
 #
-set(CMAKE_HELPERS_LIBRARY_COMPONENT_NAME_SUFFIX        "Library"              CACHE STRING "Library component name suffix"     FORCE)
-set(CMAKE_HELPERS_HEADER_COMPONENT_NAME_SUFFIX         "Header"               CACHE STRING "Header component name suffix"      FORCE)
-set(CMAKE_HELPERS_APPLICATION_COMPONENT_NAME_SUFFIX    "Application"          CACHE STRING "Application component name suffix" FORCE)
-set(CMAKE_HELPERS_DEVELOPMENT_EXPORT_SET_NAME_SUFFIX   "DevelopmentTargets"   CACHE STRING "Development targets name suffix"   FORCE)
-set(CMAKE_HELPERS_MAN_COMPONENT_NAME_SUFFIX            "Man"                  CACHE STRING "Man component name suffix"         FORCE)
-set(CMAKE_HELPERS_HTML_COMPONENT_NAME_SUFFIX           "Html"                 CACHE STRING "Html component name suffix"        FORCE)
-set(CMAKE_HELPERS_APPLICATION_EXPORT_SET_NAME_SUFFIX   "ApplicationTargets"   CACHE STRING "Application targets name suffix"   FORCE)
-set(CMAKE_HELPERS_DOCUMNETATION_EXPORT_SET_NAME_SUFFIX "DocumentationTargets" CACHE STRING "Documentation targets name suffix" FORCE)
+set(CMAKE_HELPERS_LIBRARY_COMPONENT_NAME_SUFFIX        "Library"               CACHE STRING "Library component name suffix"     FORCE)
+set(CMAKE_HELPERS_HEADER_COMPONENT_NAME_SUFFIX         "Header"                CACHE STRING "Header component name suffix"      FORCE)
+set(CMAKE_HELPERS_APPLICATION_COMPONENT_NAME_SUFFIX    "Application"           CACHE STRING "Application component name suffix" FORCE)
+set(CMAKE_HELPERS_DEVELOPMENT_EXPORT_SET_NAME_SUFFIX   "DevelopmentTargets"    CACHE STRING "Development targets name suffix"   FORCE)
+set(CMAKE_HELPERS_MAN_COMPONENT_NAME_SUFFIX            "Man"                   CACHE STRING "Man component name suffix"         FORCE)
+set(CMAKE_HELPERS_HTML_COMPONENT_NAME_SUFFIX           "Html"                  CACHE STRING "Html component name suffix"        FORCE)
+set(CMAKE_HELPERS_APPLICATION_EXPORT_SET_NAME_SUFFIX   "ApplicationTargets"    CACHE STRING "Application targets name suffix"   FORCE)
+set(CMAKE_HELPERS_DOCUMENTATION_EXPORT_SET_NAME_SUFFIX "DocumentationTargets"  CACHE STRING "Documentation targets name suffix" FORCE)

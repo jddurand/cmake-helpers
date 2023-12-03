@@ -40,7 +40,7 @@ function(cmake_helpers_depend depname)
   #
   set(_cmake_helpers_depend_file             "")
   set(_cmake_helpers_depend_version          "")
-  set(_cmake_helpers_depend_exclude_from_all FALSE)
+  set(_cmake_helpers_depend_exclude_from_all TRUE)
   set(_cmake_helpers_depend_system           FALSE)
   #
   # Multi-value options default values
@@ -100,7 +100,7 @@ function(cmake_helpers_depend depname)
     ${_cmake_helpers_depend_fetchcontent_declare_system}
     FIND_PACKAGE_ARGS ${_cmake_helpers_depend_find_package_args}
   )
-  FetchContent_MakeAvailable(${_cmake_helpers_depend_makeavailable_args})
+  cmake_helpers_call(FetchContent_MakeAvailable ${_cmake_helpers_depend_makeavailable_args})
   #
   # End
   #

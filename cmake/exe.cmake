@@ -78,12 +78,12 @@ function(cmake_helpers_exe name)
   #
   # Constants
   #
-  set(_cmake_helpers_exe_component_application_name ${_cmake_helpers_library_namespace}${CMAKE_HELPERS_APPLICATION_COMPONENT_NAME_SUFFIX})
-  set(_cmake_helpers_exe_export_set_name            ${_cmake_helpers_library_namespace}${CMAKE_HELPERS_APPLICATION_EXPORT_SET_NAME_SUFFIX})
+  set(_cmake_helpers_exe_application_component_name ${_cmake_helpers_exe_namespace}${CMAKE_HELPERS_APPLICATION_COMPONENT_NAME_SUFFIX})
+  set(_cmake_helpers_exe_export_set_name            ${_cmake_helpers_exe_namespace}${CMAKE_HELPERS_APPLICATION_EXPORT_SET_NAME_SUFFIX})
   #
   # Add an executable using all library targets. We are not supposed to have none, but we support this case anyway.
   #
-  set(_cmake_helpers_have_application_component FALSE)
+  set(_cmake_helpers_have_${_cmake_helpers_exe_namespace}_application_component FALSE)
   set(_cmake_helpers_exe_targets)
   if(NOT _cmake_helpers_library_${_cmake_helpers_library_namespace}_targets)
     set(_cmake_helpers_library_${_cmake_helpers_library_namespace}_targets FALSE)
@@ -141,21 +141,25 @@ function(cmake_helpers_exe name)
       endforeach()
     endif()
     if(_cmake_helpers_exe_install)
-      cmake_helpers_call(install
-	TARGETS ${_cmake_helpers_exe_target}
-	EXPORT ${_cmake_helpers_exe_export_set_name}
-	RUNTIME DESTINATION ${CMAKE_HELPERS_INSTALL_BINDIR}
-	COMPONENT ${_cmake_helpers_exe_component_application_name}
-      )
+      if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
+	install(
+	  TARGETS ${_cmake_helpers_exe_target}
+	  EXPORT ${_cmake_helpers_exe_export_set_name}
+	  RUNTIME DESTINATION ${CMAKE_HELPERS_INSTALL_BINDIR}
+	  COMPONENT ${_cmake_helpers_exe_component_application_name}
+	)
+      endif()
       #
-      ## Call for install of the export once
+      # Install
       #
-      set(_cmake_helpers_have_application_component TRUE)
-      cmake_helpers_call(install
-	EXPORT ${_cmake_helpers_exe_export_set_name}
-	NAMESPACE ${_cmake_helpers_library_namespace}::
-	DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
-	COMPONENT ${_cmake_helpers_exe_component_application_name})
+      if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
+	set(_cmake_helpers_have_${_cmake_helpers_exe_namespace}_application_component TRUE)
+	install(
+	  EXPORT ${_cmake_helpers_exe_export_set_name}
+	  NAMESPACE ${_cmake_helpers_library_namespace}::
+	  DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
+	  COMPONENT ${_cmake_helpers_exe_component_application_name})
+      endif()
     endif()
     if(_cmake_helpers_exe_test)
       enable_testing()
@@ -223,14 +227,14 @@ function(cmake_helpers_exe name)
   endif()
 
   foreach(_cmake_helpers_component_type application)
-    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_have_${_cmake_helpers_library_namespace}_${_cmake_helpers_component_type}_component ${_cmake_helpers_have_${_cmake_helpers_component_type}_component})
+    cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_have_${_cmake_helpers_library_namespace}_${_cmake_helpers_component_type}_component ${_cmake_helpers_have_${_cmake_helpers_exe_namespace}_${_cmake_helpers_component_type}_component})
     get_property(_cmake_helpers_have_${_cmake_helpers_component_type}_components DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_have_${_cmake_helpers_component_type}_components)
-    if((NOT _cmake_helpers_have_${_cmake_helpers_component_type}_components) AND _cmake_helpers_have_${_cmake_helpers_component_type}_component)
+    if((NOT _cmake_helpers_have_${_cmake_helpers_component_type}_components) AND _cmake_helpers_have_${_cmake_helpers_exe_namespace}_${_cmake_helpers_component_type}_component)
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_have_${_cmake_helpers_component_type}_components TRUE)
     else()
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_have_${_cmake_helpers_component_type}_components FALSE)
     endif()
-    if(${_cmake_helpers_have_${_cmake_helpers_component_type}_component})
+    if(${_cmake_helpers_have_${_cmake_helpers_exe_namespace}_${_cmake_helpers_component_type}_component})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_${_cmake_helpers_component}_${_cmake_helpers_library_namespace}_component_name ${_cmake_helpers_pod_${_cmake_helpers_component_type}_component_name})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} APPEND PROPERTY cmake_helpers_${_cmake_helpers_component_type}_component_names ${_cmake_helpers_pod_${_cmake_helpers_component_type}_component_name})
     endif()

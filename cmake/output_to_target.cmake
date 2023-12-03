@@ -28,23 +28,27 @@ function(cmake_helpers_output_to_target workingDirectory output exportSet namesp
     else()
       set(_cmake_helpers_output_to_target_component_args)
     endif()
-    cmake_helpers_call(install
-      TARGETS                 ${_target}
-      ${_cmake_helpers_output_to_target_exportSet_args}
-      FILE_SET internal       DESTINATION ${destination} ${_cmake_helpers_output_to_target_component_args}
-    )
+    if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
+      install(
+	TARGETS                 ${_target}
+	${_cmake_helpers_output_to_target_exportSet_args}
+	FILE_SET internal       DESTINATION ${destination} ${_cmake_helpers_output_to_target_component_args}
+      )
+    endif()
     if(exportSet)
       if(namespace)
 	set(_cmake_helpers_output_to_target_namespace_args NAMESPACE ${namespace})
       else()
 	set(_cmake_helpers_output_to_target_component_args)
       endif()
-      cmake_helpers_call(install
-	EXPORT ${exportSet}
-	${_cmake_helpers_output_to_target_namespace_args}
-	DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
-	${_cmake_helpers_output_to_target_component_args}
-      )
+      if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
+	install(
+	  EXPORT ${exportSet}
+	  ${_cmake_helpers_output_to_target_namespace_args}
+	  DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
+	  ${_cmake_helpers_output_to_target_component_args}
+	)
+      endif()
     endif()
   endif()
   #

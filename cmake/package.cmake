@@ -9,35 +9,25 @@ function(cmake_helpers_package)
     message(STATUS "[${_cmake_helpers_logprefix}] ========")
   endif()
   #
-  # Recuperate directory library properties
-  #
-  foreach(_variable
-      namespace
-      version
-      cpack_pre_build_script
-      install_libdir
-      install_cmakedir
-      install_pkgconfigdir)
-    get_property(_cmake_helpers_library_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_library_${_variable})
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_library_${_variable}: ${_cmake_helpers_library_${_variable}}")
-    endif()
-  endforeach()
-  #
   # Recuperate directory have properties
   #
   foreach(_variable
-      have_library_component
-      have_header_component
-      have_man_component
-      have_html_component
-      have_application_component
-      have_interface_library
-      have_static_library
-      have_shared_library
-      have_module_library
-      have_object_library)
-    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_${_variable})
+      have_library_components
+      have_header_components
+      have_man_components
+      have_html_components
+      have_application_components
+      have_interface_libraries
+      have_static_libraries
+      have_shared_libraries
+      have_module_libraries
+      have_object_libraries
+      library_component_names
+      header_component_names
+      html_component_names
+      application_component_names
+    )
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
@@ -47,6 +37,7 @@ function(cmake_helpers_package)
   #
   set(_options)
   set(_oneValueArgs
+    NAME
     VENDOR
     DESCRIPTION_SUMMARY
     LICENSE
@@ -68,14 +59,17 @@ function(cmake_helpers_package)
     APPLICATION_DISPLAY_NAME
     APPLICATION_DESCRIPTION
   )
-  set(_multiValueArgs)
+  set(_multiValueArgs
+    NAMESPACES
+  )
   #
   # Single-value arguments default values
   #
+  set(_cmake_helpers_package_name                              ${PROJECT_NAME})
   set(_cmake_helpers_package_vendor                            " ")
-  set(_cmake_helpers_package_description_summary               "${_cmake_helpers_library_namespace}")
+  set(_cmake_helpers_package_description_summary               "${_cmake_helpers_package_name}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
-  set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_library_namespace}")
+  set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_package_name}")
   set(_cmake_helpers_package_developmentgroup_display_name     "Development")
   set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries, Headers and Configuration files")
   set(_cmake_helpers_package_documentationgroup_display_name   "Documentation")
@@ -84,19 +78,19 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
   set(_cmake_helpers_package_library_display_names)
-  if(_cmake_helpers_have_interface_library)
+  if(_cmake_helpers_have_interface_libraries)
     list(APPEND _cmake_helpers_package_library_display_names "Interface")
   endif()
-  if(_cmake_helpers_have_static_library)
+  if(_cmake_helpers_have_static_libraries)
     list(APPEND _cmake_helpers_package_library_display_names "Shared")
   endif()
-  if(_cmake_helpers_have_shared_library)
+  if(_cmake_helpers_have_shared_libraries)
     list(APPEND _cmake_helpers_package_library_display_names "Static")
   endif()
-  if(_cmake_helpers_have_module_library)
+  if(_cmake_helpers_have_module_libraries)
     list(APPEND _cmake_helpers_package_library_display_names "Module")
   endif()
-  if(_cmake_helpers_have_object_library)
+  if(_cmake_helpers_have_object_libraries)
     list(APPEND _cmake_helpers_package_library_display_names "Object")
   endif()
   list(LENGTH _cmake_helpers_package_library_display_names _cmake_helpers_package_library_display_names_length)
@@ -127,6 +121,8 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_html_description                  "Documentation in the html format")
   set(_cmake_helpers_package_application_display_name          "Applications")
   set(_cmake_helpers_package_application_description           "Runtime executables")
+
+  set(_cmake_helpers_package_namespaces                        ${PROJECT_NAME})
   #
   # Parse Arguments
   #
@@ -134,17 +130,19 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(_cmake_helpers_library_cpack_pre_build_script)
-    list(APPEND CPACK_PRE_BUILD_SCRIPTS ${_cmake_helpers_library_cpack_pre_build_script})
-  endif()
+  foreach(_cmake_helpers_package_namespace ${_cmake_helpers_package_namespaces})
+    if(cmake_helpers_cpack_${_cmake_helpers_package_namespace}_pre_build_script)
+      list(APPEND CPACK_PRE_BUILD_SCRIPTS ${cmake_helpers_cpack_${_cmake_helpers_package_namespace}_pre_build_script})
+    endif()
+  endforeach()
   #
   # Set common CPack variables
   #
-  set(CPACK_PACKAGE_NAME                ${_cmake_helpers_library_namespace})
+  set(CPACK_PACKAGE_NAME                ${_cmake_helpers_package_name})
   set(CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
   set(CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
-  set(CPACK_PACKAGE_VERSION             ${_cmake_helpers_library_version})
+  set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
   if(EXISTS ${_cmake_helpers_package_license})
     configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
     set(CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
@@ -174,43 +172,48 @@ function(cmake_helpers_package)
   set(FIRE_POST_INSTALL_CMAKE_PATH ${CMAKE_BINARY_DIR}/fire_post_install.cmake)
   set(CPACK_INSTALL_SCRIPT_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_pc.cmake)
   list(APPEND CPACK_INSTALL_SCRIPTS ${CPACK_INSTALL_SCRIPT_PATH})
-  file(WRITE  ${CPACK_INSTALL_SCRIPT_PATH} "SET (CPACK_PRE_BUILD_SCRIPT_PC_PATH \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${PROJECT_NAME}.cmake\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "message(STATUS \"Generating \${CPACK_PRE_BUILD_SCRIPT_PC_PATH}\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (WRITE  \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"include(GNUInstallDirs)\\n\")\n")
-  #
-  # We use environment variables to propagate CMake options - it is not wrong to hardcode "Library" because this is the name
-  # of the component in which we have done file(WRITE ...)
-  #
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{DESTDIR} is: \\\\\\\"\\\$ENV{DESTDIR}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_PREFIX_ENV} \\\"\${CMAKE_INSTALL_PREFIX}/Library\\\")\\n\")\n")
-  FILE(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_INSTALL_PREFIX_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_INSTALL_PREFIX_ENV}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${_cmake_helpers_library_install_cmakedir}\\\" NORMALIZE)\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \\\"\\\${CMAKE_MODULE_ROOT_PATH_ENV}\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_PKGCONFIG_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${_cmake_helpers_library_install_pkgconfigdir}\\\" NORMALIZE)\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} \\\"\\\${CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
-  file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV} COMMAND_ERROR_IS_FATAL ANY COMMAND_ECHO STDOUT)\\n\")\n")
+  file(WRITE  ${CPACK_INSTALL_SCRIPT_PATH} "\n")
+  foreach(_cmake_helpers_package_namespace ${_cmake_helpers_package_namespaces})
+    if(cmake_helpers_cpack_${_cmake_helpers_package_namespace}_pre_build_script)
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "SET (CPACK_PRE_BUILD_SCRIPT_PC_PATH \"${cmake_helpers_cpack_${_cmake_helpers_package_namespace}_pre_build_script}\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "message(STATUS \"Generating \${CPACK_PRE_BUILD_SCRIPT_PC_PATH}\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (WRITE  \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"include(GNUInstallDirs)\\n\")\n")
+      #
+      # We use environment variables to propagate CMake options - it is not wrong to hardcode "Library" because this is the name
+      # of the component in which we have done file(WRITE ...)
+      #
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{DESTDIR} is: \\\\\\\"\\\$ENV{DESTDIR}\\\\\\\"\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_INSTALL_PREFIX_ENV} \\\"\${CMAKE_INSTALL_PREFIX}/Library\\\")\\n\")\n")
+      FILE(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_INSTALL_PREFIX_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_INSTALL_PREFIX_ENV}\\\\\\\"\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_MODULE_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\\\" NORMALIZE)\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \\\"\\\${CMAKE_MODULE_ROOT_PATH_ENV}\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"cmake_path(SET CMAKE_PKGCONFIG_ROOT_PATH_ENV \\\"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Library/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\\\" NORMALIZE)\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"set(ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} \\\"\\\${CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"message(STATUS \\\"[cpack_pre_build_script_pc_${PROJECT_NAME}.cmake] \\\\\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} set to: \\\\\\\"\\\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}\\\\\\\"\\\")\\n\")\n")
+      file(APPEND ${CPACK_INSTALL_SCRIPT_PATH} "FILE (APPEND \${CPACK_PRE_BUILD_SCRIPT_PC_PATH} \"execute_process(COMMAND \\\"${CMAKE_COMMAND}\\\" -G \\\"${CMAKE_GENERATOR}\\\" -P \\\"${FIRE_POST_INSTALL_CMAKE_PATH}\\\" WORKING_DIRECTORY \\\$ENV{CMAKE_INSTALL_PREFIX_ENV} COMMAND_ERROR_IS_FATAL ANY COMMAND_ECHO STDOUT)\\n\")\n")
+    endif()
+  endforeach()
   #
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  if(_cmake_helpers_have_library_component)
-    list(APPEND CPACK_COMPONENTS_ALL Library)
+  if(_cmake_helpers_have_library_components)
+    list(APPEND CPACK_COMPONENTS_ALL ${_cmake_helpers_library_component_names})
   endif()
-  if(_cmake_helpers_have_header_component)
-    list(APPEND CPACK_COMPONENTS_ALL Header)
+  if(_cmake_helpers_have_header_components)
+    list(APPEND CPACK_COMPONENTS_ALL ${_cmake_helpers_header_component_names})
   endif()
-  if(_cmake_helpers_have_man_component)
-    list(APPEND CPACK_COMPONENTS_ALL Man)
+  if(_cmake_helpers_have_man_components)
+    list(APPEND CPACK_COMPONENTS_ALL ${_cmake_helpers_man_component_names})
   endif()
-  if(_cmake_helpers_have_html_component)
-    list(APPEND CPACK_COMPONENTS_ALL Html)
+  if(_cmake_helpers_have_html_components)
+    list(APPEND CPACK_COMPONENTS_ALL ${_cmake_helpers_html_component_names})
   endif()
-  if(_cmake_helpers_have_application_component)
-    list(APPEND CPACK_COMPONENTS_ALL Application)
+  if(_cmake_helpers_have_application_components)
+    list(APPEND CPACK_COMPONENTS_ALL ${_cmake_helpers_application_component_names})
   endif()
   #
   # Specific to NSIS generator (if any)
@@ -233,17 +236,17 @@ function(cmake_helpers_package)
   #
   # Add Groups
   #
-  if(_cmake_helpers_have_library_component OR _cmake_helpers_have_header_component)
+  if(_cmake_helpers_have_library_components OR _cmake_helpers_have_header_components)
     set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(_cmake_helpers_have_man_component OR _cmake_helpers_have_html_component)
+  if(_cmake_helpers_have_man_components OR _cmake_helpers_have_html_components)
     set(_cmake_helpers_package_can_documentationgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentationgroup FALSE)
   endif()
-  if(_cmake_helpers_have_application_component)
+  if(_cmake_helpers_have_application_components)
     set(_cmake_helpers_package_can_runtimegroup TRUE)
   else()
     set(_cmake_helpers_package_can_runtimegroup FALSE)
@@ -274,40 +277,50 @@ function(cmake_helpers_package)
   #
   # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
   #
-  if(_cmake_helpers_have_library_component)
-    cmake_helpers_call(cpack_add_component Library
-      DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
-      DESCRIPTION ${_cmake_helpers_package_library_description}
-      GROUP DevelopmentGroup
-    )
+  if(_cmake_helpers_have_library_components)
+    foreach(_cmake_helpers_library_component_name ${_cmake_helpers_library_component_names})
+      cmake_helpers_call(cpack_add_component ${_cmake_helpers_library_component_name}
+	DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
+	DESCRIPTION ${_cmake_helpers_package_library_description}
+	GROUP DevelopmentGroup
+      )
+    endforeach()
   endif()
-  if(_cmake_helpers_have_header_component)
-    cmake_helpers_call(cpack_add_component Header
-      DISPLAY_NAME ${_cmake_helpers_package_header_display_name}
-      DESCRIPTION ${_cmake_helpers_package_header_description}
-      GROUP DevelopmentGroup
-    )
+  if(_cmake_helpers_have_header_components)
+    foreach(_cmake_helpers_header_component_name ${_cmake_helpers_header_component_names})
+      cmake_helpers_call(cpack_add_component ${_cmake_helpers_header_component_name}
+	DISPLAY_NAME ${_cmake_helpers_package_header_display_name}
+	DESCRIPTION ${_cmake_helpers_package_header_description}
+	GROUP DevelopmentGroup
+      )
+    endforeach()
   endif()
-  if(_cmake_helpers_have_man_component)
-    cmake_helpers_call(cpack_add_component Man
-      DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
-      DESCRIPTION ${_cmake_helpers_package_man_description}
-      GROUP DocumentationGroup
-    )
+  if(_cmake_helpers_have_man_components)
+    foreach(_cmake_helpers_man_component_name ${_cmake_helpers_man_component_names})
+      cmake_helpers_call(cpack_add_component ${_cmake_helpers_man_component_name}
+	DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
+	DESCRIPTION ${_cmake_helpers_package_man_description}
+	GROUP DocumentationGroup
+      )
+    endforeach()
   endif()
-  if(_cmake_helpers_have_html_component)
-    cmake_helpers_call(cpack_add_component Html
-      DISPLAY_NAME ${_cmake_helpers_package_html_display_name}
-      DESCRIPTION ${_cmake_helpers_package_html_description}
-      GROUP DocumentationGroup
-    )
+  if(_cmake_helpers_have_html_components)
+    foreach(_cmake_helpers_html_component_name ${_cmake_helpers_html_component_names})
+      cmake_helpers_call(cpack_add_component ${_cmake_helpers_html_component_name}
+	DISPLAY_NAME ${_cmake_helpers_package_html_display_name}
+	DESCRIPTION ${_cmake_helpers_package_html_description}
+	GROUP DocumentationGroup
+      )
+    endforeach()
   endif()
-  if(_cmake_helpers_have_application_component)
-    cmake_helpers_call(cpack_add_component Application
-      DISPLAY_NAME ${_cmake_helpers_package_application_display_name}
-      DESCRIPTION ${_cmake_helpers_package_application_description}
-      GROUP RuntimeGroup
-      DEPENDS Library)
+  if(_cmake_helpers_have_application_components)
+    foreach(_cmake_helpers_application_component_name ${_cmake_helpers_application_component_names})
+      cmake_helpers_call(cpack_add_component ${_cmake_helpers_application_component_name}
+	DISPLAY_NAME ${_cmake_helpers_package_application_display_name}
+	DESCRIPTION ${_cmake_helpers_package_application_description}
+	GROUP RuntimeGroup
+	DEPENDS Library)
+    endforeach()
   endif()
   #
   # End
