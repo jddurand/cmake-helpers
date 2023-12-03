@@ -1024,12 +1024,15 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" -DCMAKE_HELPERS
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
   if(_cmake_helpers_library_depends)
+    #
+    # We always use BUILD_LOCAL_INTERFACE to prevent the dependencies to appear in our export set
+    #
     foreach(_cmake_helpers_library_target ${_cmake_helpers_library_targets})
       cmake_helpers_call(get_target_property _cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE ${_cmake_helpers_library_depends})
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_depends}>)
       else()
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_depends})
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_depends}>)
       endif()
     endforeach()
   endif()
