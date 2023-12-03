@@ -28,7 +28,7 @@ function(cmake_helpers_package)
       html_component_names
       application_component_names
     )
-    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_${_variable})
+    get_property(_cmake_helpers_${_variable} DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_${_variable})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] _cmake_helpers_${_variable}: ${_cmake_helpers_${_variable}}")
     endif()
@@ -145,8 +145,8 @@ function(cmake_helpers_package)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
   set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
   if(EXISTS ${_cmake_helpers_package_license})
-    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
-    set(CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
+    configure_file(${_cmake_helpers_package_license} ${CMAKE_BINARY_DIR}/LICENSE.txt)
+    set(CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_BINARY_DIR}/LICENSE.txt)
   endif()
   #
   # Get all components in one package
@@ -163,7 +163,7 @@ function(cmake_helpers_package)
   #
   # We need a way to know if make install is running under CPACK or not
   #
-  set(CPACK_PROJECT_CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
+  set(CPACK_PROJECT_CONFIG_FILE_PATH ${CMAKE_BINARY_DIR}/cpack_project_config_file.cmake)
   file(WRITE ${CPACK_PROJECT_CONFIG_FILE_PATH} "message(STATUS \"Setting ENV{CPACK_IS_RUNNING}\")\n")
   file(APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "set(ENV{CPACK_IS_RUNNING} TRUE)\n")
   set(CPACK_PROJECT_CONFIG_FILE ${CPACK_PROJECT_CONFIG_FILE_PATH})
@@ -171,7 +171,7 @@ function(cmake_helpers_package)
   # Append to CPACK_INSTALL_SCRIPTS that will be executed right before packaging - we use it to generate CPACK_PRE_BUILD_SCRIPT_PC_PATH
   #
   set(FIRE_POST_INSTALL_CMAKE_PATH ${CMAKE_BINARY_DIR}/fire_post_install.cmake)
-  set(CPACK_INSTALL_SCRIPT_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_pc.cmake)
+  set(CPACK_INSTALL_SCRIPT_PATH ${CMAKE_BINARY_DIR}/cpack_install_script_pc.cmake)
   list(APPEND CPACK_INSTALL_SCRIPTS ${CPACK_INSTALL_SCRIPT_PATH})
   file(WRITE  ${CPACK_INSTALL_SCRIPT_PATH} "\n")
   foreach(_cmake_helpers_package_namespace ${_cmake_helpers_package_namespaces})
