@@ -24,6 +24,7 @@ function(cmake_helpers_package)
       have_object_libraries
       library_component_names
       header_component_names
+      man_component_names
       html_component_names
       application_component_names
     )

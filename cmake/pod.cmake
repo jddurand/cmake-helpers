@@ -77,7 +77,7 @@ function(cmake_helpers_pod)
   # Man pages
   # =========
   #
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_pod_namespace}_man_component FALSE)
+  set(_cmake_helpers_have_${_cmake_helpers_pod_namespace}_man_component FALSE)
   find_program(POD2MAN pod2man)
   if(POD2MAN)
     set(_cmake_helpers_pod_pod2man ${POD2MAN})
@@ -153,7 +153,7 @@ function(cmake_helpers_pod)
       # Remember we have man
       #
       if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
-	cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_pod_namespace}_man_component TRUE)
+	set(_cmake_helpers_have_${_cmake_helpers_pod_namespace}_man_component TRUE)
       endif()
       #
       # Add the generated files to the clean rule (not all generators support this)
@@ -166,7 +166,7 @@ function(cmake_helpers_pod)
   # Html
   # ====
   #
-  cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_pod_namespace}_html_component FALSE)
+  set(_cmake_helpers_have_${_cmake_helpers_pod_namespace}_html_component FALSE)
   find_program(POD2HTML pod2html)
   if(POD2HTML)
     set(_cmake_helpers_pod_pod2html ${POD2HTML})
@@ -211,7 +211,7 @@ function(cmake_helpers_pod)
     # Remember we have html
     #
     if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY _cmake_helpers_have_${_cmake_helpers_pod_namespace}_html_component TRUE)
+      set(_cmake_helpers_have_${_cmake_helpers_pod_namespace}_html_component TRUE)
     endif()
     #
     # Add the generated files to the clean rule (not all generators support this)
