@@ -4,18 +4,6 @@ function(cmake_helpers_init)
   #
   include(GNUInstallDirs)
   #
-  # Alike the CMakeLists.txt, we should not have been called more than once
-  #
-  get_property(_cmake_helpers_initialized_set GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED SET)
-  if(_cmake_helpers_initialized_set)
-    get_property(_cmake_helpers_initialized GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED)
-  else()
-    set(_cmake_helpers_initialized FALSE)
-  endif()
-  if(_cmake_helpers_initialized)
-    message(FATAL_ERROR "CMake Helpers already initialized")
-  endif()
-  #
   # Common include files
   #
   include(CheckIncludeFile)
