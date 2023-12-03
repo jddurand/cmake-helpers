@@ -511,8 +511,4 @@ function(cmake_helpers_init)
   # Check GNU features
   #
   check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
-  #
-  # Remember we were initialized
-  #
-  set_property(GLOBAL PROPERTY CMAKE_HELPERS_INITIALIZED TRUE)
 endfunction()

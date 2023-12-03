@@ -27,7 +27,7 @@ function(cmake_helpers_parse_arguments scope varprefix options one_value_keyword
     string(TOLOWER "${_varname}" _varname)
     if(DEFINED CMAKE_HELPERS_${_option})
       if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] ... ... Argument CMAKE_HELPERS_${_option}=${CMAKE_HELPERS_${_option}}")
+	message(STATUS "[${_cmake_helpers_logprefix}] ... ... Argument ${_option}=${CMAKE_HELPERS_${_option}}")
       endif()
       set(${_varname} ${CMAKE_HELPERS_${_option}})
       set(${_varname} ${CMAKE_HELPERS_${_option}} PARENT_SCOPE)

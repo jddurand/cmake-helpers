@@ -1,4 +1,4 @@
-function(cmake_helpers_output_to_target workingDirectory output export namespace destination exportDestination component target_outvar)
+function(cmake_helpers_output_to_target workingDirectory output exportSet namespace destination component target_outvar)
   #
   # Save argn
   #
@@ -18,10 +18,10 @@ function(cmake_helpers_output_to_target workingDirectory output export namespace
     #
     # Target install rule
     #
-    if(export)
-      set(_cmake_helpers_output_to_target_export_args EXPORT ${export})
+    if(exportSet)
+      set(_cmake_helpers_output_to_target_exportSet_args EXPORT ${exportSet})
     else()
-      set(_cmake_helpers_output_to_target_export_args)
+      set(_cmake_helpers_output_to_target_exportSet_args)
     endif()
     if(component)
       set(_cmake_helpers_output_to_target_component_args COMPONENT ${component})
@@ -30,19 +30,19 @@ function(cmake_helpers_output_to_target workingDirectory output export namespace
     endif()
     cmake_helpers_call(install
       TARGETS                 ${_target}
-      ${_cmake_helpers_output_to_target_export_args}
+      ${_cmake_helpers_output_to_target_exportSet_args}
       FILE_SET internal       DESTINATION ${destination} ${_cmake_helpers_output_to_target_component_args}
     )
-    if(export AND exportDestination)
+    if(exportSet)
       if(namespace)
 	set(_cmake_helpers_output_to_target_namespace_args NAMESPACE ${namespace})
       else()
 	set(_cmake_helpers_output_to_target_component_args)
       endif()
       cmake_helpers_call(install
-	EXPORT ${export}
+	EXPORT ${exportSet}
 	${_cmake_helpers_output_to_target_namespace_args}
-	DESTINATION ${exportDestination}
+	DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
 	${_cmake_helpers_output_to_target_component_args}
       )
     endif()
