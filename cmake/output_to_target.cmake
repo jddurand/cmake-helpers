@@ -1,4 +1,4 @@
-function(cmake_helpers_output_to_target workingDirectory output exportSet namespace destination component target_outvar)
+function(cmake_helpers_output_to_target workingDirectory output exportSet destination component target_outvar)
   #
   # Save argn
   #
@@ -36,15 +36,10 @@ function(cmake_helpers_output_to_target workingDirectory output exportSet namesp
       )
     endif()
     if(exportSet)
-      if(namespace)
-	set(_cmake_helpers_output_to_target_namespace_args NAMESPACE ${namespace})
-      else()
-	set(_cmake_helpers_output_to_target_component_args)
-      endif()
       if((NOT CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO) OR PROJECT_IS_TOP_LEVEL)
 	install(
 	  EXPORT ${exportSet}
-	  ${_cmake_helpers_output_to_target_namespace_args}
+	  NAMESPACE ${PROJECT_NAME}::
 	  DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
 	  ${_cmake_helpers_output_to_target_component_args}
 	)

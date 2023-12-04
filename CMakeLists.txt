@@ -59,14 +59,3 @@ foreach(_cmake_helpers_type html cmake pkgconfig)
   string(TOUPPER "${_cmake_helpers_type}" _cmake_helpers_type_toupper)
   set(CMAKE_HELPERS_INSTALL_${_cmake_helpers_type_toupper}DIR ${_cmake_helpers_install_${_cmake_helpers_type}dir_default} CACHE PATH "${_cmake_helpers_type} install directory" FORCE)
 endforeach()
-#
-# ... Component names and export set names
-#
-set(CMAKE_HELPERS_LIBRARY_COMPONENT_NAME_SUFFIX        "Library"               CACHE STRING "Library component name suffix"     FORCE)
-set(CMAKE_HELPERS_HEADER_COMPONENT_NAME_SUFFIX         "Header"                CACHE STRING "Header component name suffix"      FORCE)
-set(CMAKE_HELPERS_APPLICATION_COMPONENT_NAME_SUFFIX    "Application"           CACHE STRING "Application component name suffix" FORCE)
-set(CMAKE_HELPERS_DEVELOPMENT_EXPORT_SET_NAME_SUFFIX   "DevelopmentTargets"    CACHE STRING "Development targets name suffix"   FORCE)
-set(CMAKE_HELPERS_MAN_COMPONENT_NAME_SUFFIX            "Man"                   CACHE STRING "Man component name suffix"         FORCE)
-set(CMAKE_HELPERS_HTML_COMPONENT_NAME_SUFFIX           "Html"                  CACHE STRING "Html component name suffix"        FORCE)
-set(CMAKE_HELPERS_APPLICATION_EXPORT_SET_NAME_SUFFIX   "ApplicationTargets"    CACHE STRING "Application targets name suffix"   FORCE)
-set(CMAKE_HELPERS_DOCUMENTATION_EXPORT_SET_NAME_SUFFIX "DocumentationTargets"  CACHE STRING "Documentation targets name suffix" FORCE)
