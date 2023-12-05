@@ -2,7 +2,7 @@ function(cmake_helpers_library)
   # ============================================================================================================
   # This module can generate one export set:
   #
-  # - ${PROJECT_NAME}DevelopmentExportSet
+  # - ${PROJECT_NAME}DevelopmentTargets
   #
   # This module can install six components:
   #
@@ -21,7 +21,6 @@ function(cmake_helpers_library)
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HeaderComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent     : Boolean indicating presence of COMPONENT ${PROJECT_NAME}CMakeConfigComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent       : Boolean indicating presence of COMPONENT ${PROJECT_NAME}PkgConfigComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript          : Location of a ${PROJECT_NAME} CPack pre-build script
   # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets               : List of library targets
   #
   # Note that:
@@ -46,7 +45,6 @@ function(cmake_helpers_library)
     HaveHeaderComponent
     HaveCMakeConfigComponent
     HavePkgConfigComponent
-    CpackPreBuildScript
   )
   set(_cmake_helpers_library_array_properties
     LibraryTargets
@@ -71,7 +69,7 @@ function(cmake_helpers_library)
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} FALSE)
   endforeach()
   foreach(_cmake_helpers_library_array_property ${_cmake_helpers_library_array_properties})
-    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property} FALSE)
+    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property})
   endforeach()
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
@@ -348,6 +346,7 @@ function(cmake_helpers_library)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
     cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
+    message(STATUS "JDD : cmake_helpers_property_${PROJECT_NAME}_LibraryTargets = ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets}")
   endforeach()
   #
   # FILE_SETs
@@ -615,8 +614,6 @@ function(cmake_helpers_library)
 	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
       elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
 	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
-      elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
-	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
       elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
 	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
       elseif(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
@@ -633,16 +630,57 @@ function(cmake_helpers_library)
     # Install rule
     #
     if(_cmake_helpers_library_install_targets)
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent TRUE)
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent TRUE)
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent TRUE)
+      foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
+	get_target_property(_cmake_helpers_library_install_target_type ${_cmake_helpers_library_install_target} TYPE)
+	if(_cmake_helpers_library_install_target_type STREQUAL "INTERFACE_LIBRARY")
+	  #
+	  # No binary data - c.f. the check below for public headers
+	  #
+	elseif(_cmake_helpers_library_install_target_type STREQUAL "MODULE_LIBRARY")
+	  #
+	  # Module libraries are always treated as library targets
+	  #
+	  cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent TRUE)
+	elseif(_cmake_helpers_library_install_target_type STREQUAL "STATIC_LIBRARY")
+	  #
+	  # Static libraries are always treated as archive targets
+	  #
+	  cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent TRUE)
+	elseif(_cmake_helpers_library_install_target_type STREQUAL "SHARED_LIBRARY")
+	  #
+	  # All Windows-based systems including Cygwin are DLL platforms
+	  #
+	  if(WIN32 OR CYGWIN)
+	    #
+	    # For DLL platforms the DLL part of a shared library is treated as a runtime target
+	    # and the corresponding import library is treated as an archive target
+	    #
+	    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent TRUE)
+	    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent TRUE)
+	  else()
+	    #
+	    # For non-DLL platforms shared libraries are treated as library targets
+	    #
+	    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent TRUE)
+	  endif()
+	elseif(_cmake_helpers_library_install_target_type STREQUAL "OBJECT_LIBRARY")
+	  #
+	  # An OBJECT library is not installable
+	  #
+	else()
+	  message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_target_type}")
+	endif()
+      endforeach()
+      #
+      # Public headers
+      #
       if(_cmake_helpers_public_headers)
 	cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent TRUE)
 	cmake_helpers_call(set _cmake_helpers_install_files_set_public_header_args FILE_SET public_headers DESTINATION ${CMAKE_HELPERS_INSTALL_INCLUDEDIR} COMPONENT ${PROJECT_NAME}HeaderComponent)
       endif()
       cmake_helpers_call(install
 	TARGETS                 ${_cmake_helpers_library_install_targets}
-	EXPORT                  ${PROJECT_NAME}DevelopmentExportSet
+	EXPORT                  ${PROJECT_NAME}DevelopmentTargets
 	RUNTIME                 DESTINATION ${CMAKE_HELPERS_INSTALL_BINDIR}     COMPONENT ${PROJECT_NAME}RuntimeComponent
 	LIBRARY                 DESTINATION ${CMAKE_HELPERS_INSTALL_LIBDIR}     COMPONENT ${PROJECT_NAME}LibraryComponent
 	ARCHIVE                 DESTINATION ${CMAKE_HELPERS_INSTALL_LIBDIR}     COMPONENT ${PROJECT_NAME}ArchiveComponent
@@ -705,7 +743,7 @@ else()
 endif()
 ")
     install(
-      EXPORT ${PROJECT_NAME}DevelopmentExportSet
+      EXPORT ${PROJECT_NAME}DevelopmentTargets
       NAMESPACE ${PROJECT_NAME}::
       DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
       COMPONENT ${PROJECT_NAME}CMakeConfigComponent
@@ -737,31 +775,57 @@ endif()
     endif()
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent TRUE)
     #
-    # Generate a file that will be overwriten by the post-install scripts
+    # Create a pc.${PROJECT_NAME} directory
     #
-    foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
-      set(FIRE_POST_INSTALL_PKGCONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build/${_cmake_helpers_library_install_target}.pc)
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${FIRE_POST_INSTALL_PKGCONFIG_PATH}")
-      endif()
-      file(WRITE ${FIRE_POST_INSTALL_PKGCONFIG_PATH} "# Content of this file is overwriten during install or package phases")
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent TRUE)
-      cmake_helpers_call(install
-	FILES ${FIRE_POST_INSTALL_PKGCONFIG_PATH}
-	DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
-	COMPONENT ${PROJECT_NAME}PkgConfigComponent
-      )
-    endforeach()
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
+      COMMAND_ECHO STDOUT
+      COMMAND_ERROR_IS_FATAL ANY
+    )
     #
-    # It is important to intall the pkgconfig hooks after the install rule, because withing a directory
-    # install rules are executed in order
+    # Generate a pc.in template that will be configured for every library
+    # Note that it is difficult to tell CMake to generate a file that contains
+    # generator expressions. The [[xxx]] syntax still evaluates them.
+    # So we have to break the syntax inserting dummy things.
     #
+    set(_cmake_helpers_library_pc_in ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/pc.in)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_cmake_helpers_library_pc_in}")
+    endif()
     file(CONFIGURE
-      OUTPUT "pc.${PROJECT_NAME}/CMakeLists.txt"
+      OUTPUT ${_cmake_helpers_library_pc_in}
+      CONTENT "prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+bindir=${exec_prefix}/@CMAKE_HELPERS_INSTALL_BINDIR@
+includedir=${prefix}/@CMAKE_HELPERS_INSTALL_INCLUDEDIR@
+docdir=${prefix}/@CMAKE_HELPERS_INSTALL_DOCDIR@
+libdir=${exec_prefix}/@CMAKE_HELPERS_INSTALL_LIBDIR@
+mandir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@
+man1dir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@1
+man2dir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@2
+
+Name: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_NAME>
+Description: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION>
+Version: $<TARGET_PROPERTY:PC_VERSION>
+Requires: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>,>
+Requires.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>,>
+Cflags: -I${includedir} $<IF:$<BOOL:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>>,-D$<JOIN:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>, -D>,>
+Cflags.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>>,-I${includedir} -D$<JOIN:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>, -D>,>
+Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>,>
+Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>,>
+"
+      @ONLY NEWLINE_STYLE LF)
+
+    set(_cmake_helpers_library_CMakeLists ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/CMakeLists.txt)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_cmake_helpers_library_CMakeLists}")
+    endif()
+    file(CONFIGURE
+      OUTPUT ${_cmake_helpers_library_CMakeLists}
       CONTENT [[
 cmake_minimum_required(VERSION 3.16)
-project(pc_@PROJECT_NAME@ LANGUAGES C CXX)
-include(GNUInstallDirs)
+project(pc_@PROJECT_NAME@)
 
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
 if(CMAKE_HELPERS_DEBUG)
@@ -769,20 +833,9 @@ if(CMAKE_HELPERS_DEBUG)
 endif()
 
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@PROJECT_NAME@/build] Initializing CMAKE_PREFIX_PATH with: $ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
-endif()
-set(CMAKE_PREFIX_PATH "$ENV{CMAKE_MODULE_ROOT_PATH_ENV}")
-
-if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@PROJECT_NAME@/build] Initializing CMAKE_PKGCONFIG_DIR with: $ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}")
-endif()
-set(CMAKE_PKGCONFIG_DIR "$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}")
-
-if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@PROJECT_NAME@/build] find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)")
 endif()
 find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)
-
 #
 # It is important to do static before shared, because shared will reuse static properties
 #
@@ -900,144 +953,100 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
     set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "${_pc_libs_string}")
   endif()
 endforeach()
-
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/pc.in pc_in)
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
   set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
   set(_file "${CMAKE_PKGCONFIG_DIR}/${_cmake_helpers_library_install_target}.pc")
   message(STATUS "[pc.@PROJECT_NAME@/build] Generating ${_file}")
-  file(GENERATE OUTPUT ${_file}
-     CONTENT [=[prefix=${pcfiledir}/../..
-exec_prefix=${prefix}
-bindir=${exec_prefix}/@CMAKE_HELPERS_INSTALL_BINDIR@
-includedir=${prefix}/@CMAKE_HELPERS_INSTALL_INCLUDEDIR@
-docdir=${prefix}/@CMAKE_HELPERS_INSTALL_DOCDIR@
-libdir=${exec_prefix}/@CMAKE_HELPERS_INSTALL_LIBDIR@
-mandir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@
-man1dir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@1
-man2dir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@2
-
-Name: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_NAME>
-Description: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION>
-Version: $<TARGET_PROPERTY:PC_VERSION>
-Requires: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>,>
-Requires.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>,>
-Cflags: -I${includedir} $<IF:$<BOOL:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>>,-D$<JOIN:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>, -D>,>
-Cflags.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>>,-I${includedir} -D$<JOIN:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>, -D>,>
-Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>,>
-Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>,>
-]=] TARGET ${_cmake_helpers_library_target} NEWLINE_STYLE LF)
-
+  file(CONFIGURE OUTPUT ${_file}
+     CONTENT ${pc_in}
+     TARGET ${_cmake_helpers_library_target} NEWLINE_STYLE LF
+  )
 endforeach()
 ]] @ONLY NEWLINE_STYLE LF)
-
-    file(CONFIGURE
-      OUTPUT "pc.${PROJECT_NAME}/post-install.cmake"
-      CONTENT [[
-set(proj "@CMAKE_CURRENT_BINARY_DIR@/pc.@PROJECT_NAME@")
-if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[pc.@PROJECT_NAME@/post-install.cmake] Building in ${proj}/build")
-endif()
-execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" @_cmake_helpers_library_generator_platform_args@ @_cmake_helpers_library_generator_toolset_args@ -DCMAKE_HELPERS_DEBUG=@CMAKE_HELPERS_DEBUG@ -S "${proj}" -B "${proj}/build" COMMAND_ERROR_IS_FATAL ANY COMMAND_ECHO STDOUT)
-]] @ONLY NEWLINE_STYLE LF)
-
-    set(FIRE_POST_INSTALL_CMAKE_PATH ${CMAKE_CURRENT_BINARY_DIR}/fire_post_install.cmake)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] Generating ${FIRE_POST_INSTALL_CMAKE_PATH}")
-    endif()
-    file(WRITE  ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] \\\$ENV{DESTDIR}: \\\"\$ENV{DESTDIR}\\\"\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_INSTALL_PREFIX \"\$ENV{CMAKE_INSTALL_PREFIX_ENV}\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_INSTALL_PREFIX: \\\"\${CMAKE_INSTALL_PREFIX}\\\"\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_MODULE_ROOT_PATH \"\$ENV{CMAKE_MODULE_ROOT_PATH_ENV}\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "set(CMAKE_PKGCONFIG_ROOT_PATH \"\$ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV}\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "if(CMAKE_HELPERS_DEBUG)\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_MODULE_ROOT_PATH: \\\"\${CMAKE_MODULE_ROOT_PATH}\\\"\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "  message(STATUS \"[fire_post_install.cmake] CMAKE_PKGCONFIG_ROOT_PATH: \\\"\${CMAKE_PKGCONFIG_ROOT_PATH}\\\"\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "endif()\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "message(STATUS \"[fire_post_install.cmake] include(${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake)\")\n")
-    file(APPEND ${FIRE_POST_INSTALL_CMAKE_PATH} "include(${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/post-install.cmake)\n")
     #
-    # We CANNOT use CMAKE_INSTALL_PREFIX variable contrary to what is posted almost everywhere on the net: CPack will
-    # will have a CMAKE_INSTALL_PREFIX different, the real and only way to know exactly where we install things is to
-    # set the current working directory to ${DESTDIR}${CMAKE_INSTALL_PREFIX}, and use WORKING_DIRECTORY as the full install prefix dir.
-    # Now take care: DESTDIR does not "work" on Windows if used as is, and CMake has a hook, that we replacate here
+    # Register a file for install that will be overwriten by the very last install(CODE ...) script - see just after this foreach() loop
     #
-    set(_hook [[
-
-    set(_destination "${CMAKE_INSTALL_PREFIX}")
-    cmake_path(CONVERT ${_destination} TO_CMAKE_PATH_LIST _destination NORMALIZE)
-    if(NOT ("x$ENV{DESTDIR}" STREQUAL "x"))
-      file(TO_CMAKE_PATH "$ENV{DESTDIR}" _destdir)
-      string(LENGTH "${_destination}" _destination_length)
-      if(_destination_length GREATER 1)
-	string(SUBSTRING "${_destination}" 0 1 _ch1)
-	string(SUBSTRING "${_destination}" 1 1 _ch2)
-	set(_ch3 0)
-	if(_destination_length GREATER 2)
-	  string(SUBSTRING "${_destination}" 2 1 _ch3)
-	endif()
-	set(_skip 0)
-	if(NOT (ch1 STREQUAL "/"))
-	  set(_relative 0)
-	  if(((("${_ch1}" STRGREATER_EQUAL  "a") AND ("${_ch1}" STRLESS_EQUAL  "z")) OR (("${_ch1}" STRGREATER_EQUAL  "A") AND ("${_ch1}" STRLESS_EQUAL  "Z"))) AND ("${_ch2}" STREQUAL ":"))
-	    #
-	    # Assume Windows
-	    #
-	    set(_skip 2)
-	    if(NOT ("${_ch3}" STREQUAL "/"))
-	      set(_relative 1)
-	    endif()
-	  else()
-	    set(_relative 1)
-	  endif()
-	  if (_relative)
-	    message(FATAL_ERROR "Called with relative DESTINATION. This does not make sense when using DESTDIR. Specify absolute path or remove DESTDIR environment variable.")
-	  endif()
-	else()
-	  if("${_ch2}" STREQUAL "/")
-	    #
-	    # Looks like a network path
-	    #
-	    message(FATAL_ERROR "Called with network path DESTINATION. This does not make sense when using DESTDIR. Specify local absolute path or remove DESTDIR environment variable.\nCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}\n")
-	  endif()
-	endif()
+    foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
+      set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build/${_cmake_helpers_library_install_target}.pc)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${_cmake_helpers_library_pc}")
       endif()
-      string(SUBSTRING "${_destination}" ${_skip} -1 _destination)
-      set(_destination "${_destdir}${_destination}")
+      file(WRITE ${_cmake_helpers_library_pc} "# Content of this file is overwriten during install or package phases")
+      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent TRUE)
+      cmake_helpers_call(install
+	FILES ${_cmake_helpers_library_pc}
+	DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
+	COMPONENT ${PROJECT_NAME}PkgConfigComponent
+      )
+    endforeach()
+    #
+    # It is important to intall the pkgconfig hooks as the LAST install rule, because withing a directory
+    # install rules are executed in order
+    #
+    install(CODE "  set(_destination \${CMAKE_INSTALL_PREFIX})
+  cmake_path(CONVERT \"\${_destination}\" TO_CMAKE_PATH_LIST _destination NORMALIZE)
+  if(\$ENV{DESTDIR})
+    cmake_path(CONVERT \"\$ENV{DESTDIR}\" TO_CMAKE_PATH_LIST _destdir NORMALIZE)
+    string(LENGTH \${_destination} _destination_length)
+    if(_destination_length GREATER 1)
+      string(SUBSTRING \"\${_destination}\" 0 1 _ch1)
+      string(SUBSTRING \"\${_destination}\" 1 1 _ch2)
+      set(_ch3 0)
+      if(_destination_length GREATER 2)
+        string(SUBSTRING \"\${_destination}\" 2 1 _ch3)
+      endif()
+      set(_skip 0)
+      if(NOT (ch1 STREQUAL \"/\"))
+        set(_relative 0)
+        if((((_ch1 STRGREATER_EQUAL \"a\") AND (_ch1 STRLESS_EQUAL \"z\")) OR ((_ch1 STRGREATER_EQUAL \"A\") AND (_ch1 STRLESS_EQUAL \"Z\"))) AND (_ch2 STREQUAL \":\"))
+          #
+          # Assume Windows
+          #
+          set(_skip 2)
+          if(NOT (_ch3 STREQUAL \"/\"))
+            set(_relative 1)
+          endif()
+        else()
+          set(_relative 1)
+        endif()
+        if (_relative)
+          message(FATAL_ERROR \"Called with relative DESTINATION. This does not make sense when using DESTDIR. Specify absolute path or remove DESTDIR environment variable.\")
+        endif()
+      else()
+        if(_ch2 STREQUAL \"/\")
+          #
+          # Looks like a network path
+          #
+          message(FATAL_ERROR \"Called with network path DESTINATION. This does not make sense when using DESTDIR. Specify local absolute path or remove DESTDIR environment variable.\nCMAKE_INSTALL_PREFIX=\${CMAKE_INSTALL_PREFIX}\n\")
+        endif()
+      endif()
     endif()
-    cmake_path(IS_ABSOLUTE _destination _destination_is_absolute)
-    if(NOT _destination_is_absolute)
-      cmake_path(ABSOLUTE_PATH _destination NORMALIZE OUTPUT_VARIABLE _destination_absolute)
-      message(STATUS "Destination changed from ${_destination} to ${_destination_absolute}")
-      set(_destination "${_destination_absolute}")
+    string(SUBSTRING \"\${_destination}\" \${_skip} -1 _destination)
+    #
+    # Make sure that _destdir ends with a \"/\"
+    #
+    string(REGEX MATCH [[/\$]] _destdir_match \${_destdir})
+    if(_destdir_match)
+      set(_destination \"\${_destdir}\${_destination}\")
+    else()
+      set(_destination \"\${_destdir}/\${_destination}\")
     endif()
-]])
-    install(CODE ${_hook}
-      COMPONENT ${PROJECT_NAME}CMakeConfigComponent
-    )
-    install(CODE "
-
-    set(CPACK_IS_RUNNING \$ENV{CPACK_IS_RUNNING})
-    #
-    # We do not want to run this when it is CPack
-    #
-    if (NOT CPACK_IS_RUNNING)
-      set(ENV{CMAKE_INSTALL_PREFIX_ENV} \"${CMAKE_INSTALL_PREFIX}\") # Variable may be empty
-      set(ENV{CMAKE_MODULE_ROOT_PATH_ENV} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
-      set(ENV{CMAKE_PKGCONFIG_ROOT_PATH_ENV} \"\${_destination}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
-      execute_process(COMMAND \"${CMAKE_COMMAND}\" -G \"${CMAKE_GENERATOR}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -P \"${FIRE_POST_INSTALL_CMAKE_PATH}\" WORKING_DIRECTORY \"\${_destination}\" COMMAND_ERROR_IS_FATAL ANY COMMAND_ECHO STDOUT)
-    endif()
-"
-      COMPONENT ${PROJECT_NAME}CMakeConfigComponent
-    )
-    #
-    # CPack specific pre-build script
-    #
-    cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_pc_${PROJECT_NAME}.cmake)
-    file(WRITE ${cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript} "# Content of this file is overwriten during install or package phase")
+  endif()
+  cmake_path(IS_ABSOLUTE _destination _destination_is_absolute)
+  if(NOT _destination_is_absolute)
+    cmake_path(ABSOLUTE_PATH _destination NORMALIZE OUTPUT_VARIABLE _destination_absolute)
+    set(_destination \${_destination_absolute})
+  endif()
+  message(STATUS \"Install destination path: \${_destination}\")
+  set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
+  execute_process(
+    COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" --debug-find -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -S \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}\" -B \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build\"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+")
   endif()
   #
   # Apply dependencies
@@ -1070,7 +1079,7 @@ execute_process(COMMAND "@CMAKE_COMMAND@" -G "@CMAKE_GENERATOR@" @_cmake_helpers
   endif()
   foreach(_cmake_helpers_library_property ${_cmake_helpers_library_properties})
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property})
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} TRUE)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property}})
     endif()
   endforeach()
   foreach(_cmake_helpers_library_array_property ${_cmake_helpers_library_array_properties})

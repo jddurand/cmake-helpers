@@ -1,8 +1,8 @@
-function(cmake_helpers_exe name)
+Function(cmake_helpers_exe name)
   # ============================================================================================================
   # This module can generate one export set:
   #
-  # - ${PROJECT_NAME}ApplicationExportSet
+  # - ${PROJECT_NAME}ApplicationTargets
   #
   # This module can install one components:
   #
@@ -10,16 +10,22 @@ function(cmake_helpers_exe name)
   #
   # This module depend on these ${CMAKE_CURRENT_BINARY_DIR} directory properties:
   #
-  # - cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets
+  # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets
   #
   # These directory properties are generated on ${CMAKE_CURRENT_BINARY_DIR}:
   #
   # - cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ExeComponent
   # ============================================================================================================
   #
+  # Check exe name
+  #
+  if(NOT name)
+    message(FATAL_ERROR "name argument is missing")
+  endif()
+  #
   # Log prefix
   #
-  set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/exe")
+  set(_cmake_helpers_logprefix "cmake_helpers/${PROJECT_NAME}/exe/${name}")
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] ========")
     message(STATUS "[${_cmake_helpers_logprefix}] Starting")
@@ -36,7 +42,20 @@ function(cmake_helpers_exe name)
   #
   # Directory properties dependencies
   #
-  cmake_helpers_call(get_property cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets)
+  set(_cmake_helpers_exe_dependencies
+    cmake_helpers_property_${PROJECT_NAME}_LibraryTargets
+  )
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] -------------")
+    message(STATUS "[${_cmake_helpers_logprefix}] Dependencies:")
+    message(STATUS "[${_cmake_helpers_logprefix}] -------------")
+  endif()
+  foreach(_cmake_helpers_exe_dependency ${_cmake_helpers_exe_dependencies})
+    get_property(${_cmake_helpers_exe_dependency} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_cmake_helpers_exe_dependency})
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] ... ${_cmake_helpers_exe_dependency}: ${${_cmake_helpers_exe_dependency}}")
+    endif()
+  endforeach()
   #
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
@@ -44,12 +63,6 @@ function(cmake_helpers_exe name)
   foreach(_cmake_helpers_exe_property ${_cmake_helpers_exe_properties})
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_exe_property} FALSE)
   endforeach()
-  #
-  # Check exe name
-  #
-  if(NOT name)
-    message(FATAL_ERROR "name argument is missing")
-  endif()
   #
   # Arguments definitions: options, one value arguments, multivalue arguments.
   #
@@ -84,10 +97,10 @@ function(cmake_helpers_exe name)
   # Add an executable using all library targets. We are not supposed to have none, but we support this case anyway.
   #
   set(_cmake_helpers_exe_targets)
-  if(NOT cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets)
-    set(cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets FALSE)
+  if(NOT cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+    set(cmake_helpers_property_${PROJECT_NAME}_LibraryTargets FALSE)
   endif()
-  foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_DevelopmentTargets})
+  foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
     if(TARGET ${_cmake_helpers_library_target})
       get_target_property(_cmake_helpers_library_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_type STREQUAL "SHARED_LIBRARY")
@@ -147,12 +160,12 @@ function(cmake_helpers_exe name)
 	cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent TRUE)
 	cmake_helpers_call(install
 	  TARGETS ${_cmake_helpers_exe_target}
-	  EXPORT ${PROJECT_NAME}ApplicationExportSet
+	  EXPORT ${PROJECT_NAME}ApplicationTargets
 	  RUNTIME DESTINATION ${CMAKE_HELPERS_INSTALL_BINDIR}
 	  COMPONENT ${PROJECT_NAME}ExeComponent
 	)
 	cmake_helpers_call(install
-	  EXPORT ${PROJECT_NAME}ApplicationExportSet
+	  EXPORT ${PROJECT_NAME}ApplicationTargets
 	  NAMESPACE ${PROJECT_NAME}::
 	  DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
 	  COMPONENT ${PROJECT_NAME}ExeComponent
@@ -221,7 +234,7 @@ function(cmake_helpers_exe name)
   endif()
   foreach(_cmake_helpers_exe_property ${_cmake_helpers_exe_properties})
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_exe_property})
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_exe_property} TRUE)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_exe_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_exe_property}})
     endif()
   endforeach()
   foreach(_cmake_helpers_exe_array_property ${_cmake_helpers_exe_array_properties})

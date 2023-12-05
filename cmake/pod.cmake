@@ -2,7 +2,7 @@ function(cmake_helpers_pod)
   # ============================================================================================================
   # This module can generate one export set:
   #
-  # - ${PROJECT_NAME}DocumentationExportSet
+  # - ${PROJECT_NAME}DocumentationTargets
   #
   # This module can install two components:
   #
@@ -129,7 +129,7 @@ function(cmake_helpers_pod)
       cmake_helpers_output_to_target(
 	${CMAKE_CURRENT_BINARY_DIR}/man                     # workingDirectory
 	${_cmake_helpers_pod_pod2man_gzip_output}           # output
-	${PROJECT_NAME}DocumentationExportSet               # exportSet
+	${PROJECT_NAME}DocumentationTargets                 # exportSet
 	${CMAKE_HELPERS_INSTALL_MANDIR}                     # destination
 	${PROJECT_NAME}ManComponent                         # component
 	_cmake_helpers_pod_pod2man_gzip_output_target       # target_outvar
@@ -186,7 +186,7 @@ function(cmake_helpers_pod)
     cmake_helpers_output_to_target(
       ${CMAKE_CURRENT_BINARY_DIR}/html                    # workingDirectory
       ${_cmake_helpers_pod_pod2html_output}               # output
-      ${PROJECT_NAME}DocumentationExportSet               # exportSet
+      ${PROJECT_NAME}DocumentationTargets                 # exportSet
       ${CMAKE_HELPERS_INSTALL_HTMLDIR}                    # destination
       ${PROJECT_NAME}HtmlComponent                        # component
       _cmake_helpers_pod_pod2html_output_target           # target_outvar
@@ -223,7 +223,7 @@ function(cmake_helpers_pod)
   endif()
   foreach(_cmake_helpers_pod_property ${_cmake_helpers_pod_properties})
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property})
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property} TRUE)
+      cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property}})
     endif()
   endforeach()
   foreach(_cmake_helpers_pod_array_property ${_cmake_helpers_pod_array_properties})
