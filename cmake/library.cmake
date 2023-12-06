@@ -518,10 +518,10 @@ function(cmake_helpers_library)
       if(_cmake_helpers_library_ntrace)
 	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_NTRACE -DNTRACE)
       endif()
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
 
       if(WIN32 AND _cmake_helpers_library_with_msvc_minimal_headers)
 	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -DWIN32_LEAN_AND_MEAN)
@@ -795,7 +795,7 @@ endif()
     endif()
     file(CONFIGURE
       OUTPUT ${_cmake_helpers_library_pc_in}
-      CONTENT "prefix=${pcfiledir}/../..
+      CONTENT [[prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 bindir=${exec_prefix}/@CMAKE_HELPERS_INSTALL_BINDIR@
 includedir=${prefix}/@CMAKE_HELPERS_INSTALL_INCLUDEDIR@
@@ -814,7 +814,7 @@ Cflags: -I${includedir} $<IF:$<BOOL:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITI
 Cflags.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>>,-I${includedir} -D$<JOIN:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>, -D>,>
 Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>,>
 Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>,>
-"
+]]
       @ONLY NEWLINE_STYLE LF)
 
     set(_cmake_helpers_library_CMakeLists ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/CMakeLists.txt)
@@ -830,6 +830,7 @@ project(pc_@PROJECT_NAME@)
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[pc.@PROJECT_NAME@/build] Starting")
+  message(STATUS "[pc.@PROJECT_NAME@/build] CMAKE_PKGCONFIG_DIR: ${CMAKE_PKGCONFIG_DIR}")
 endif()
 
 if(CMAKE_HELPERS_DEBUG)
@@ -845,7 +846,14 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
   get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
   get_target_property(_cmake_helpers_library_interface_link_libraries ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES)
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[pc.@PROJECT_NAME@/build] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_interface_link_libraries}")
+    if(${_cmake_helpers_library_interface_link_libraries})
+      message(STATUS "[pc.@PROJECT_NAME@/build] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_interface_link_libraries}")
+    else()
+      #
+      # We prefer no string instead of _cmake_helpers_library_interface_link_libraries-NOTFOUND
+      #
+      message(STATUS "[pc.@PROJECT_NAME@/build] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES:")
+    endif()
   endif()
   set(_cmake_helpers_library_computed_requires)
   set(_cmake_helpers_library_computed_extra_libs)
@@ -953,14 +961,13 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
     set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "${_pc_libs_string}")
   endif()
 endforeach()
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/pc.in pc_in)
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
   set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
   set(_file "${CMAKE_PKGCONFIG_DIR}/${_cmake_helpers_library_install_target}.pc")
   message(STATUS "[pc.@PROJECT_NAME@/build] Generating ${_file}")
-  file(CONFIGURE OUTPUT ${_file}
-     CONTENT ${pc_in}
-     TARGET ${_cmake_helpers_library_target} NEWLINE_STYLE LF
+  file(GENERATE OUTPUT ${_file}
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/pc.in
+    TARGET ${_cmake_helpers_library_target} NEWLINE_STYLE LF
   )
 endforeach()
 ]] @ONLY NEWLINE_STYLE LF)
@@ -968,7 +975,7 @@ endforeach()
     # Register a file for install that will be overwriten by the very last install(CODE ...) script - see just after this foreach() loop
     #
     foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
-      set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build/${_cmake_helpers_library_install_target}.pc)
+      set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target}.pc)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${_cmake_helpers_library_pc}")
       endif()
@@ -1038,11 +1045,14 @@ endforeach()
     cmake_path(ABSOLUTE_PATH _destination NORMALIZE OUTPUT_VARIABLE _destination_absolute)
     set(_destination \${_destination_absolute})
   endif()
-  message(STATUS \"Install destination path: \${_destination}\")
+  set(CMAKE_PKGCONFIG_DIR \${_destination}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR})
+  message(STATUS \"Calling for pkgconfig files generation\")
+  #
+  # CMake config files for the project has already beeing installed prior to this CODE hook
+  #
   set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build\"
-    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -S \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}\" -B \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_PKGCONFIG_DIR=\${CMAKE_PKGCONFIG_DIR} -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG} -S \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}\" -B \"${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}/build\"
     COMMAND_ECHO STDOUT
     COMMAND_ERROR_IS_FATAL ANY
   )
