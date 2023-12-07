@@ -6,9 +6,8 @@ function(cmake_helpers_package)
   # - cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentLibraryComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentArchiveComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentHeaderComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent     : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentCMakeConfigComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent       : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentPkgconfigComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript          : Location of a ${PROJECT_NAME} CPack pre-build script
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentConfigComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript          : Location of a ${PROJECT_NAME} CPack pre-build script
   # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets               : List of library targets
   # - cmake_helpers_property_${PROJECT_NAME}_HaveManComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DocumentationManComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent            : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DocumentationHtmlComponent
@@ -37,9 +36,8 @@ function(cmake_helpers_package)
     cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent
-    cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent
-    cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent
-    cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript
+    cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent
+    cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript
     cmake_helpers_property_${PROJECT_NAME}_LibraryTargets
     cmake_helpers_property_${PROJECT_NAME}_HaveManComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent
@@ -154,8 +152,7 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript)
-    list(APPEND CPACK_PRE_BUILD_SCRIPTS ${cmake_helpers_property_${PROJECT_NAME}_CpackPreBuildScript})
+  if(cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
   endif()
   #
   # Set common CPack variables
@@ -190,8 +187,7 @@ function(cmake_helpers_package)
       LibraryComponent
       ArchiveComponent
       HeaderComponent
-      CMakeConfigComponent
-      PkgConfigComponent
+      ConfigComponent
       ManComponent
       HtmlComponent
     )
@@ -267,8 +263,7 @@ function(cmake_helpers_package)
 	LibraryComponent
 	ArchiveComponent
 	HeaderComponent
-	CMakeConfigComponent
-	PkgConfigComponent
+	ConfigComponent
       )
       if(cmake_helpers_property_${PROJECT_NAME}_Have${_cmake_helpers_package_component})
 	cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_cmake_helpers_package_component}

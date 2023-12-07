@@ -10,8 +10,7 @@ function(cmake_helpers_library)
   # - ${PROJECT_NAME}LibraryComponent
   # - ${PROJECT_NAME}ArchiveComponent
   # - ${PROJECT_NAME}HeaderComponent
-  # - ${PROJECT_NAME}CMakeConfigComponent
-  # - ${PROJECT_NAME}PkgConfigComponent
+  # - ${PROJECT_NAME}ConfigComponent
   #
   # These directory properties are generated on ${CMAKE_CURRENT_BINARY_DIR}:
   #
@@ -19,8 +18,8 @@ function(cmake_helpers_library)
   # - cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}LibraryComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ArchiveComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HeaderComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent     : Boolean indicating presence of COMPONENT ${PROJECT_NAME}CMakeConfigComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent       : Boolean indicating presence of COMPONENT ${PROJECT_NAME}PkgConfigComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ConfigComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript          : Script that generates pkgconfig files after install phase
   # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets               : List of library targets
   #
   # Note that:
@@ -43,8 +42,8 @@ function(cmake_helpers_library)
     HaveLibraryComponent
     HaveArchiveComponent
     HaveHeaderComponent
-    HaveCMakeConfigComponent
-    HavePkgConfigComponent
+    HaveConfigComponent
+    PkgConfigHookScript
   )
   set(_cmake_helpers_library_array_properties
     LibraryTargets
@@ -692,7 +691,7 @@ function(cmake_helpers_library)
 	message(STATUS "[${_cmake_helpers_logprefix}] Creating CMake configuration files")
 	message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------------")
       endif()
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent TRUE)
+      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent TRUE)
       #
       # CMake configuration files for import
       #
@@ -746,7 +745,7 @@ endif()
 	EXPORT ${PROJECT_NAME}DevelopmentTargets
 	NAMESPACE ${PROJECT_NAME}::
 	DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
-	COMPONENT ${PROJECT_NAME}CMakeConfigComponent
+	COMPONENT ${PROJECT_NAME}ConfigComponent
       )
 
       include(CMakePackageConfigHelpers)
@@ -765,23 +764,22 @@ endif()
       cmake_helpers_call(install
 	FILES ${_export_cmake_config_out} ${_export_cmake_configversion_out}
 	DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
-	COMPONENT ${PROJECT_NAME}CMakeConfigComponent
+	COMPONENT ${PROJECT_NAME}ConfigComponent
       )
     endif()
     #
     # We create pkgconfighooks if we install cmake configuration files
     #
-    if(cmake_helpers_property_${PROJECT_NAME}_HaveCMakeConfigComponent)
+    if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent)
       # *****************************************************************************************
       # This will do the LAST install() - we generate something that call be called with cmake -P
-      set(_cmake_helpers_library_pkgconfig_cmake_path ${CMAKE_CURRENT_BINARY_DIR}/pkgconfig.cmake)
+      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript ${CMAKE_CURRENT_BINARY_DIR}/pkgconfig.cmake)
       # *****************************************************************************************
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
 	message(STATUS "[${_cmake_helpers_logprefix}] Creating pkgconfig hooks")
 	message(STATUS "[${_cmake_helpers_logprefix}] ------------------------")
       endif()
-      cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent TRUE)
       #
       # Create a pc.${PROJECT_NAME} directory
       #
@@ -997,7 +995,7 @@ endif()
         NEWLINE_STYLE LF
       )
       #
-      # Register a file for install that will be overwriten by the very last install(CODE ...) script - see just after this foreach() loop
+      # Install dummy .pc files that will overwriten during install, c.f. install(CODE ...) below
       #
       foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
 	set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target}.pc)
@@ -1005,21 +1003,20 @@ endif()
 	  message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${_cmake_helpers_library_pc}")
 	endif()
 	file(WRITE ${_cmake_helpers_library_pc} "# Content of this file is overwriten during install or package phases")
-	cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HavePkgConfigComponent TRUE)
 	cmake_helpers_call(install
 	  FILES ${_cmake_helpers_library_pc}
 	  DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
-	  COMPONENT ${PROJECT_NAME}PkgConfigComponent
+	  COMPONENT ${PROJECT_NAME}ConfigComponent
 	)
       endforeach()
       #
-      # It is important to intall the pkgconfig hooks as the LAST install rule, because withing a directory
-      # install rules are executed in order
+      # Generate a cmake file that will process CMAKE_INSTALL_PREFIX to send correct parameters
+      # to a generated CMake project, the later will generate the .pc files using the CMake config files
       #
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] Generating pkgconfig.cmake")
       endif()
-      file(WRITE ${_cmake_helpers_library_pkgconfig_cmake_path} "  set(_cmake_helpers_logprefix \"cmake_helpers/${PROJECT_NAME}/library/pkgconfig\")
+      file(WRITE ${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript} "  set(_cmake_helpers_logprefix \"cmake_helpers/${PROJECT_NAME}/library/pkgconfig\")
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS \"[\${_cmake_helpers_logprefix}] ========\")
     message(STATUS \"[\${_cmake_helpers_logprefix}] Starting\")
@@ -1090,29 +1087,42 @@ endif()
     COMMAND_ECHO STDOUT
     COMMAND_ERROR_IS_FATAL ANY
   )
-"
-    )
-    endif()
-    install(CODE "  set(_cmake_helpers_library_pkgconfig_cmake_path \"${_cmake_helpers_library_pkgconfig_cmake_path}\")
-  message(STATUS \"Executing \${_cmake_helpers_library_pkgconfig_cmake_path}\")\n
-  set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
-  set(_cmake_helpers_install_pkgconfigdir \"${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
-  set(_cmake_helpers_install_cmakedir \"${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
-  set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
-  set(_cmake_helpers_library_pkgconfig_cmake_path \"${_cmake_helpers_library_pkgconfig_cmake_path}\")
-  set(_cmake_current_binary_dir \"${CMAKE_CURRENT_BINARY_DIR}\")
-  execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_cmake_helpers_library_pkgconfig_cmake_path}
-    WORKING_DIRECTORY \${_cmake_current_binary_dir}
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-   )
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS \"[\${_cmake_helpers_logprefix}] ======\")
     message(STATUS \"[\${_cmake_helpers_logprefix}] Ending\")
     message(STATUS \"[\${_cmake_helpers_logprefix}] ======\")
   endif()
 "
+    )
+    endif()
+    #
+    # Install CODE hook for the ConfigComponent
+    #
+    install(CODE "  set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
+  message(STATUS \"... CMAKE_INSTALL_PREFIX              : \${_cmake_install_prefix}\")\n
+
+  set(_cmake_current_binary_dir \"${CMAKE_CURRENT_BINARY_DIR}\")
+  message(STATUS \"... CMAKE_CURRENT_BINARY_DIR          : \${_cmake_current_binary_dir}\")\n
+
+  set(_cmake_helpers_install_pkgconfigdir \"${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+  message(STATUS \"... CMAKE_HELPERS_INSTALL_PKGCONFIGDIR: \${_cmake_helpers_install_pkgconfigdir}\")\n
+
+  set(_cmake_helpers_install_cmakedir \"${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
+  message(STATUS \"... CMAKE_HELPERS_INSTALL_CMAKEDIR    : \${_cmake_helpers_install_cmakedir}\")\n
+
+  set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
+  message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
+
+  set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
+  message(STATUS \"Executing \${_script}\")\n
+  execute_process(
+    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    WORKING_DIRECTORY \${_cmake_current_binary_dir}
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+   )
+"
+      COMPONENT ${PROJECT_NAME}ConfigComponent
     )
   endif()
   #
