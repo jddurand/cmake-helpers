@@ -5,7 +5,7 @@ function(cmake_helpers_match_regexes value regexes default output_var)
 
   if(regexes)
     set(_matched FALSE)
-    foreach(_regex ${regexes})
+    foreach(_regex IN LISTS regexes)
       string(REGEX MATCH ${_regex} _output ${value})
       if(_output)
         set(_matched TRUE)

@@ -2,16 +2,16 @@ function(cmake_helpers_package)
   # ============================================================================================================
   # This module depend on these ${CMAKE_CURRENT_BINARY_DIR} directory properties:
   #
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentRuntimeComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentLibraryComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentArchiveComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentHeaderComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DevelopmentConfigComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript          : Location of a ${PROJECT_NAME} CPack pre-build script
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}RuntimeComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}LibraryComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent         : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ArchiveComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HeaderComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ConfigComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript          : Script that generates pkgconfig files after install phase
   # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets               : List of library targets
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveManComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DocumentationManComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent            : Boolean indicating presence of COMPONENT ${PROJECT_NAME}DocumentationHtmlComponent
-  # - cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ApplicationExeComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent            : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HtmlComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveManComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ManComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ExeComponent
   # ============================================================================================================
   #
   # We do not want to package if we install nothing
@@ -48,7 +48,7 @@ function(cmake_helpers_package)
     message(STATUS "[${_cmake_helpers_logprefix}] Dependencies:")
     message(STATUS "[${_cmake_helpers_logprefix}] -------------")
   endif()
-  foreach(_cmake_helpers_package_dependency ${_cmake_helpers_package_dependencies})
+  foreach(_cmake_helpers_package_dependency IN LISTS _cmake_helpers_package_dependencies)
     get_property(${_cmake_helpers_package_dependency} DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY ${_cmake_helpers_package_dependency})
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ... ${_cmake_helpers_package_dependency}: ${${_cmake_helpers_package_dependency}}")
@@ -99,7 +99,7 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
   set(_cmake_helpers_package_library_display_name              "Libraries")
   set(_cmake_helpers_package_library_display_names)
-  foreach(_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+  foreach(_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
     get_target_property(_type ${_target} TYPE)
     if(_type STREQUAL "INTERFACE_LIBRARY")
       list(APPEND _cmake_helpers_package_library_display_names "Interface")
@@ -152,7 +152,110 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+  if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+    #
+    # CPack install things breaked into components. But we want a true install to generate the .pc files.
+    # So we install in a local directory, and copy back the .pc files in the CPack's CMAKE_INSTALL_PREFIX/component pkgconfig dir.
+    # Unfortunately a true local install will need the current configuratio, and it is not easy to propagate that to CPack.
+    #
+    # A $<CONFIG> aware CPack script. We keep the logic to be config aware in the case there is no $<CONFIG>, with the technique
+    # described in https://cmake.org/pipermail/cmake-developers/2015-April/025082.html .
+    # When $<CONFIG> is set, CMake will redo every file(GENERATE ...) call.
+    #
+    set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
+    file(WRITE ${_cmake_helpers_package_cpack_project_config_file} "
+if(CPACK_BUILD_CONFIG)
+  list(APPEND CPACK_INSTALL_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
+else()
+  list(APPEND CPACK_INSTALL_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}.cmake\")
+endif()
+"
+    )
+    set(CPACK_PROJECT_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
+    #
+    # Generate a script for every configuration. This will
+    # - do a local install
+    # - use this local install to generate correct .pc files
+    # - copy these .pc files in the CPack staging area
+    #
+    set(_cmake_helpers_package_local_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install")
+    cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(_cmake_helpers_package_generator_is_multi_config)
+      set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
+    elseif($<CONFIG>)
+      set(_cmake_helpers_package_configs $<CONFIG>)
+    else()
+      set(_cmake_helpers_package_configs)
+    endif()
+    if(_cmake_helpers_package_configs)
+      foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
+	file(GENERATE
+	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+	  CONTENT "
+set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"******************************************************************************\")
+message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"******************************************************************************\")
+execute_process(
+  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
+  COMMAND_ECHO STDOUT
+  COMMAND_ERROR_IS_FATAL ANY
+)
+execute_process(
+  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --config ${_cmake_helpers_package_config} --prefix \"\${_cmake_helpers_package_local_prefix}\"
+  COMMAND_ECHO STDOUT
+  COMMAND_ERROR_IS_FATAL ANY
+)
+
+set(_cmake_helpers_package_configcomponent_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}ConfigComponent\")
+set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configcomponent_path}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+message(STATUS \"******************************************************************************\")
+message(STATUS \"Copying\")
+message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
+message(STATUS \"to\")
+message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
+message(STATUS \"******************************************************************************\")
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
+foreach(_pc IN LISTS _pcs)
+  message(STATUS \"\${_pc}\")
+  file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
+endforeach()
+"
+        )
+      endforeach()
+    else()
+      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+	"
+set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"******************************************************************************\")
+message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"******************************************************************************\")
+execute_process(
+  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
+  COMMAND_ECHO STDOUT
+  COMMAND_ERROR_IS_FATAL ANY
+)
+execute_process(
+  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_package_local_prefix}\"
+  COMMAND_ECHO STDOUT
+  COMMAND_ERROR_IS_FATAL ANY
+)
+set(_cmake_helpers_package_configcomponent_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}ConfigComponent\")
+set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configcomponent_path}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+message(STATUS \"******************************************************************************\")
+message(STATUS \"Copying\")
+message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
+message(STATUS \"to\")
+message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
+message(STATUS \"******************************************************************************\")
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
+foreach(_pc IN_LIST _pcs)
+  message(STATUS \"\${_pc}\")
+  file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
+endforeach()
+"
+      )
+    endif()
   endif()
   #
   # Set common CPack variables
@@ -192,7 +295,7 @@ function(cmake_helpers_package)
       HtmlComponent
     )
     if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
-      list(APPEND CPACK_COMPONENTS_ALL ${PROJECT_NAME}_${_component})
+      list(APPEND CPACK_COMPONENTS_ALL ${PROJECT_NAME}${_component})
     endif()
   endforeach()
   #

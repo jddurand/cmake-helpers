@@ -36,7 +36,7 @@ function(cmake_helpers_pod)
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
   #
-  foreach(_cmake_helpers_pod_property ${_cmake_helpers_pod_properties})
+  foreach(_cmake_helpers_pod_property IN LISTS _cmake_helpers_pod_properties)
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property} FALSE)
   endforeach()
   #
@@ -221,12 +221,12 @@ function(cmake_helpers_pod)
     message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
     message(STATUS "[${_cmake_helpers_logprefix}] ============================")
   endif()
-  foreach(_cmake_helpers_pod_property ${_cmake_helpers_pod_properties})
+  foreach(_cmake_helpers_pod_property IN LISTS _cmake_helpers_pod_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property}})
     endif()
   endforeach()
-  foreach(_cmake_helpers_pod_array_property ${_cmake_helpers_pod_array_properties})
+  foreach(_cmake_helpers_pod_array_property IN LISTS _cmake_helpers_pod_array_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_array_property})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} APPEND PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_array_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_array_property}})
     endif()

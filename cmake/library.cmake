@@ -64,10 +64,10 @@ function(cmake_helpers_library)
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
   #
-  foreach(_cmake_helpers_library_property ${_cmake_helpers_library_properties})
+  foreach(_cmake_helpers_library_property IN LISTS _cmake_helpers_library_properties)
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} FALSE)
   endforeach()
-  foreach(_cmake_helpers_library_array_property ${_cmake_helpers_library_array_properties})
+  foreach(_cmake_helpers_library_array_property IN LISTS _cmake_helpers_library_array_properties)
     cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property})
   endforeach()
   #
@@ -220,7 +220,7 @@ function(cmake_helpers_library)
       message(STATUS "[${_cmake_helpers_logprefix}] --------------------")
     endif()
     include(CMakeFindDependencyMacro)
-    foreach(_cmake_helpers_library_find_dependency "${_cmake_helpers_library_find_dependencies}")
+    foreach(_cmake_helpers_library_find_dependency IN LISTS _cmake_helpers_library_find_dependencies)
       #
       # _find_depend is splitted using the space
       #
@@ -327,7 +327,7 @@ function(cmake_helpers_library)
   # Collect all validated library types
   #
   set(_cmake_helpers_library_types)
-  foreach(_cmake_helpers_library_valid_type ${_cmake_helpers_library_valid_types})
+  foreach(_cmake_helpers_library_valid_type IN LISTS _cmake_helpers_library_valid_types)
     string(TOUPPER "${_cmake_helpers_library_valid_type}" _cmake_helpers_library_valid_type_toupper)
     list(APPEND _cmake_helpers_library_types ${_cmake_helpers_library_valid_type_toupper})
     set(_cmake_helpers_have_${_cmake_helpers_library_valid_type}_library TRUE)
@@ -341,11 +341,10 @@ function(cmake_helpers_library)
     message(STATUS "[${_cmake_helpers_logprefix}] Creating targets")
     message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
   endif()
-  foreach(_cmake_helpers_library_type ${_cmake_helpers_library_types})
+  foreach(_cmake_helpers_library_type IN LISTS _cmake_helpers_library_types)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
     cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
-    message(STATUS "JDD : cmake_helpers_property_${PROJECT_NAME}_LibraryTargets = ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets}")
   endforeach()
   #
   # FILE_SETs
@@ -354,7 +353,7 @@ function(cmake_helpers_library)
   # - Private headers go in the private file set "private_headers"
   # This is duplicating base_dirs in include directories, but there is no harm with that.
   #
-  foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+  foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
     cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
     cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
   endforeach()
@@ -424,7 +423,7 @@ function(cmake_helpers_library)
   if(CMAKE_HELPERS_DEBUG)
     foreach(_cmake_helpers_header_type public private)
       message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_header_type} headers:")
-      foreach(_file ${_cmake_helpers_${_cmake_helpers_header_type}_headers})
+      foreach(_file IN LISTS _cmake_helpers_${_cmake_helpers_header_type}_headers)
 	message(STATUS "[${_cmake_helpers_logprefix}] ... ${_file}")
       endforeach()
     endforeach()
@@ -449,7 +448,7 @@ function(cmake_helpers_library)
       _cmake_helpers_library_relpath_pods)
   endif()
   if(_cmake_helpers_library_pods)
-    foreach(_cmake_helpers_library_pod ${_cmake_helpers_library_pods})
+    foreach(_cmake_helpers_library_pod IN LISTS _cmake_helpers_library_pods)
       get_filename_component(_filename_we ${_cmake_helpers_library_pod} NAME_WE)
       if(_cmake_helpers_library_pods_rename_readme_to_namespace AND (_filename_we STREQUAL "README"))
 	#
@@ -476,7 +475,7 @@ function(cmake_helpers_library)
   #
   # Targets specifics
   #
-  foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+  foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
     get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
@@ -607,7 +606,7 @@ function(cmake_helpers_library)
     # We select the targets to install
     #
     set(_cmake_helpers_library_install_targets)
-    foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+    foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
       get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
 	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
@@ -629,7 +628,7 @@ function(cmake_helpers_library)
     # Install rule
     #
     if(_cmake_helpers_library_install_targets)
-      foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
+      foreach(_cmake_helpers_library_install_target IN LISTS _cmake_helpers_library_install_targets)
 	get_target_property(_cmake_helpers_library_install_target_type ${_cmake_helpers_library_install_target} TYPE)
 	if(_cmake_helpers_library_install_target_type STREQUAL "INTERFACE_LIBRARY")
 	  #
@@ -701,7 +700,7 @@ function(cmake_helpers_library)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-foreach(_find_depend \"${_cmake_helpers_library_find_dependencies}\")
+foreach(_find_depend IN LISTS _cmake_helpers_library_find_dependencies)
   if(\"x\${_find_depend}\" STREQUAL \"x\")
     continue()
   endif()
@@ -718,7 +717,7 @@ endforeach()
 set(_${PROJECT_NAME}_supported_components Development Application Documentation)
 
 if(${PROJECT_NAME}_FIND_COMPONENTS)
-  foreach(_comp \${${PROJECT_NAME}_FIND_COMPONENTS})
+  foreach(_comp IN LISTS ${PROJECT_NAME}_FIND_COMPONENTS)
     if (NOT _comp IN_LIST _${PROJECT_NAME}_supported_components)
       set(${PROJECT_NAME}_FOUND False)
       set(${PROJECT_NAME}_NOT_FOUND_MESSAGE \"Unsupported component: \${_comp}\")
@@ -733,7 +732,7 @@ if(${PROJECT_NAME}_FIND_COMPONENTS)
     endif()
   endforeach()
 else()
-  foreach(_comp \${_${PROJECT_NAME}_supported_components})
+  foreach(_comp IN LISTS _${PROJECT_NAME}_supported_components)
     set(_include \"\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}\${_comp}Targets.cmake\")
     if(EXISTS \${_include})
       include(\${_include})
@@ -997,7 +996,7 @@ endif()
       #
       # Install dummy .pc files that will overwriten during install, c.f. install(CODE ...) below
       #
-      foreach(_cmake_helpers_library_install_target ${_cmake_helpers_library_install_targets})
+      foreach(_cmake_helpers_library_install_target IN LISTS _cmake_helpers_library_install_targets)
 	set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target}.pc)
 	if(CMAKE_HELPERS_DEBUG)
 	  message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${_cmake_helpers_library_pc}")
@@ -1114,7 +1113,6 @@ endif()
   message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
-  message(STATUS \"Executing \${_script}\")\n
   execute_process(
     COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
@@ -1137,7 +1135,7 @@ endif()
     #
     # We always use BUILD_LOCAL_INTERFACE to prevent the dependencies to appear in our export set
     #
-    foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+    foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
       get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
 	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_depends}>)
@@ -1154,12 +1152,12 @@ endif()
     message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
     message(STATUS "[${_cmake_helpers_logprefix}] ============================")
   endif()
-  foreach(_cmake_helpers_library_property ${_cmake_helpers_library_properties})
+  foreach(_cmake_helpers_library_property IN LISTS _cmake_helpers_library_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property}})
     endif()
   endforeach()
-  foreach(_cmake_helpers_library_array_property ${_cmake_helpers_library_array_properties})
+  foreach(_cmake_helpers_library_array_property IN LISTS _cmake_helpers_library_array_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property})
       cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} APPEND PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property}})
     endif()
@@ -1181,7 +1179,7 @@ endfunction()
 function(_cmake_helpers_files_find type base_dirs globs prefix accept_relpath_regexes reject_relpath_regexes output_var relpath_output_var)
   set(_cmake_helpers_library_all_files)
   set(_cmake_helpers_library_all_relfiles)
-  foreach(_base_dir ${base_dirs})
+  foreach(_base_dir IN LISTS base_dirs)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ... base dir ${_base_dir}")
     endif()
