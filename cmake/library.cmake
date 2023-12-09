@@ -211,6 +211,14 @@ function(cmake_helpers_library)
   #
   cmake_helpers_parse_arguments(library _cmake_helpers_library "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # A variable to echo execute_process commands in debug mode
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    set(_cmake_helpers_process_command_echo_stdout "COMMAND_ECHO" "STDOUT")
+  else()
+    set(_cmake_helpers_process_command_echo_stdout)
+  endif()
+  #
   # Check find dependencies
   #
   if(_cmake_helpers_library_find_dependencies)
@@ -785,7 +793,7 @@ endif()
       execute_process(
         COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
-        COMMAND_ECHO STDOUT
+	${_cmake_helpers_process_command_echo_stdout}
         COMMAND_ERROR_IS_FATAL ANY
       )
       #
@@ -1083,7 +1091,7 @@ endif()
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   execute_process(
     COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
-    COMMAND_ECHO STDOUT
+    ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
   if(CMAKE_HELPERS_DEBUG)
@@ -1116,7 +1124,7 @@ endif()
   execute_process(
     COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
-    COMMAND_ECHO STDOUT
+    ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
    )
 "

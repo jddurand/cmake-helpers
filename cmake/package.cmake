@@ -150,6 +150,14 @@ function(cmake_helpers_package)
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_package "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # A variable to echo execute_process commands in debug mode
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    set(_cmake_helpers_package_command_echo_stdout "COMMAND_ECHO" "STDOUT")
+  else()
+    set(_cmake_helpers_package_command_echo_stdout)
+  endif()
+  #
   # Set CPack hooks
   #
   if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
@@ -198,12 +206,12 @@ message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_p
 message(STATUS \"******************************************************************************\")
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
-  COMMAND_ECHO STDOUT
+  ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --config ${_cmake_helpers_package_config} --prefix \"\${_cmake_helpers_package_local_prefix}\"
-  COMMAND_ECHO STDOUT
+  ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
 
@@ -232,12 +240,12 @@ message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_p
 message(STATUS \"******************************************************************************\")
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
-  COMMAND_ECHO STDOUT
+  ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_package_local_prefix}\"
-  COMMAND_ECHO STDOUT
+  ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
 set(_cmake_helpers_package_configcomponent_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}ConfigComponent\")
