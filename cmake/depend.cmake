@@ -112,7 +112,13 @@ function(cmake_helpers_depend depname)
     cmake_helpers_call(list APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
     cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "NO_CMAKE_PATH")
     cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
-    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
+  endif()
+  cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
+  if(${depname}_FOUND)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] ${depname} found")
+    endif()
+    return()
   endif()
   #
   # Check if we raise a fatal error or not when it is not found
@@ -252,9 +258,9 @@ function(cmake_helpers_depend depname)
   # Redo a find_package.
   #
   if((NOT _result_variable) OR (_result_variable EQUAL 0))
-    list(APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
-    list(REMOVE_ITEM _cmake_helpers_depend_find_package_args "NO_CMAKE_PATH")
-    set(CMAKE_FIND_USE_CMAKE_PATH TRUE)
+    cmake_helpers_call(list APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
+    cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args "NO_CMAKE_PATH")
+    cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
     cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
   endif()
   #
