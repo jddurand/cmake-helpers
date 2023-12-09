@@ -1109,7 +1109,7 @@ endif()
   #
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\" --debug-find
+    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
