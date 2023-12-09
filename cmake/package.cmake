@@ -160,7 +160,7 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+  if(FALSE AND cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
     #
     # CPack install things breaked into components. But we want a true install to generate the .pc files.
     # So we install in a local directory, and copy back the .pc files in the CPack's CMAKE_INSTALL_PREFIX/component pkgconfig dir.

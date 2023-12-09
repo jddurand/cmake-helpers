@@ -708,7 +708,8 @@ function(cmake_helpers_library)
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-foreach(_find_depend IN LISTS _cmake_helpers_library_find_dependencies)
+set(_find_depends \"${_cmake_helpers_library_find_dependencies}\")
+foreach(_find_depend IN LISTS _find_depends)
   if(\"x\${_find_depend}\" STREQUAL \"x\")
     continue()
   endif()
@@ -1090,7 +1091,7 @@ endif()
   #
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\" --debug-find
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
@@ -1105,20 +1106,21 @@ endif()
     #
     # Install CODE hook for the ConfigComponent
     #
-    install(CODE "  set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
-  message(STATUS \"... CMAKE_INSTALL_PREFIX              : \${_cmake_install_prefix}\")\n
+    install(CODE "    message(STATUS \"Executing pkgconfig hooks\")
+  set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
+  # message(STATUS \"... CMAKE_INSTALL_PREFIX              : \${_cmake_install_prefix}\")\n
 
   set(_cmake_current_binary_dir \"${CMAKE_CURRENT_BINARY_DIR}\")
-  message(STATUS \"... CMAKE_CURRENT_BINARY_DIR          : \${_cmake_current_binary_dir}\")\n
+  # message(STATUS \"... CMAKE_CURRENT_BINARY_DIR          : \${_cmake_current_binary_dir}\")\n
 
   set(_cmake_helpers_install_pkgconfigdir \"${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
-  message(STATUS \"... CMAKE_HELPERS_INSTALL_PKGCONFIGDIR: \${_cmake_helpers_install_pkgconfigdir}\")\n
+  # message(STATUS \"... CMAKE_HELPERS_INSTALL_PKGCONFIGDIR: \${_cmake_helpers_install_pkgconfigdir}\")\n
 
   set(_cmake_helpers_install_cmakedir \"${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
-  message(STATUS \"... CMAKE_HELPERS_INSTALL_CMAKEDIR    : \${_cmake_helpers_install_cmakedir}\")\n
+  # message(STATUS \"... CMAKE_HELPERS_INSTALL_CMAKEDIR    : \${_cmake_helpers_install_cmakedir}\")\n
 
   set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
-  message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
+  # message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
   execute_process(
