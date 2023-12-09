@@ -109,9 +109,9 @@ function(cmake_helpers_depend depname)
   # Since we install locally ourself, check if this is already done
   #
   if(_cmake_helpers_depend_prefix_paths)
-    list(APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
-    list(REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "NO_CMAKE_PATH")
-    set(CMAKE_FIND_USE_CMAKE_PATH TRUE)
+    cmake_helpers_call(list APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
+    cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "NO_CMAKE_PATH")
+    cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
     cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
   endif()
   #
