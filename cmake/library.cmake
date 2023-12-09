@@ -853,9 +853,6 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR    : ${CMAKE_HELPERS_CMAKEDIR}")
 endif()
 
-if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[${_cmake_helpers_logprefix}] find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)")
-endif()
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
 #
 # We are going to do a find_package, so we also need to collect the dependencies we
@@ -875,6 +872,10 @@ foreach(_cmake IN LISTS _cmakes)
 endforeach()
 list(APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
 set(CMAKE_FIND_USE_CMAKE_PATH TRUE)
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+  message(STATUS "[${_cmake_helpers_logprefix}] find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)")
+endif()
 find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)
 #
 # It is important to do static before shared, because shared will reuse static properties
