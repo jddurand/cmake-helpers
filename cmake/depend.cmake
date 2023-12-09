@@ -185,6 +185,7 @@ function(cmake_helpers_depend depname)
   # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
   #
   set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${depname})
+  message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}, configuration ${_cmake_helpers_depend_build_and_install_configuration}")
   execute_process(
     COMMAND ${CMAKE_COMMAND}
       -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
