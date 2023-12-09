@@ -2,7 +2,7 @@ function(cmake_helpers_depend depname)
   #
   # This method ensure that the dependency is always available using find_package.
   # If it is provided via FetchContent(), it is then explicitly installed into
-  # ${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install, and find_package is done on the later.
+  # ${PROJECT_BINARY_DIR}/cmake_helpers_install, and find_package is done on the later.
   # We use FetchContent facility just to have the sources at configure step.
   #
   # =========================================================================================
@@ -181,7 +181,10 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_process_command_error_is_fatal)
   endif()
-  set(_cmake_helpers_install_path ${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install/${depname})
+  #
+  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+  #
+  set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${depname})
   execute_process(
     COMMAND ${CMAKE_COMMAND}
       -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
