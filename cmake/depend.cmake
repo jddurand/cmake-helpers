@@ -65,6 +65,21 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_file "")
   endif()
   #
+  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+  #
+  set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${depname})
+  file(GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
+  set(_cmake_helpers_depend_prefix_paths)
+  foreach(_cmake IN LISTS _cmakes)
+    get_filename_component(_dir ${_cmake} DIRECTORY)
+    if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] CMake prefix path: ${_dir}")
+      endif()
+      list(APPEND _cmake_helpers_depend_prefix_paths ${_dir})
+    endif()
+  endforeach()
+  #
   # Check with find_package first
   # -----------------------------
   #
@@ -90,7 +105,15 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_have_quiet FALSE)
     set(_cmake_helper_depend_find_package_must_succeed FALSE)
   endif()
-  cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
+  #
+  # Since we install locally ourself, check if this is already done
+  #
+  if(_cmake_helpers_depend_prefix_paths)
+    list(APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
+    list(REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "NO_CMAKE_PATH")
+    set(CMAKE_FIND_USE_CMAKE_PATH TRUE)
+    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
+  endif()
   #
   # Check if we raise a fatal error or not when it is not found
   #
@@ -181,10 +204,6 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_process_command_error_is_fatal)
   endif()
-  #
-  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
-  #
-  set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${depname})
   message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}, configuration ${_cmake_helpers_depend_build_and_install_configuration}")
   execute_process(
     COMMAND ${CMAKE_COMMAND}
