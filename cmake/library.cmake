@@ -1258,7 +1258,8 @@ endif()
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    # COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    COMMAND \"${CMAKE_COMMAND}\" --debug-find -DCMAKE_INSTALL_PREFIX=ON -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
