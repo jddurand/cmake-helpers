@@ -217,9 +217,9 @@ function(cmake_helpers_pod)
   # Save properties
   #
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] ============================")
+    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
     message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
-    message(STATUS "[${_cmake_helpers_logprefix}] ============================")
+    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
   endif()
   foreach(_cmake_helpers_pod_property IN LISTS _cmake_helpers_pod_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_pod_property})

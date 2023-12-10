@@ -110,6 +110,7 @@ function(cmake_helpers_library)
   set(_multiValueArgs
     FIND_DEPENDENCIES
     DEPENDS
+    DEPENDS_EXT
     CONFIG_ARGS
     SOURCES
     SOURCES_AUTO
@@ -176,6 +177,7 @@ function(cmake_helpers_library)
   get_filename_component(_cmake_helpers_library_bindir "${CMAKE_CURRENT_BINARY_DIR}" REALPATH)
   set(_cmake_helpers_library_find_dependencies)
   set(_cmake_helpers_library_depends)
+  set(_cmake_helpers_library_depends_ext)
   set(_cmake_helpers_library_config_args)
   set(_cmake_helpers_library_sources)
   set(_cmake_helpers_library_sources_auto                         TRUE)
@@ -287,7 +289,7 @@ function(cmake_helpers_library)
       endif()
     else()
       #
-      # It is STATIC then SHARED - order is important, c.f. pkgconfig hooks
+      # It is STATIC and SHARED
       #
       list(APPEND _cmake_helpers_library_valid_types static)
       if(_cmake_helpers_library_target_name_auto)
@@ -821,13 +823,13 @@ man2dir=${prefix}/@CMAKE_HELPERS_INSTALL_MANDIR@2
 
 Name: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_NAME>
 Description: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION>
-Version: $<TARGET_PROPERTY:PC_VERSION>
-Requires: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>,>
-Requires.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>,>
-Cflags: -I${includedir} $<IF:$<BOOL:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>>,-D$<JOIN:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>, -D>,>
-Cflags.private: $<IF:$<BOOL:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>>,-I${includedir} -D$<JOIN:$<TARGET_PROPERTY:PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE>, -D>,>
-Libs: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>,>
-Libs.private: $<IF:$<BOOL:$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>>,$<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>,>
+Version: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_VERSION>
+Requires: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES>
+Requires.private: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE>
+Cflags: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_CFLAGS>
+Cflags.private: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_CFLAGS_PRIVATE>
+Libs: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS>
+Libs.private: $<TARGET_PROPERTY:_CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE>
 ]]
         @ONLY
         NEWLINE_STYLE LF
@@ -878,131 +880,244 @@ if(CMAKE_HELPERS_DEBUG)
 endif()
 find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)
 #
-# It is important to do static before shared, because shared will reuse static properties
+# Helper that transform a filename to a pkgconfig link
 #
-set(_target_static)
-foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
-  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
-  get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
-  get_target_property(_cmake_helpers_library_interface_link_libraries ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES)
-  if(CMAKE_HELPERS_DEBUG)
-    if(${_cmake_helpers_library_interface_link_libraries})
-      message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_interface_link_libraries}")
-    else()
-      #
-      # We prefer no string instead of _cmake_helpers_library_interface_link_libraries-NOTFOUND
-      #
-      message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES:")
-    endif()
+function(filename_to_pc_lib location pc_lib)
+  cmake_path(GET location FILENAME _filename)
+  #
+  # We guess if the -lxxx is ok - this is not perfect and use CMake conventions
+  # Only shared library case is special, any other, include MODULE_LIBRARY, is not
+  # handled
+  #
+  set(_linkname ${_filename})
+  if(CMAKE_SHARED_LIBRARY_PREFIX)
+    string(REGEX REPLACE "^${CMAKE_SHARED_LIBRARY_PREFIX}" "" _linkname ${_linkname})
   endif()
-  set(_cmake_helpers_library_computed_requires)
-  set(_cmake_helpers_library_computed_extra_libs)
-  foreach(_cmake_helpers_library_interface_link_library ${_cmake_helpers_library_interface_link_libraries})
-    if(TARGET ${_cmake_helpers_library_interface_link_library})
-      #
-      # Pkgconfig does not understand namespace::target - we keep target only
-      #
-      string(REGEX REPLACE ".*::" "" _cmake_helpers_library_computed_require ${_cmake_helpers_library_interface_link_library})
-      list(APPEND _cmake_helpers_library_computed_requires ${_cmake_helpers_library_computed_require})
-    else()
-      #
-      # This is not a known target : we will put that in the Libs section
-      #
-      get_filename_component(_filename_we ${_cmake_helpers_library_interface_link_library} NAME_WE)
-      #
-      # If the filename without extension is equal to the dependency, we assume it is candidate for the generic -lxxx syntax,
-      # else we put the dependency as is.
-      #
-      if(_filename_we STREQUAL _cmake_helpers_library_interface_link_library)
-        list(APPEND _cmake_helpers_library_computed_extra_libs "-l${_cmake_helpers_library_interface_link_library}")
-      else()
-        list(APPEND _cmake_helpers_library_computed_extra_libs "${_cmake_helpers_library_interface_link_library}")
+  set(_can_l_syntax FALSE)
+  string(LENGTH ${_linkname} _linkname_length)
+  foreach(_suffix ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES})
+    string(LENGTH ${_suffix} _suffix_length)
+    if(_linkname_length GREATER _suffix_length)
+      math(EXPR _expected_indice "${_linkname_length} - ${_suffix_length}")
+      string(FIND ${_linkname} ${_suffix} _indice REVERSE)
+      if(_indice EQUAL _expected_indice)
+	string(SUBSTRING "${_linkname}" 0 ${_indice} _linkname)
+	set(_can_l_syntax TRUE)
+	break()
       endif()
     endif()
   endforeach()
-  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_NAME ${_cmake_helpers_library_install_target})
+  if(_can_l_syntax)
+    set(_pc_lib ${_linkname})
+  else()
+    set(_pc_lib "\${libdir}/${_filename}")
+  endif()
+  set(pc_lib ${_pc_lib} PARENT_SCOPE)
+endfunction()
+
+#
+# We collect all types in _cmake_helpers_library_target_types
+# For each type we have
+# _cmake_helpers_library_${_cmake_helpers_library_target_type}_target
+# _cmake_helpers_library_${_cmake_helpers_library_target_type}_links
+# _cmake_helpers_library_${_cmake_helpers_library_target_type}_defs
+# _cmake_helpers_library_${_cmake_helpers_library_target_type}_private_links
+# _cmake_helpers_library_${_cmake_helpers_library_target_type}_private_defs
+#
+foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
+  #
+  # Get target name
+  #
+  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Target: ${_cmake_helpers_library_target}")
+  endif()
+  #
+  # Get target type
+  #
+  get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Type: ${_cmake_helpers_library_target_type}")
+  endif()
+  #
+  # Set defs
+  #
+  get_target_property(_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs ${_cmake_helpers_library_target} INTERFACE_COMPILE_DEFINITIONS)
+  if(CMAKE_HELPERS_DEBUG)
+    #
+    # We do not want to have "xxx-NOTFOUND" printed out
+    #
+    if(_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs)
+      message(STATUS "[${_cmake_helpers_logprefix}] ... INTERFACE_COMPILE_DEFINITIONS: ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs}")
+    else()
+      message(STATUS "[${_cmake_helpers_logprefix}] ... INTERFACE_COMPILE_DEFINITIONS:")
+    endif()
+  endif()
+  #
+  # Set links
+  #
+  get_target_property(_cmake_helpers_library_${_cmake_helpers_library_target_type}_links ${_cmake_helpers_library_target} INTERFACE_LINK_LIBRARIES)
+  if(CMAKE_HELPERS_DEBUG)
+    #
+    # We do not want to have "xxx-NOTFOUND" printed out
+    #
+    if(_cmake_helpers_library_${_cmake_helpers_library_target_type}_links)
+      message(STATUS "[${_cmake_helpers_logprefix}] ... INTERFACE_LINK_LIBRARIES: ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_links}")
+    else()
+      message(STATUS "[${_cmake_helpers_logprefix}] ... INTERFACE_LINK_LIBRARIES:")
+    endif()
+  endif()
+endforeach()
+#
+# If there are a static and a shared links, put in shared'd private_links the static's links and remove the duplicates
+#
+if(_cmake_helpers_library_STATIC_LIBRARY_links AND _cmake_helpers_library_SHARED_LIBRARY_links)
+  set(_cmake_helpers_library_SHARED_LIBRARY_private_links ${_cmake_helpers_library_STATIC_LIBRARY_links})
+  list(REMOVE_ITEM _cmake_helpers_library_SHARED_LIBRARY_private_links ${_cmake_helpers_library_SHARED_LIBRARY_links})
+endif()
+#
+# If there are a static and a shared defs, put in shared'd private_defs the static's private_links and remove the duplicates
+#
+if(_cmake_helpers_library_STATIC_LIBRARY_defs AND _cmake_helpers_library_SHARED_LIBRARY_defs)
+  set(_cmake_helpers_library_SHARED_LIBRARY_private_defs ${_cmake_helpers_library_STATIC_LIBRARY_defs})
+  list(REMOVE_ITEM _cmake_helpers_library_SHARED_LIBRARY_private_defs ${_cmake_helpers_library_SHARED_LIBRARY_defs})
+endif()
+#
+# Loop on all targets and assign target generated properties. Note that we always a string for convenience.
+#
+foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
+  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
+  get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+
+  set(_cmake_helpers_library_links         ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_links})
+  set(_cmake_helpers_library_defs          ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs})
+  set(_cmake_helpers_library_private_links ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_private_links})
+  set(_cmake_helpers_library_private_defs  ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_private_defs})
+  #
+  # Name: the name of the target
+  #
+  set(_name ${_cmake_helpers_library_install_target})
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Name: ${_name}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_NAME ${_name})
+  #
+  # Description: custom based on library type
+  #
+  set(_description)
   if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@PROJECT_NAME@ headers")
+    set(_description "@PROJECT_NAME@ headers")
   elseif(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@PROJECT_NAME@ dynamic library")
+    set(_description "@PROJECT_NAME@ dynamic library")
   elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@PROJECT_NAME@ module library")
+    set(_description "@PROJECT_NAME@ module library")
   elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@PROJECT_NAME@ static library")
-    set(_target_static ${_cmake_helpers_library_target})
+    set(_description "@PROJECT_NAME@ static library")
   elseif(_cmake_helpers_library_target_type STREQUAL "OBJECT_LIBRARY")
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "@PROJECT_NAME@ object library")
+    set(_description "@PROJECT_NAME@ object library")
   else()
     message(FATAL_ERROR "Unsupported target type ${_cmake_helpers_library_target_type}")
   endif()
-  if (_cmake_helpers_library_computed_requires)
-    list(JOIN _cmake_helpers_library_computed_requires "," _cmake_helpers_library_pc_requires)
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES "${_cmake_helpers_library_pc_requires}")
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Description: ${_description}")
   endif()
-  if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-    #
-    # By definition the "static" target should already exist
-    #
-    if(NOT TARGET ${_target_static})
-      message(FATAL_ERROR "No static target")
-    endif()
-    #
-    # Requires.private
-    #
-    get_target_property(_cmake_helpers_library_pc_requires_private ${_target_static} _CMAKE_HELPERS_LIBRARY_PC_REQUIRES)
-    if(_cmake_helpers_library_pc_requires_private)
-      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE "${_cmake_helpers_library_pc_requires_private}")
-    endif()
-    #
-    # Cflags.private
-    #
-    get_target_property(_pc_interface_compile_definitions_private ${_target_static} INTERFACE_COMPILE_DEFINITIONS)
-    if(_pc_interface_compile_definitions_private)
-      set_target_properties(${_cmake_helpers_library_target} PROPERTIES PC_INTERFACE_COMPILE_DEFINITIONS_PRIVATE "${_pc_interface_compile_definitions_private}")
-    endif()
-    #
-    # Libs.private
-    #
-    get_target_property(_pc_libs_private ${_target_static} _CMAKE_HELPERS_LIBRARY_PC_LIBS)
-    if(_pc_libs_private)
-      set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE "${_pc_libs_private}")
-    endif()
-  endif()
-  set_target_properties(${_cmake_helpers_library_target} PROPERTIES PC_VERSION "@PROJECT_VERSION@")
-
-  get_target_property(_location ${_cmake_helpers_library_target} LOCATION)
-  set(_pc_libs)
-  if(_location)
-    cmake_path(GET _location FILENAME _filename)
-    if((_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY"))
-      get_filename_component(_filename_we ${_filename} NAME_WE)
-      if(NOT ("x${CMAKE_SHARED_LIBRARY_PREFIX}" STREQUAL "x"))
-        string(REGEX REPLACE "^${CMAKE_SHARED_LIBRARY_PREFIX}" "" _filename_we ${_filename_we})
-      endif()
-      list(APPEND _pc_libs "-L\${libdir} -l${_filename_we}")
-    elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
-      list(APPEND _pc_libs "\${libdir}/${_filename}")
-    endif()
-  else()
-    #
-    # This is not really a problem
-    #
-    # message(WARNING "Target ${_cmake_helpers_library_target} has no LOCATION property")
-  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_DESCRIPTION "${_description}")
   #
-  # Append eventual extra libs
+  # Version: the current project version
   #
-  list(APPEND _pc_libs ${_cmake_helpers_library_computed_extra_libs})
-  if(_pc_libs)
-    list(JOIN _pc_libs " " _pc_libs_string)
-    #
-    # Append extra libs to the dependencies
-    #
-    set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "${_pc_libs_string}")
+  set(_version "@PROJECT_VERSION@")
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Version: ${_version}")
   endif()
-endforeach()
-foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
-  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_VERSION "${_version}")
+  #
+  # Requires: known targets from _cmake_helpers_library_links
+  #
+  set(_requires)
+  foreach(_cmake_helpers_library_link IN LISTS _cmake_helpers_library_links)
+    if(TARGET ${_cmake_helpers_library_link})
+      string(REGEX REPLACE ".*::" "" _cmake_helpers_library_link ${_cmake_helpers_library_link})
+      list(APPEND _requires ${_cmake_helpers_library_link})
+    endif()
+  endforeach()
+  list(JOIN _requires "," _requires)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Requires: ${_requires}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES "${_requires}")
+  #
+  # Requires.private: known targets from _cmake_helpers_library_private_links
+  #
+  set(_requires_private)
+  foreach(_cmake_helpers_library_private_link IN LISTS _cmake_helpers_library_private_links)
+    if(TARGET ${_cmake_helpers_library_private_link})
+      string(REGEX REPLACE ".*::" "" _cmake_helpers_library_private_link ${_cmake_helpers_library_private_link})
+      list(APPEND _requires_private ${_cmake_helpers_library_private_link})
+    endif()
+  endforeach()
+  list(JOIN _requires_private "," _requires_private)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Requires.private: ${_requires_private}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_REQUIRES_PRIVATE "${_requires_private}")
+  #
+  # Cflags: compile definitions
+  #
+  set(_cflags "-I\${includedir}")
+  foreach(_cmake_helpers_library_def IN LISTS _cmake_helpers_library_defs)
+    list(APPEND _cflags "-D${_cmake_helpers_library_def}")
+  endforeach()
+  list(JOIN _cflags " " _cflags)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Cflags: ${_cflags}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_CFLAGS "${_cflags}")
+  #
+  # Cflags.private: private compile definitions
+  #
+  set(_cflags_private)
+  foreach(_cmake_helpers_library_private_def IN LISTS _cmake_helpers_library_private_defs)
+    list(APPEND _cflags_private "-D${_cmake_helpers_library_private_def}")
+  endforeach()
+  list(JOIN _cflags_private " " _cflags_private)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Cflags.private: ${_cflags_private}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_CFLAGS_PRIVATE "${_cflags_private_join}")
+  #
+  # Libs: unknown targets from _cmake_helpers_library_links
+  #
+  set(_libs)
+  foreach(_cmake_helpers_library_link IN LISTS _cmake_helpers_library_links)
+    if(NOT (TARGET ${_cmake_helpers_library_link}))
+      get_filename_component(_filename ${_cmake_helpers_library_link} NAME)
+      filename_to_pc_lib(location _pc_lib)
+      list(APPEND _libs ${_pc_lib})
+    endif()
+  endforeach()
+  list(JOIN _libs "," _libs)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Libs: ${_libs}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS "${_libs}")
+  #
+  # Libs.private: unknown targets from _cmake_helpers_library_private_links
+  #
+  set(_libs_private)
+  foreach(_cmake_helpers_library_private_link IN LISTS _cmake_helpers_library_private_links)
+    if(NOT (TARGET ${_cmake_helpers_library_private_link}))
+      get_filename_component(_filename ${_cmake_helpers_library_private_link} NAME)
+      filename_to_pc_lib(location _pc_lib)
+      list(APPEND _libs_private ${_pc_lib})
+    endif()
+  endforeach()
+  list(JOIN _libs_private "," _libs_private)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Libs.private: ${_libs_private}")
+  endif()
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE "${_libs_private}")
+  #
+  # Generate .pc.in
   set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_install_target}.pc")
   message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
   file(GENERATE OUTPUT ${_file}
@@ -1160,26 +1275,71 @@ endif()
     message(STATUS "[${_cmake_helpers_logprefix}] Applying dependencies")
     message(STATUS "[${_cmake_helpers_logprefix}] ---------------------")
   endif()
+  #
+  # DEPENDS This must be a list of two items at every iteration: scope, lib
+  #
+  list(LENGTH _cmake_helpers_library_depends _cmake_helpers_library_depends_length)
+  math(EXPR _cmake_helpers_library_depends_length_modulo_2 "${_cmake_helpers_library_depends_length} % 2")
+  if(NOT(_cmake_helpers_library_depends_length_modulo_2 EQUAL 0))
+    message(FATAL_ERROR "DEPENDS option value must be a list of two items: scope, lib")
+  endif()
   if(_cmake_helpers_library_depends)
-    #
-    # We always use BUILD_LOCAL_INTERFACE to prevent the dependencies to appear in our export set
-    #
-    foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
-      get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
-      if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} INTERFACE $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_depends}>)
-      else()
-	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${_cmake_helpers_library_depends}>)
-      endif()
+    math(EXPR _cmake_helpers_library_depends_length_i_max "(${_cmake_helpers_library_depends_length} / 2) - 1")
+    set(_j -1)
+    foreach(_i RANGE 0 ${_cmake_helpers_library_depends_length_i_max})
+      math(EXPR _j "${_j} + 1")
+      list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_scope)
+      math(EXPR _j "${_j} + 1")
+      list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_lib)
+      foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
+	  #
+	  # An interface's target can only have the INTERFACE scope
+	  #
+	  set(_cmake_helpers_library_depend_scope "INTERFACE")
+	endif()
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_scope} ${_cmake_helpers_library_depend_lib})
+      endforeach()
+    endforeach()
+  endif()
+  #
+  # DEPENDS_EXT This must be a list of three items at every iteration: scope, interface, lib
+  #
+  list(LENGTH _cmake_helpers_library_depends_ext _cmake_helpers_library_depends_ext_length)
+  math(EXPR _cmake_helpers_library_depends_ext_length_modulo_3 "${_cmake_helpers_library_depends_ext_length} % 3")
+  if(NOT(_cmake_helpers_library_depends_ext_length_modulo_3 EQUAL 0))
+    message(FATAL_ERROR "DEPENDS_EXT option value must be a list of three items: scope, interface, lib")
+  endif()
+  if(_cmake_helpers_library_depends_ext)
+    math(EXPR _cmake_helpers_library_depends_ext_length_i_max "(${_cmake_helpers_library_depends_ext_length} / 3) - 1")
+    set(_j -1)
+    foreach(_i RANGE 0 ${_cmake_helpers_library_depends_ext_length_i_max})
+      math(EXPR _j "${_j} + 1")
+      list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_scope)
+      math(EXPR _j "${_j} + 1")
+      list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_interface)
+      math(EXPR _j "${_j} + 1")
+      list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_lib)
+      foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
+	  #
+	  # An interface's target can only have the INTERFACE scope
+	  #
+	  set(_cmake_helpers_library_depend_scope "INTERFACE")
+	endif()
+	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_scope} $<${_cmake_helpers_library_depend_interface}:${_cmake_helpers_library_depend_lib}>)
+      endforeach()
     endforeach()
   endif()
   #
   # Save properties
   #
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] ============================")
+    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
     message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
-    message(STATUS "[${_cmake_helpers_logprefix}] ============================")
+    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
   endif()
   foreach(_cmake_helpers_library_property IN LISTS _cmake_helpers_library_properties)
     if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property})
