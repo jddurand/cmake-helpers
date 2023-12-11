@@ -1251,8 +1251,8 @@ endif()
   #
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   execute_process(
-    # COMMAND \"${_cmake_helpers_cmake_command}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
-    COMMAND \"${_cmake_helpers_cmake_command}\" --debug-find -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    # COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" ${_cmake_helpers_cmake_command_generator_option} ${_cmake_helpers_cmake_command_generator_platform_option} ${_cmake_helpers_cmake_command_generator_toolset_option} --debug-find -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
@@ -1285,7 +1285,7 @@ endif()
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
   execute_process(
-    COMMAND \"${_cmake_helpers_cmake_command}\" -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    COMMAND \"${CMAKE_COMMAND}\" ${_cmake_helpers_cmake_command_generator_option} ${_cmake_helpers_cmake_command_generator_platform_option} ${_cmake_helpers_cmake_command_generator_toolset_option} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
