@@ -55,31 +55,122 @@ function(cmake_helpers_library)
   if(CMAKE_GENERATOR)
     list(APPEND _cmake_helpers_cmake_command_options "-G")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR})
+    message(STATUS "[${_cmake_helpers_logprefix}] Generator: ${CMAKE_GENERATOR}")
   endif()
   if(CMAKE_GENERATOR_TOOLSET)
     list(APPEND _cmake_helpers_cmake_command_options "-T")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_TOOLSET})
+    message(STATUS "[${_cmake_helpers_logprefix}] Generator toolset: ${CMAKE_GENERATOR_TOOLSET}")
   endif()
   if(CMAKE_GENERATOR_PLATFORM)
     list(APPEND _cmake_helpers_cmake_command_options "-A")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_PLATFORM})
+    message(STATUS "[${_cmake_helpers_logprefix}] Generator platform: ${CMAKE_GENERATOR_PLATFORM}")
   else()
     #
-    # Hook only for Visual Studio Win32/Win64. It is strongly advisable to SET the -A option
-    # on the command-line.
+    # We copy/pasted the technique used in
+    # https://github.com/OpenMathLib/OpenBLAS/blob/develop/cmake/system_check.cmake
+    #
+    if(CMAKE_CL_64 OR MINGW64)
+      if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64.*|AARCH64.*|arm64.*|ARM64.*)")
+	set(ARM64 1)
+      else()
+	set(X86_64 1)
+      endif()
+    elseif(MINGW OR (MSVC AND NOT CMAKE_CROSSCOMPILING))
+      set(X86 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc.*|power.*|Power.*")
+      set(POWER 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "mips64.*")
+      set(MIPS64 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "loongarch64.*")
+      set(LOONGARCH64 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64.*")
+      set(RISCV64 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*" OR (CMAKE_SYSTEM_NAME MATCHES "Darwin" AND CMAKE_SYSTEM_PROCESSOR MATCHES "i686.*|i386.*|x86.*"))
+      if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(X86_64 1)
+      else()
+	set(X86 1)
+      endif()
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i686.*|i386.*|x86.*|amd64.*|AMD64.*")
+      set(X86 1)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64.*|AARCH64.*|arm64.*|ARM64.*|armv8.*)")
+      if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(ARM64 1)
+      else()
+	set(ARM 1)
+      endif()
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm.*|ARM.*)")
+      set(ARM 1)
+    elseif (${CMAKE_CROSSCOMPILING})
+      if (${TARGET} STREQUAL "CORE2")
+	set(X86 1)
+      elseif (${TARGET} STREQUAL "P5600" OR ${TARGET} MATCHES "MIPS.*")
+	set(MIPS32 1)
+      elseif (${TARGET} STREQUAL "ARMV7")
+	set(ARM 1)
+      else()
+	set(ARM64 1)
+      endif ()
+    endif()
+
+    if (X86_64)
+      set(ARCH "x86_64")
+    elseif(X86)
+      set(ARCH "x86")
+    elseif(POWER)
+      set(ARCH "power")
+    elseif(MIPS32)
+      set(ARCH "mips")
+    elseif(MIPS64)
+      set(ARCH "mips64")
+    elseif(ARM)
+      set(ARCH "arm")
+    elseif(ARM64)
+      set(ARCH "arm64")
+    else()
+      message(WARNING "[${_cmake_helpers_logprefix}] Target ARCH could not be determined, got \"${CMAKE_SYSTEM_PROCESSOR}\"")
+      set(ARCH ${CMAKE_SYSTEM_PROCESSOR} CACHE STRING "Target Architecture")
+    endif ()
+
+    #
+    # Hook only for generators that support the -A option.
+    # This -A option was definitely not on the command-line, and we are very
+    # probably not doing cross-platform compilation (then it is highly recommended
+    # to set this variable).
     #
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	list(APPEND _cmake_helpers_cmake_command_options "-A" "Win64")
-      elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-	list(APPEND _cmake_helpers_cmake_command_options "-A" "Win32")
+      if(CMAKE_VS_PLATFORM_NAME)
+	message(STATUS "[${_cmake_helpers_logprefix}] Using CMAKE_VS_PLATFORM_NAME: ${CMAKE_VS_PLATFORM_NAME}")
+	list(APPEND _cmake_helpers_cmake_command_options "-A" "${CMAKE_VS_PLATFORM_NAME}")
+      else()
+	set(_guess)
+	if(ARCH STREQUAL "x86")
+	  set(_guess "Win32")
+	elseif(ARCH STREQUAL "x86_64")
+	  set(_guess "x64")
+	elseif(ARCH STREQUAL "arm")
+	  set(_guess "ARM")
+	elseif(ARCH STREQUAL "arm64")
+	  set(_guess "ARM64")
+	else()
+	endif()
+	if(_guess)
+	  message(STATUS "[${_cmake_helpers_logprefix}] Guessing architecture ${_guess}")
+	  list(APPEND _cmake_helpers_cmake_command_options "-A" ${_guess})
+	else()
+	  message(WARNING "[${_cmake_helpers_logprefix}] Guess of architecture failed")
+	endif()
       endif()
     endif()
   endif()
+
   set(_cmake_helpers_cmake_command_options_injection)
   foreach(_cmake_helpers_cmake_command_option IN LISTS _cmake_helpers_cmake_command_options)
     list(APPEND _cmake_helpers_cmake_command_options_injection "\"${_cmake_helpers_cmake_command_option}\"")
   endforeach()
+  list(JOIN _cmake_helpers_cmake_command_options_injection " " _cmake_helpers_cmake_command_options_injection)
   #
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
@@ -1247,7 +1338,7 @@ endif()
   set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
   execute_process(
     # COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --debug-find -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
@@ -1281,7 +1372,7 @@ endif()
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
   set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --config \$<CONFIG> -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
