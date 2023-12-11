@@ -808,8 +808,8 @@ endif()
       # Create a pc.${PROJECT_NAME} directory
       #
       execute_process(
-        COMMAND ${_cmake_helpers_cmake_command} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
-        COMMAND ${_cmake_helpers_cmake_command} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
+        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/pc.${PROJECT_NAME}
 	${_cmake_helpers_process_command_echo_stdout}
         COMMAND_ERROR_IS_FATAL ANY
       )
