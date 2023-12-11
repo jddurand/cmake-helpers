@@ -52,17 +52,17 @@ function(cmake_helpers_library)
   # CMAKE_COMMAND common parameters in execute_process
   #
   if(CMAKE_GENERATOR)
-    set(_cmake_helpers_cmake_command_generator_option "-G" "${CMAKE_GENERATOR}")
+    set(_cmake_helpers_cmake_command_generator_option "-G" "\"${CMAKE_GENERATOR}\"")
   else()
     set(_cmake_helpers_cmake_command_generator_option)
   endif()
   if(CMAKE_GENERATOR_TOOLSET)
-    set(_cmake_helpers_cmake_command_generator_toolset_option "-T" "${CMAKE_GENERATOR_TOOLSET}")
+    set(_cmake_helpers_cmake_command_generator_toolset_option "-T" "\"${CMAKE_GENERATOR_TOOLSET}\"")
   else()
     set(_cmake_helpers_cmake_command_generator_toolset_option)
   endif()
   if(CMAKE_GENERATOR_PLATFORM)
-    set(_cmake_helpers_cmake_command_generator_platform_option "-A" "${CMAKE_GENERATOR_PLATFORM}")
+    set(_cmake_helpers_cmake_command_generator_platform_option "-A" "\"${CMAKE_GENERATOR_PLATFORM}\"")
   else()
     #
     # Hook only for Visual Studio Win32/Win64. It is strongly advisable to SET the -A option
@@ -80,12 +80,6 @@ function(cmake_helpers_library)
       set(_cmake_helpers_cmake_command_generator_platform_option)
     endif()
   endif()
-  set(_cmake_helpers_cmake_command
-    ${CMAKE_COMMAND}
-    ${_cmake_helpers_cmake_command_generator_option}
-    ${_cmake_helpers_cmake_command_generator_platform_option}
-    ${_cmake_helpers_cmake_command_generator_toolset_option}
-  )
   #
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
