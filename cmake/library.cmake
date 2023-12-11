@@ -48,18 +48,44 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_array_properties
     LibraryTargets
   )
-  set(_cmake_helpers_library_generator_platform                   ${CMAKE_GENERATOR_PLATFORM})
-  if(_cmake_helpers_library_generator_platform)
-    set(_cmake_helpers_library_generator_platform_args "-A" "${_cmake_helpers_library_generator_platform}")
+  #
+  # CMAKE_COMMAND common parameters in execute_process
+  #
+  if(CMAKE_GENERATOR)
+    set(_cmake_helpers_cmake_command_generator_option "-G" ${CMAKE_GENERATOR})
   else()
-    set(_cmake_helpers_library_generator_platform_args)
+    set(_cmake_helpers_cmake_command_generator_option)
   endif()
-  set(_cmake_helpers_library_generator_toolset                   ${CMAKE_GENERATOR_TOOLSET})
-  if(_cmake_helpers_library_generator_toolset)
-    set(_cmake_helpers_library_generator_toolset_args "-T" "${_cmake_helpers_library_generator_toolset}")
+  if(CMAKE_GENERATOR_TOOLSET)
+    set(_cmake_helpers_cmake_command_generator_toolset_option "-T" $[CMAKE_GENERATOR_TOOLSET})
   else()
-    set(_cmake_helpers_library_generator_toolset_args)
+    set(_cmake_helpers_cmake_command_generator_toolset_option)
   endif()
+  if(CMAKE_GENERATOR_PLATFORM)
+    set(_cmake_helpers_cmake_command_generator_platform_option "-A" ${CMAKE_GENERATOR_PLATFORM})
+  else()
+    #
+    # Hook only for Visual Studio Win32/Win64. It is strongly advisable to SET the -A option
+    # on the command-line.
+    #
+    if(CMAKE_GENERATOR MATCHES "Visual Studio")
+      if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(_cmake_helpers_cmake_command_generator_platform_option "-A" "Win64")
+      elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+	set(_cmake_helpers_cmake_command_generator_platform_option "-A" "Win32")
+      else()
+	set(_cmake_helpers_cmake_command_generator_platform_option)
+      endif()
+    else()
+      set(_cmake_helpers_cmake_command_generator_platform_option)
+    endif()
+  endif()
+  set(_cmake_helpers_cmake_command
+    ${CMAKE_COMMAND}
+    ${_cmake_helpers_cmake_command_generator_option}
+    ${_cmake_helpers_cmake_command_generator_platform_option}
+    ${_cmake_helpers_cmake_command_generator_toolset_option}
+  )
   #
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
@@ -220,20 +246,6 @@ function(cmake_helpers_library)
   else()
     set(_cmake_helpers_process_command_echo_stdout)
   endif()
-  #
-  # CMAKE_COMMAND common parameters in execute_process
-  #
-  if(CMAKE_GENERATOR)
-    set(_cmake_helpers_cmake_command_generator_option "-G" ${CMAKE_GENERATOR})
-  else()
-    set(_cmake_helpers_cmake_command_generator_option)
-  endif()
-  if(CMAKE_GENERATOR_PLATFORM)
-    set(_cmake_helpers_cmake_command_generator_platform_option "-A" ${CMAKE_GENERATOR_PLATFORM})
-  else()
-    set(_cmake_helpers_cmake_command_generator_platform_option)
-  endif()
-  set(_cmake_helpers_cmake_command ${CMAKE_COMMAND} ${_cmake_helpers_cmake_command_generator_option} ${_cmake_helpers_cmake_command_generator_platform_option})
   #
   # Check find dependencies
   #
