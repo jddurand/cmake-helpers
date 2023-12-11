@@ -51,18 +51,18 @@ function(cmake_helpers_library)
   #
   # CMAKE_COMMAND common parameters in execute_process
   #
+  set(_cmake_helpers_cmake_command_options)
   if(CMAKE_GENERATOR)
-    set(_cmake_helpers_cmake_command_generator_option "-G" "\"${CMAKE_GENERATOR}\"")
-  else()
-    set(_cmake_helpers_cmake_command_generator_option)
+    list(APPEND _cmake_helpers_cmake_command_options "-G")
+    list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR})
   endif()
   if(CMAKE_GENERATOR_TOOLSET)
-    set(_cmake_helpers_cmake_command_generator_toolset_option "-T" "\"${CMAKE_GENERATOR_TOOLSET}\"")
-  else()
-    set(_cmake_helpers_cmake_command_generator_toolset_option)
+    list(APPEND _cmake_helpers_cmake_command_options "-T")
+    list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_TOOLSET})
   endif()
   if(CMAKE_GENERATOR_PLATFORM)
-    set(_cmake_helpers_cmake_command_generator_platform_option "-A" "\"${CMAKE_GENERATOR_PLATFORM}\"")
+    list(APPEND _cmake_helpers_cmake_command_options "-A")
+    list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_PLATFORM})
   else()
     #
     # Hook only for Visual Studio Win32/Win64. It is strongly advisable to SET the -A option
@@ -70,16 +70,16 @@ function(cmake_helpers_library)
     #
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(_cmake_helpers_cmake_command_generator_platform_option "-A" "Win64")
+	list(APPEND _cmake_helpers_cmake_command_options "-A" "Win64")
       elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-	set(_cmake_helpers_cmake_command_generator_platform_option "-A" "Win32")
-      else()
-	set(_cmake_helpers_cmake_command_generator_platform_option)
+	list(APPEND _cmake_helpers_cmake_command_options "-A" "Win32")
       endif()
-    else()
-      set(_cmake_helpers_cmake_command_generator_platform_option)
     endif()
   endif()
+  set(_cmake_helpers_cmake_command_options_injection)
+  foreach(_cmake_helpers_cmake_command_option IN LISTS _cmake_helpers_cmake_command_options)
+    list(APPEND _cmake_helpers_cmake_command_options_injection "\"${_cmake_helpers_cmake_command_option}\"")
+  endforeach()
   #
   # Variables holding directory properties initialization.
   # They will be used at the end of this module.
@@ -1244,9 +1244,10 @@ endif()
   # CMake config files for the project has already beeing installed prior to this CODE hook
   #
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
+  set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
   execute_process(
     # COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
-    COMMAND \"${CMAKE_COMMAND}\" ${_cmake_helpers_cmake_command_generator_option} ${_cmake_helpers_cmake_command_generator_platform_option} ${_cmake_helpers_cmake_command_generator_toolset_option} --debug-find -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --debug-find -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
@@ -1278,8 +1279,9 @@ endif()
   # message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
+  set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" ${_cmake_helpers_cmake_command_generator_option} ${_cmake_helpers_cmake_command_generator_platform_option} ${_cmake_helpers_cmake_command_generator_toolset_option} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
     ${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
