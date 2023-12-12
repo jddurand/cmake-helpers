@@ -55,17 +55,23 @@ function(cmake_helpers_library)
   if(CMAKE_GENERATOR)
     list(APPEND _cmake_helpers_cmake_command_options "-G")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR})
-    message(STATUS "[${_cmake_helpers_logprefix}] Generator: ${CMAKE_GENERATOR}")
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generator: ${CMAKE_GENERATOR}")
+    endif()
   endif()
   if(CMAKE_GENERATOR_TOOLSET)
     list(APPEND _cmake_helpers_cmake_command_options "-T")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_TOOLSET})
-    message(STATUS "[${_cmake_helpers_logprefix}] Generator toolset: ${CMAKE_GENERATOR_TOOLSET}")
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generator toolset: ${CMAKE_GENERATOR_TOOLSET}")
+    endif()
   endif()
   if(CMAKE_GENERATOR_PLATFORM)
     list(APPEND _cmake_helpers_cmake_command_options "-A")
     list(APPEND _cmake_helpers_cmake_command_options ${CMAKE_GENERATOR_PLATFORM})
-    message(STATUS "[${_cmake_helpers_logprefix}] Generator platform: ${CMAKE_GENERATOR_PLATFORM}")
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generator platform: ${CMAKE_GENERATOR_PLATFORM}")
+    endif()
   else()
     #
     # We copy/pasted the technique used in
@@ -142,7 +148,9 @@ function(cmake_helpers_library)
     #
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
       if(CMAKE_VS_PLATFORM_NAME)
-	message(STATUS "[${_cmake_helpers_logprefix}] Using CMAKE_VS_PLATFORM_NAME: ${CMAKE_VS_PLATFORM_NAME}")
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] Using CMAKE_VS_PLATFORM_NAME: ${CMAKE_VS_PLATFORM_NAME}")
+	endif()
 	list(APPEND _cmake_helpers_cmake_command_options "-A" "${CMAKE_VS_PLATFORM_NAME}")
       else()
 	set(_guess)
@@ -157,7 +165,9 @@ function(cmake_helpers_library)
 	else()
 	endif()
 	if(_guess)
-	  message(STATUS "[${_cmake_helpers_logprefix}] Guessing architecture ${_guess}")
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[${_cmake_helpers_logprefix}] Guessing architecture ${_guess}")
+	  endif()
 	  list(APPEND _cmake_helpers_cmake_command_options "-A" ${_guess})
 	else()
 	  message(WARNING "[${_cmake_helpers_logprefix}] Guess of architecture failed")
@@ -331,6 +341,7 @@ function(cmake_helpers_library)
   else()
     set(_cmake_helpers_process_command_echo_stdout)
   endif()
+  list(JOIN _cmake_helpers_cmake_command_echo_stdout_injection " " _cmake_helpers_cmake_command_echo_stdout_injection)
   #
   # Check find dependencies
   #
@@ -1336,10 +1347,10 @@ endif()
   #
   # set(ENV{${PROJECT_NAME}_DIR} \"\${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
   set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
+  set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
   execute_process(
-    # COMMAND \"${CMAKE_COMMAND}\" -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${CMAKE_HELPERS_DEBUG} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=ON -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
-    ${_cmake_helpers_process_command_echo_stdout}
+    \${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
   if(CMAKE_HELPERS_DEBUG)
@@ -1371,10 +1382,11 @@ endif()
 
   set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
   set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
+  set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
   execute_process(
     COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --config \$<CONFIG> -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
     WORKING_DIRECTORY \${_cmake_current_binary_dir}
-    ${_cmake_helpers_process_command_echo_stdout}
+    \${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
    )
 "
