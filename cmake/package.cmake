@@ -160,7 +160,7 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
-  if(FALSE AND cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+  if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
     #
     # CPack install things breaked into components. But we want a true install to generate the .pc files.
     # So we install in a local directory, and copy back the .pc files in the CPack's CMAKE_INSTALL_PREFIX/component pkgconfig dir.
@@ -173,9 +173,9 @@ function(cmake_helpers_package)
     set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
     file(WRITE ${_cmake_helpers_package_cpack_project_config_file} "
 if(CPACK_BUILD_CONFIG)
-  list(APPEND CPACK_INSTALL_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
+  list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
 else()
-  list(APPEND CPACK_INSTALL_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}.cmake\")
+  list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake\")
 endif()
 "
     )
@@ -186,6 +186,14 @@ endif()
     # - use this local install to generate correct .pc files
     # - copy these .pc files in the CPack staging area
     #
+    # In the pre-build script we want to remember the CMAKE_INSTALL_PREFIX of the local staging area...
+    #
+    set(_cpack_install_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script.cmake)
+    set(_cpack_local_install_prefix_txt ${CMAKE_CURRENT_BINARY_DIR}/cpack_local_install_prefix.txt)
+    file(WRITE  ${_cpack_install_script} "message(STATUS \"Remembering local install prefix: \${CMAKE_INSTALL_PREFIX}\")\n")
+    file(APPEND ${_cpack_install_script} "file(WRITE \"${_cpack_local_install_prefix_txt}\" \${CMAKE_INSTALL_PREFIX})\n")
+    list(APPEND CPACK_INSTALL_SCRIPTS ${_cpack_install_script})
+
     set(_cmake_helpers_package_local_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install")
     cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(_cmake_helpers_package_generator_is_multi_config)
@@ -198,8 +206,15 @@ endif()
     if(_cmake_helpers_package_configs)
       foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
 	file(GENERATE
-	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
 	  CONTENT "
+#
+# Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
+#
+unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
+#
+# Do a local install
+#
 set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
@@ -215,25 +230,39 @@ execute_process(
   COMMAND_ERROR_IS_FATAL ANY
 )
 
-set(_cmake_helpers_package_configcomponent_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}ConfigComponent\")
+file(READ \"${_cpack_local_install_prefix_txt}\" _cpack_local_install_prefix_txt)
+set(_cmake_helpers_package_configcomponent_path \"\${_cpack_local_install_prefix_txt}/${PROJECT_NAME}ConfigComponent\")
+cmake_path(CONVERT \"\${_cmake_helpers_package_configcomponent_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_configcomponent_path NORMALIZE)
 set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configcomponent_path}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+cmake_path(CONVERT \"\${_cmake_helpers_package_pkgconfigdir_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_pkgconfigdir_path NORMALIZE)
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Copying\")
 message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
-message(STATUS \"to\")
+message(STATUS \"to pkgconfig local install\")
 message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
 message(STATUS \"******************************************************************************\")
 file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
 foreach(_pc IN LISTS _pcs)
   message(STATUS \"\${_pc}\")
+  get_filename_component(_filename \${_pc} NAME)
+  set(_destination \"\${_cmake_helpers_package_pkgconfigdir_path}/\${_filename}\")
+  cmake_path(CONVERT \"\${_destination}\" TO_CMAKE_PATH_LIST _destination NORMALIZE)
+  file(REMOVE \${_destination})
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
 "
         )
       endforeach()
     else()
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
 	"
+#
+# Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
+#
+unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
+#
+# Do a local install
+#
 set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
@@ -248,17 +277,24 @@ execute_process(
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
-set(_cmake_helpers_package_configcomponent_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}ConfigComponent\")
+file(READ \"${_cpack_local_install_prefix_txt}\" _cpack_local_install_prefix_txt)
+set(_cmake_helpers_package_configcomponent_path \"\${_cpack_local_install_prefix_txt}/${PROJECT_NAME}ConfigComponent\")
+cmake_path(CONVERT \"\${_cmake_helpers_package_configcomponent_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_configcomponent_path NORMALIZE)
 set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configcomponent_path}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+cmake_path(CONVERT \"\${_cmake_helpers_package_pkgconfigdir_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_pkgconfigdir_path NORMALIZE)
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Copying\")
 message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
-message(STATUS \"to\")
+message(STATUS \"to pkgconfig local install\")
 message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
 message(STATUS \"******************************************************************************\")
 file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
 foreach(_pc IN_LIST _pcs)
   message(STATUS \"\${_pc}\")
+  get_filename_component(_filename \${_pc} NAME)
+  set(_destination \"\${_cmake_helpers_package_pkgconfigdir_path}/\${_filename}\")
+  cmake_path(CONVERT \"\${_destination}\" TO_CMAKE_PATH_LIST _destination NORMALIZE)
+  file(REMOVE \${_destination})
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
 "
@@ -289,6 +325,16 @@ endforeach()
   # Always enable archive
   #
   set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+  #
+  # We need a way to know if make install is running under CPACK or not
+  #
+  SET (CPACK_PROJECT_CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
+  FILE (WRITE "# ${PROJECT_NAME} CPack configuration file")
+  if(CMAKE_HELPERS_DEBUG)
+    FILE (APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
+  endif()
+  FILE (APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
+  SET (CPACK_PROJECT_CONFIG_FILE ${CPACK_PROJECT_CONFIG_FILE_PATH})
   #
   # Components
   #

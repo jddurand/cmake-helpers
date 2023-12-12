@@ -1108,6 +1108,9 @@ endif()
 # Loop on all targets and assign target generated properties. Note that we always a string for convenience.
 #
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
+  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_install_target}.pc")
+  message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
+
   set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
   get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 
@@ -1240,8 +1243,7 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
   set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_LIBS_PRIVATE "${_libs_private}")
   #
   # Generate .pc.in
-  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_install_target}.pc")
-  message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
+  #
   file(GENERATE OUTPUT ${_file}
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/pc.in
     TARGET ${_cmake_helpers_library_target}
@@ -1364,31 +1366,27 @@ endif()
     #
     # Install CODE hook for the ConfigComponent
     #
-    install(CODE "    message(STATUS \"Executing pkgconfig hooks\")
-  set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
-  # message(STATUS \"... CMAKE_INSTALL_PREFIX              : \${_cmake_install_prefix}\")\n
-
-  set(_cmake_current_binary_dir \"${CMAKE_CURRENT_BINARY_DIR}\")
-  # message(STATUS \"... CMAKE_CURRENT_BINARY_DIR          : \${_cmake_current_binary_dir}\")\n
-
-  set(_cmake_helpers_install_pkgconfigdir \"${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
-  # message(STATUS \"... CMAKE_HELPERS_INSTALL_PKGCONFIGDIR: \${_cmake_helpers_install_pkgconfigdir}\")\n
-
-  set(_cmake_helpers_install_cmakedir \"${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
-  # message(STATUS \"... CMAKE_HELPERS_INSTALL_CMAKEDIR    : \${_cmake_helpers_install_cmakedir}\")\n
-
-  set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
-  # message(STATUS \"... CMAKE_HELPERS_DEBUG               : \${_cmake_helpers_debug}\")\n
-
-  set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
-  set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
-  set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
-  execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --config \$<CONFIG> -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
-    WORKING_DIRECTORY \${_cmake_current_binary_dir}
-    \${_cmake_helpers_process_command_echo_stdout}
-    COMMAND_ERROR_IS_FATAL ANY
-   )
+    install(CODE "        set(CMAKE_HELPERS_CPACK_IS_RUNNING \$ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
+  #
+  # We do not want to run this when it is CPack
+  #
+  if(NOT CMAKE_HELPERS_CPACK_IS_RUNNING)
+    message(STATUS \"Executing pkgconfig hooks\")
+    set(_cmake_install_prefix \${CMAKE_INSTALL_PREFIX})
+    set(_cmake_current_binary_dir \"${CMAKE_CURRENT_BINARY_DIR}\")
+    set(_cmake_helpers_install_pkgconfigdir \"${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}\")
+    set(_cmake_helpers_install_cmakedir \"${CMAKE_HELPERS_INSTALL_CMAKEDIR}\")
+    set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
+    set(_script \"${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript}\")
+    set(_cmake_helpers_cmake_command_options ${_cmake_helpers_cmake_command_options_injection})
+    set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
+    execute_process(
+      COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_cmake_command_options} --config \$<CONFIG> -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+      WORKING_DIRECTORY \${_cmake_current_binary_dir}
+      \${_cmake_helpers_process_command_echo_stdout}
+      COMMAND_ERROR_IS_FATAL ANY
+     )
+  endif()
 "
       COMPONENT ${PROJECT_NAME}ConfigComponent
     )
