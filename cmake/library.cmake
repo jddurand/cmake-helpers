@@ -1208,7 +1208,7 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] ... Cflags.private: ${_cflags_private}")
   endif()
-  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_CFLAGS_PRIVATE "${_cflags_private_join}")
+  set_target_properties(${_cmake_helpers_library_target} PROPERTIES _CMAKE_HELPERS_LIBRARY_PC_CFLAGS_PRIVATE "${_cflags_private}")
   #
   # Libs: unknown targets from _cmake_helpers_library_links
   #
