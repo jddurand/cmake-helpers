@@ -8,7 +8,6 @@ function(cmake_helpers_package)
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HeaderComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent          : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ConfigComponent
   # - cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript          : Script that generates pkgconfig files after install phase
-  # - cmake_helpers_property_${PROJECT_NAME}_LibraryTargets               : List of library targets
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent            : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HtmlComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveManComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ManComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ExeComponent
@@ -38,7 +37,6 @@ function(cmake_helpers_package)
     cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent
     cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript
-    cmake_helpers_property_${PROJECT_NAME}_LibraryTargets
     cmake_helpers_property_${PROJECT_NAME}_HaveManComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent
@@ -64,14 +62,24 @@ function(cmake_helpers_package)
     DESCRIPTION_SUMMARY
     LICENSE
     INSTALL_DIRECTORY
+    #
+    # Component groups
+    #
     DEVELOPMENTGROUP_DISPLAY_NAME
     DEVELOPMENTGROUP_DESCRIPTION
     DOCUMENTATIONGROUP_DISPLAY_NAME
     DOCUMENTATIONGROUP_DESCRIPTION
     RUNTIMEGROUP_DISPLAY_NAME
     RUNTIMEGROUP_DESCRIPTION
+    #
+    # Components
+    #
+    RUNTIME_DISPLAY_NAME
+    RUNTIME_DESCRIPTION
     LIBRARY_DISPLAY_NAME
     LIBRARY_DESCRIPTION
+    ARCHIVE_DISPLAY_NAME
+    ARCHIVE_DESCRIPTION
     HEADER_DISPLAY_NAME
     HEADER_DESCRIPTION
     MAN_DISPLAY_NAME
@@ -97,48 +105,20 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_documentationgroup_description    "Documentation\n\nDocumentation in various formats")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
+  set(_cmake_helpers_package_runtime_display_name              "Runtime")
+  set(_cmake_helpers_package_runtime_description               "Runtime libraries")
   set(_cmake_helpers_package_library_display_name              "Libraries")
-  set(_cmake_helpers_package_library_display_names)
-  foreach(_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
-    get_target_property(_type ${_target} TYPE)
-    if(_type STREQUAL "INTERFACE_LIBRARY")
-      list(APPEND _cmake_helpers_package_library_display_names "Interface")
-    elseif(_type STREQUAL "SHARED_LIBRARY")
-      list(APPEND _cmake_helpers_package_library_display_names "Shared")
-    elseif(_type STREQUAL "STATIC_LIBRARY")
-      list(APPEND _cmake_helpers_package_library_display_names "Static")
-    elseif(_type STREQUAL "MODULE_LIBRARY")
-      list(APPEND _cmake_helpers_package_library_display_names "Module")
-    elseif(_type STREQUAL "OBJECT_LIBRARY")
-      #
-      # And object library installs nothing
-      #
-    else()
-      message(FATAL_ERROR "Unsupported library type: ${_type}")
-    endif()
-  endforeach()
-  list(LENGTH _cmake_helpers_package_library_display_names _cmake_helpers_package_library_display_names_length)
-  if(_cmake_helpers_package_library_display_names_length EQUAL 1)
-    #
-    # Only one library
-    #
-    set(_cmake_helpers_package_library_description "${_cmake_helpers_package_library_display_names} library")
-  elseif(_cmake_helpers_package_library_display_names_length GREATER 1)
-    #
-    # More than one library
-    #
-    list(GET _cmake_helpers_package_library_display_names -1 _cmake_helpers_package_library_display_name_last)
-    list(REMOVE_AT _cmake_helpers_package_library_display_names -1)
-    list(JOIN _cmake_helpers_package_library_display_names ", " _cmake_helpers_package_library_description)
-    set(_cmake_helpers_package_library_description "${_cmake_helpers_package_library_description} and ${_cmake_helpers_package_library_display_name_last} libraries")
+  set(_cmake_helpers_package_library_description               "Shared libraries")
+  set(_cmake_helpers_package_archive_display_name              "Archive")
+  if(WIN32 OR CYGWIN)
+    set(_cmake_helpers_package_archive_description               "Import/export libraries")
   else()
-    #
-    # No library
-    #
-    set(_cmake_helpers_package_library_description "")
+    set(_cmake_helpers_package_archive_description               "Static libraries")
   endif()
   set(_cmake_helpers_package_header_display_name               "Headers")
   set(_cmake_helpers_package_header_description                "C/C++ Header files")
+  set(_cmake_helpers_package_config_display_name               "Development configuration")
+  set(_cmake_helpers_package_config_description                "CMake and pkgconfig configuration files")
   set(_cmake_helpers_package_man_display_name                  "Man")
   set(_cmake_helpers_package_man_description                   "Documentation in the man format")
   set(_cmake_helpers_package_html_display_name                 "Html")
@@ -339,15 +319,17 @@ endforeach()
   # Components
   #
   set(CPACK_COMPONENTS_ALL)
-  foreach(_component
-      RuntimeComponent
-      LibraryComponent
-      ArchiveComponent
-      HeaderComponent
-      ConfigComponent
-      ManComponent
-      HtmlComponent
+  foreach(_part
+      runtime
+      library
+      archive
+      header
+      config
+      man
+      html
     )
+    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+    set(_component "${_part_toupper_firstletter}Component")
     if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
       list(APPEND CPACK_COMPONENTS_ALL ${PROJECT_NAME}${_component})
     endif()
@@ -373,12 +355,17 @@ endforeach()
   #
   # Add Groups
   #
-  if(cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+  if(cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent OR
+     cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent OR
+     cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent OR
+     cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent OR
+     cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent)
     set(_cmake_helpers_package_can_developmentgroup TRUE)
   else()
     set(_cmake_helpers_package_can_developmentgroup FALSE)
   endif()
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveManComponent OR cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent)
+  if(cmake_helpers_property_${PROJECT_NAME}_HaveManComponent OR
+     cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent)
     set(_cmake_helpers_package_can_documentationgroup TRUE)
   else()
     set(_cmake_helpers_package_can_documentationgroup FALSE)
@@ -414,52 +401,65 @@ endforeach()
   #
   # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
   #
-  if(cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
-    foreach(_cmake_helpers_package_component
-	RuntimeComponent
-	LibraryComponent
-	ArchiveComponent
-	HeaderComponent
-	ConfigComponent
+  # DevelopmentGroup
+  #
+  foreach(_part
+      runtime
+      library
+      archive
+      header
+      config
+    )
+    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+    set(_component "${_part_toupper_firstletter}Component")
+    message(STATUS "_component ${_component}")
+    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
+      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
+	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
+	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
+	GROUP DevelopmentGroup
       )
-      if(cmake_helpers_property_${PROJECT_NAME}_Have${_cmake_helpers_package_component})
-	cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_cmake_helpers_package_component}
-	  DISPLAY_NAME ${_cmake_helpers_package_library_display_name}
-	  DESCRIPTION ${_cmake_helpers_package_library_description}
-	  GROUP DevelopmentGroup
-	)
-      endif()
-    endforeach()
-  endif()
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveManComponent OR cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent)
-    foreach(_cmake_helpers_package_component
-	ManComponent
-	HtmlComponent
-      )
-      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_cmake_helpers_package_component}
-	DISPLAY_NAME ${_cmake_helpers_package_man_display_name}
-	DESCRIPTION ${_cmake_helpers_package_man_description}
+    endif()
+  endforeach()
+  #
+  # DocumentationGroup
+  #
+  foreach(_part
+      man
+      html
+    )
+    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+    set(_component "${_part_toupper_firstletter}Component")
+    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
+      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
+	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
+	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
 	GROUP DocumentationGroup
       )
-    endforeach()
-  endif()
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent)
-    if(cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent)
-      set(_cmake_helpers_component_depends DEPENDS RuntimeComponent)
-    else()
-      set(_cmake_helpers_component_depends)
     endif()
-    foreach(_cmake_helpers_package_component
-	ExeComponent
-      )
-      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_cmake_helpers_package_component}
-	DISPLAY_NAME ${_cmake_helpers_package_application_display_name}
-	DESCRIPTION ${_cmake_helpers_package_application_description}
-	GROUP RuntimeGroup
-	${_cmake_helpers_component_depends}
-      )
-    endforeach()
+  endforeach()
+  #
+  # RuntimeGroup
+  #
+  if(cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent)
+    set(_cmake_helpers_package_exe_component_depends DEPENDS RuntimeComponent)
+  else()
+    set(_cmake_helpers_package_exe_component_depends)
   endif()
+  foreach(_part
+      exe
+    )
+    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+    set(_component "${_part_toupper_firstletter}Component")
+    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
+      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
+	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
+	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
+	GROUP RuntimeGroup
+	${_cmake_helpers_package_exe_component_depends}
+      )
+    endif()
+  endforeach()
   #
   # End
   #
@@ -467,5 +467,21 @@ endforeach()
     message(STATUS "[${_cmake_helpers_logprefix}] ======")
     message(STATUS "[${_cmake_helpers_logprefix}] Ending")
     message(STATUS "[${_cmake_helpers_logprefix}] ======")
+  endif()
+endfunction()
+
+function(_cmake_helpers_package_toupper_firstletter input outvar)
+  string(LENGTH "${input}" _length)
+  if(_length GREATER 0)
+    string(SUBSTRING "${input}" 0 1 _first)
+    if(_length GREATER 1)
+      string(SUBSTRING "${input}" 1 -1 _rest)
+    else()
+      set(_rest "")
+    endif()
+    string(TOUPPER "${_first}" _first_toupper)
+    set(${outvar} "${_first_toupper}${_rest}" PARENT_SCOPE)
+  else()
+    set(${outvar} "" PARENT_SCOPE)
   endif()
 endfunction()
