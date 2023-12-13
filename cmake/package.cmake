@@ -309,7 +309,7 @@ endforeach()
   # We need a way to know if make install is running under CPACK or not
   #
   SET (CPACK_PROJECT_CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
-  FILE (WRITE ${CPACK_PROJECT_CONFIG_FILE_PATH} "# ${PROJECT_NAME} CPack configuration file")
+  FILE (WRITE ${CPACK_PROJECT_CONFIG_FILE_PATH} "# ${PROJECT_NAME} CPack configuration file\n")
   if(CMAKE_HELPERS_DEBUG)
     FILE (APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
   endif()
