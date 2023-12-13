@@ -412,7 +412,6 @@ endforeach()
     )
     _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
     set(_component "${_part_toupper_firstletter}Component")
-    message(STATUS "_component ${_component}")
     if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
       cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
 	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
