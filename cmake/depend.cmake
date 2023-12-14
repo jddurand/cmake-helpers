@@ -32,7 +32,6 @@ function(cmake_helpers_depend depname)
     VERSION
     EXCLUDE_FROM_ALL
     SYSTEM
-    BUILD_AND_INSTALL_CONFIGURATION
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -45,7 +44,6 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_version                         "")
   set(_cmake_helpers_depend_exclude_from_all                TRUE)
   set(_cmake_helpers_depend_system                          FALSE)
-  set(_cmake_helpers_depend_build_and_install_configuration Release)
   #
   # Multi-value options default values
   #
@@ -208,7 +206,6 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_process_command_error_is_fatal)
   endif()
-  message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}, configuration ${_cmake_helpers_depend_build_and_install_configuration}")
   execute_process(
     COMMAND ${CMAKE_COMMAND}
       -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
@@ -222,19 +219,17 @@ function(cmake_helpers_depend depname)
     execute_process(
       COMMAND ${CMAKE_COMMAND}
         --build ${${_depname_tolower}_BINARY_DIR}
-	--config ${_cmake_helpers_depend_build_and_install_configuration}
-      ${_cmake_helpers_process_command_echo_stdout}
-      ${_cmake_helpers_process_command_error_is_fatal}
+        ${_cmake_helpers_process_command_echo_stdout}
+        ${_cmake_helpers_process_command_error_is_fatal}
     )
   endif()
   if((NOT _result_variable) OR (_result_variable EQUAL 0))
     execute_process(
       COMMAND ${CMAKE_COMMAND}
         --install ${${_depname_tolower}_BINARY_DIR}
-	--config ${_cmake_helpers_depend_build_and_install_configuration}
 	--prefix ${_cmake_helpers_install_path}
-      ${_cmake_helpers_process_command_echo_stdout}
-      ${_cmake_helpers_process_command_error_is_fatal}
+        ${_cmake_helpers_process_command_echo_stdout}
+        ${_cmake_helpers_process_command_error_is_fatal}
     )
   endif()
   #
