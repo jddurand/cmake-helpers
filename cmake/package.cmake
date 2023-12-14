@@ -140,6 +140,19 @@ function(cmake_helpers_package)
   #
   # Set CPack hooks
   #
+  #
+  # We need a way to know if make install is running under CPACK or not
+  #
+  set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
+  FILE (WRITE ${_cmake_helpers_package_cpack_project_config_file} "# ${PROJECT_NAME} CPack configuration file\n")
+  if(CMAKE_HELPERS_DEBUG)
+    FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
+  endif()
+  FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
+  SET (CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
+  #
+  # pkgconfig hooks are running just before CPack installs the components
+  #
   if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
     #
     # CPack install things breaked into components. But we want a true install to generate the .pc files.
@@ -150,16 +163,14 @@ function(cmake_helpers_package)
     # described in https://cmake.org/pipermail/cmake-developers/2015-April/025082.html .
     # When $<CONFIG> is set, CMake will redo every file(GENERATE ...) call.
     #
-    set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
-    file(WRITE ${_cmake_helpers_package_cpack_project_config_file} "
-if(CPACK_BUILD_CONFIG)
+    file(APPEND ${_cmake_helpers_package_cpack_project_config_file} "
+if(NOT(\"x\${CPACK_BUILD_CONFIG}\" STREQUAL \"x\"))
   list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
 else()
   list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake\")
 endif()
 "
     )
-    set(CPACK_PROJECT_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
     #
     # Generate a script for every configuration. This will
     # - do a local install
@@ -234,7 +245,7 @@ endforeach()
         )
       endforeach()
     else()
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake
 	"
 #
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
@@ -269,7 +280,7 @@ message(STATUS \"to pkgconfig local install\")
 message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
 message(STATUS \"******************************************************************************\")
 file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
-foreach(_pc IN_LIST _pcs)
+foreach(_pc IN LISTS _pcs)
   message(STATUS \"\${_pc}\")
   get_filename_component(_filename \${_pc} NAME)
   set(_destination \"\${_cmake_helpers_package_pkgconfigdir_path}/\${_filename}\")
@@ -305,16 +316,6 @@ endforeach()
   # Always enable archive
   #
   set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-  #
-  # We need a way to know if make install is running under CPACK or not
-  #
-  SET (CPACK_PROJECT_CONFIG_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
-  FILE (WRITE ${CPACK_PROJECT_CONFIG_FILE_PATH} "# ${PROJECT_NAME} CPack configuration file\n")
-  if(CMAKE_HELPERS_DEBUG)
-    FILE (APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
-  endif()
-  FILE (APPEND ${CPACK_PROJECT_CONFIG_FILE_PATH} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
-  SET (CPACK_PROJECT_CONFIG_FILE ${CPACK_PROJECT_CONFIG_FILE_PATH})
   #
   # Components
   #
