@@ -184,8 +184,10 @@ endif()
     file(WRITE  ${_cpack_install_script} "message(STATUS \"Remembering local install prefix: \${CMAKE_INSTALL_PREFIX}\")\n")
     file(APPEND ${_cpack_install_script} "file(WRITE \"${_cpack_local_install_prefix_txt}\" \${CMAKE_INSTALL_PREFIX})\n")
     list(APPEND CPACK_INSTALL_SCRIPTS ${_cpack_install_script})
-
-    set(_cmake_helpers_package_local_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install")
+    #
+    # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+    #
+    set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${PROJECT_NAME})
     cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(_cmake_helpers_package_generator_is_multi_config)
       set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
@@ -206,17 +208,12 @@ unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
 #
 # Do a local install
 #
-set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
+set(_cmake_helpers_install_path \"${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
-message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
 execute_process(
-  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
-  ${_cmake_helpers_package_command_echo_stdout}
-  COMMAND_ERROR_IS_FATAL ANY
-)
-execute_process(
-  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --config ${_cmake_helpers_package_config} --prefix \"\${_cmake_helpers_package_local_prefix}\"
+  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --config ${_cmake_helpers_package_config} --prefix \"\${_cmake_helpers_install_path}\"
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
@@ -228,11 +225,11 @@ set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configc
 cmake_path(CONVERT \"\${_cmake_helpers_package_pkgconfigdir_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_pkgconfigdir_path NORMALIZE)
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Copying\")
-message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
+message(STATUS \"\${_cmake_helpers_install_path}/*${PROJECT_NAME}*.pc\")
 message(STATUS \"to pkgconfig local install\")
 message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
 message(STATUS \"******************************************************************************\")
-file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_install_path}/*${PROJECT_NAME}*.pc)
 foreach(_pc IN LISTS _pcs)
   message(STATUS \"\${_pc}\")
   get_filename_component(_filename \${_pc} NAME)
@@ -254,17 +251,17 @@ unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
 #
 # Do a local install
 #
-set(_cmake_helpers_package_local_prefix \"${_cmake_helpers_package_local_prefix}\")
+set(_cmake_helpers_install_path \"${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
-message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_package_local_prefix}\")
+message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
 execute_process(
-  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_package_local_prefix}
+  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_install_path}
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
 execute_process(
-  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_package_local_prefix}\"
+  COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_install_path}\"
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
@@ -275,11 +272,11 @@ set(_cmake_helpers_package_pkgconfigdir_path \"\${_cmake_helpers_package_configc
 cmake_path(CONVERT \"\${_cmake_helpers_package_pkgconfigdir_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_pkgconfigdir_path NORMALIZE)
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Copying\")
-message(STATUS \"\${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc\")
+message(STATUS \"\${_cmake_helpers_install_path}/*${PROJECT_NAME}*.pc\")
 message(STATUS \"to pkgconfig local install\")
 message(STATUS \"\${_cmake_helpers_package_pkgconfigdir_path}\")
 message(STATUS \"******************************************************************************\")
-file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_package_local_prefix}/*${PROJECT_NAME}*.pc)
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false \${_cmake_helpers_install_path}/*${PROJECT_NAME}*.pc)
 foreach(_pc IN LISTS _pcs)
   message(STATUS \"\${_pc}\")
   get_filename_component(_filename \${_pc} NAME)
