@@ -36,7 +36,6 @@ function(cmake_helpers_depend depname)
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
-    MAKEAVAILABLE_ARGS
     FIND_PACKAGE_ARGS
   )
   #
@@ -51,7 +50,6 @@ function(cmake_helpers_depend depname)
   # Multi-value options default values
   #
   set(_cmake_helpers_depend_externalproject_add_args)
-  set(_cmake_helpers_depend_makeavailable_args)
   set(_cmake_helpers_depend_find_package_args)
   #
   # Parse Arguments
