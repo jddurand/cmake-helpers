@@ -32,6 +32,7 @@ function(cmake_helpers_depend depname)
     VERSION
     EXCLUDE_FROM_ALL
     SYSTEM
+    CONFIG
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -44,6 +45,95 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_version                         "")
   set(_cmake_helpers_depend_exclude_from_all                TRUE)
   set(_cmake_helpers_depend_system                          FALSE)
+  #
+  # In the case we are doing a local installation, we want to know the configuration type.
+  # We always end up with a find_package, so we also want to specify import configuration mapping.
+  #
+  cmake_helpers_call(get_property _cmake_helpers_depend_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  set(_cmake_helpers_depend_config_default                  RelWithDebInfo)
+  if(_cmake_helpers_depend_generator_is_multi_config)
+    #
+    # This a multi-generator. If caller did set CMAKE_BUILD_TYPE, use it in the build and install steps.
+    #
+    if(DEFINED CMAKE_BUILD_TYPE)
+      set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
+    else()
+      set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+    endif()
+    set(_cmake_helpers_depend_configure_step_config_option)
+    set(_cmake_helpers_depend_build_step_config_option "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_install_step_config_option "--config" ${_cmake_helpers_depend_config})
+  elseif(DEFINED CMAKE_BUILD_TYPE)
+    #
+    # Single generator. If caller did set CMAKE_BUILD_TYPE, use it in the configure step.
+    #
+    set(_cmake_helpers_depend_config                            "${CMAKE_BUILD_TYPE}")
+  else()
+    #
+    # None of the above. Force our default.
+    #
+    set(_cmake_helpers_depend_config                            ${_cmake_helpers_depend_config_default})
+    set(_cmake_helpers_depend_configure_step_config_option "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_build_step_config_option)
+    set(_cmake_helpers_depend_install_step_config_option)
+  endif()
+  #
+  # Import mapping. We always want to fallback to:
+  # - our default (case we build/install locally)
+  # - "sane" default, including the noconfig case
+  #
+  if(_cmake_helpers_depend_generator_is_multi_config)
+    set(_cmake_helpers_depend_configuration_types ${CMAKE_CONFIGURATION_TYPES})
+  elseif(DEFINED CMAKE_BUILD_TYPE)
+    set(_cmake_helpers_depend_configuration_types ${CMAKE_BUILD_TYPE})
+  else()
+    set(_cmake_helpers_depend_configuration_types)
+  endif()
+  #
+  # Make sure the known CMake default are present.
+  #
+  foreach(_cmake_helpers_depend_configuration_default "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+    if(NOT(${_cmake_helpers_depend_configuration_default} IN_LIST _cmake_helpers_depend_configuration_types))
+      list(APPEND _cmake_helpers_depend_configuration_types ${_cmake_helpers_depend_configuration_default})
+    endif()
+  endforeach()
+  #
+  # Make sure the "noconfig" version is present
+  #
+  if(NOT("" IN_LIST _cmake_helpers_depend_configuration_types))
+    list(APPEND _cmake_helpers_depend_configuration_types "")
+  endif()
+  #
+  # Put "Debug;" at the very end
+  #
+  foreach(_cmake_helpers_depend_configuration_default "Debug" "")
+    list(REMOVE_ITEM _cmake_helpers_depend_configuration_types "${_cmake_helpers_depend_configuration_default}")
+    list(APPEND _cmake_helpers_depend_configuration_types "${_cmake_helpers_depend_configuration_default}")
+  endforeach()
+  #
+  # Define the import fallbacks
+  #
+  foreach(_cmake_helpers_depend_configuration_type IN LISTS _cmake_helpers_depend_configuration_types)
+    if(NOT("x${_cmake_helpers_depend_configuration_type}" STREQUAL "x"))
+      string(TOUPPER "${_cmake_helpers_depend_configuration_type}" _cmake_helpers_depend_configuration_type_toupper)
+      if(NOT(DEFINED CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper}))
+        set(_cmake_helpers_depend_configuration_type_maps ${_cmake_helpers_depend_configuration_types})
+        list(REMOVE_ITEM _cmake_helpers_depend_configuration_type_maps ${_cmake_helpers_depend_configuration_type})
+        list(INSERT _cmake_helpers_depend_configuration_type_maps 0 ${_cmake_helpers_depend_configuration_type})
+        set(CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper} ${_cmake_helpers_depend_configuration_type_maps})
+        #
+        # Well, CMake has trouble with empty element
+        #
+        list(GET CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper} -1 _last)
+        if(NOT("x${_last}" STREQUAL "x"))
+          list(APPEND CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper} "")
+        endif()
+        if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper}: ${CMAKE_MAP_IMPORTED_CONFIG_${_cmake_helpers_depend_configuration_type_toupper}}")
+        endif()
+      endif()
+    endif()
+  endforeach()
   #
   # Multi-value options default values
   #
@@ -211,6 +301,7 @@ function(cmake_helpers_depend depname)
       -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
       -S ${${_depname_tolower}_SOURCE_DIR}
       -B ${${_depname_tolower}_BINARY_DIR}
+      ${_cmake_helpers_depend_configure_step_config_option}
     RESULT_VARIABLE _result_variable
     ${_cmake_helpers_process_command_echo_stdout}
     ${_cmake_helpers_process_command_error_is_fatal}
@@ -219,6 +310,7 @@ function(cmake_helpers_depend depname)
     execute_process(
       COMMAND ${CMAKE_COMMAND}
         --build ${${_depname_tolower}_BINARY_DIR}
+        ${_cmake_helpers_depend_build_step_config_option}
         ${_cmake_helpers_process_command_echo_stdout}
         ${_cmake_helpers_process_command_error_is_fatal}
     )
@@ -228,6 +320,7 @@ function(cmake_helpers_depend depname)
       COMMAND ${CMAKE_COMMAND}
         --install ${${_depname_tolower}_BINARY_DIR}
 	--prefix ${_cmake_helpers_install_path}
+        ${_cmake_helpers_depend_install_step_config_option}
         ${_cmake_helpers_process_command_echo_stdout}
         ${_cmake_helpers_process_command_error_is_fatal}
     )

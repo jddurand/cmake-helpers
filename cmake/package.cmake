@@ -191,12 +191,15 @@ endif()
     cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(_cmake_helpers_package_generator_is_multi_config)
       set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
-    elseif($<CONFIG>)
-      set(_cmake_helpers_package_configs $<CONFIG>)
+    elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
+      set(_cmake_helpers_package_configs ${CMAKE_BUILD_TYPE})
     else()
       set(_cmake_helpers_package_configs)
     endif()
     if(_cmake_helpers_package_configs)
+      #
+      # By definition, we have $<CONFIG>
+      #
       foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
 	file(GENERATE
 	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
