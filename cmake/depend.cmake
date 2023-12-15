@@ -53,30 +53,30 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_config_default                  RelWithDebInfo)
   if(_cmake_helpers_depend_generator_is_multi_config)
     #
-    # This a multi-generator. If caller did set CMAKE_BUILD_TYPE, use it in the build and install steps.
+    # Multi-generator. config is not know until build/install steps.
     #
-    if(DEFINED CMAKE_BUILD_TYPE)
-      set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
-    else()
-      set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
-    endif()
+    set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
     set(_cmake_helpers_depend_configure_step_config_option)
-    set(_cmake_helpers_depend_build_step_config_option "--config" ${_cmake_helpers_depend_config})
-    set(_cmake_helpers_depend_install_step_config_option "--config" ${_cmake_helpers_depend_config})
-  elseif(DEFINED CMAKE_BUILD_TYPE)
+    set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
+  elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
     #
     # Single generator. If caller did set CMAKE_BUILD_TYPE, use it in the configure step.
     #
-    set(_cmake_helpers_depend_config                            "${CMAKE_BUILD_TYPE}")
+    set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
   else()
     #
     # None of the above. Force our default.
     #
-    set(_cmake_helpers_depend_config                            ${_cmake_helpers_depend_config_default})
-    set(_cmake_helpers_depend_configure_step_config_option "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+    set(_cmake_helpers_depend_configure_step_config_option    "--config" ${_cmake_helpers_depend_config})
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
+  #
+  # CMake generate options
+  #
+  cmake_generate_options(_cmake_helpers_depend_cmake_generate_options)
   #
   # Import mapping. We always want to fallback to:
   # - our default (case we build/install locally)
@@ -84,7 +84,7 @@ function(cmake_helpers_depend depname)
   #
   if(_cmake_helpers_depend_generator_is_multi_config)
     set(_cmake_helpers_depend_configuration_types ${CMAKE_CONFIGURATION_TYPES})
-  elseif(DEFINED CMAKE_BUILD_TYPE)
+  elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
     set(_cmake_helpers_depend_configuration_types ${CMAKE_BUILD_TYPE})
   else()
     set(_cmake_helpers_depend_configuration_types)
@@ -299,6 +299,7 @@ function(cmake_helpers_depend depname)
   execute_process(
     COMMAND ${CMAKE_COMMAND}
       -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
+      ${_cmake_helpers_depend_cmake_generate_options}
       -S ${${_depname_tolower}_SOURCE_DIR}
       -B ${${_depname_tolower}_BINARY_DIR}
       ${_cmake_helpers_depend_configure_step_config_option}
