@@ -268,11 +268,6 @@ message(STATUS \"***************************************************************
 message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
 execute_process(
-  COMMAND \"${CMAKE_COMMAND}\" -E rm -rf \${_cmake_helpers_install_path}
-  ${_cmake_helpers_package_command_echo_stdout}
-  COMMAND_ERROR_IS_FATAL ANY
-)
-execute_process(
   COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_install_path}\"
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
