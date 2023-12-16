@@ -165,9 +165,16 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_file "")
   endif()
   #
-  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR. In case of a
+  # recursive call via an external project, this path is recuperated via an environment
+  # variable.
   #
-  set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${depname})
+  if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
+    set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install)
+    set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
+  else()
+    set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
+  endif()
   file(GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
   set(_cmake_helpers_depend_prefix_paths)
   foreach(_cmake IN LISTS _cmakes)

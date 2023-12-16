@@ -866,7 +866,12 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
 # We are going to do a find_package, so we also need to collect the dependencies we
 # installed locally.
 #
-set(_cmake_helpers_install_path "@PROJECT_BINARY_DIR@/cmake_helpers_install")
+if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
+  set(_cmake_helpers_install_path "@PROJECT_BINARY_DIR@/cmake_helpers_install")
+  set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
+else()
+  set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
+endif()
 file(GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
 set(_cmake_helpers_depend_prefix_paths)
 foreach(_cmake IN LISTS _cmakes)

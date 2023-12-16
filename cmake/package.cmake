@@ -189,7 +189,12 @@ endif()
     #
     # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
     #
-    set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install/${PROJECT_NAME})
+    if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
+      set(_cmake_helpers_install_path ${PROJECT_BINARY_DIR}/cmake_helpers_install)
+      set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
+    else()
+      set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
+    endif()
     cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(_cmake_helpers_package_generator_is_multi_config)
       set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
