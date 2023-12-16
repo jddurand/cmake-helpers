@@ -59,16 +59,21 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_configure_step_config_option)
     set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
     set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
-  elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
-    #
-    # Single generator. If caller did set CMAKE_BUILD_TYPE, use it in the configure step.
-    #
-    set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
   else()
     #
-    # None of the above. Force our default.
+    # Single generator.
     #
-    set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+    if(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
+      #
+      # If caller did set CMAKE_BUILD_TYPE, use it in the configure step.
+      #
+      set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
+    else()
+      #
+      # Force our default.
+      #
+      set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+    endif()
     set(_cmake_helpers_depend_configure_step_config_option    "--config" ${_cmake_helpers_depend_config})
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)

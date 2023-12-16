@@ -288,13 +288,7 @@ Function(cmake_helpers_exe name)
       #
       # A tiny hook to force ctest to build the executable
       #
-      set(_cmake_helpers_exe_config $<CONFIG>)
-      if(_cmake_helpers_exe_config)
-	set(_cmake_helpers_exe_config_args --config "${_cmake_helpers_exe_config}")
-      else()
-	set(_cmake_helpers_exe_config_args)
-      endif()
-      cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" ${_cmake_helpers_exe_config_args} --target ${_cmake_helpers_exe_target})
+      cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" $<$<CONFIG>:--config $<CONFIG>> --target ${_cmake_helpers_exe_target})
       cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES DEPENDS ${_cmake_helpers_exe_target}_build)
     endif()
   endforeach()
