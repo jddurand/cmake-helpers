@@ -202,8 +202,7 @@ endif()
       foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
         set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
 	file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
-	  CONTENT "
-#
+"#
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
 unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
