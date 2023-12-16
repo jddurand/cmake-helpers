@@ -149,6 +149,9 @@ function(cmake_helpers_package)
     FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
   endif()
   FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
+  if(CMAKE_HELPERS_DEBUG)
+    FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] CPACK_BUILD_CONFIG: \${CPACK_BUILD_CONFIG}\")\n")
+  endif()
   #
   # pkgconfig hooks are running just before CPack installs the components
   #
