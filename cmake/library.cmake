@@ -193,7 +193,7 @@ function(cmake_helpers_library)
   # Common reject relpath regexps: test, 3rparty and _deps directories
   #
   set(_cmake_helpers_library_sources_reject_relpath_regexes_common "/test/" "/3rdparty/" "/_deps/" "^test/" "^3rdparty/" "^_deps/")
-  
+
   set(_cmake_helpers_library_sources_accept_relpath_regexes)
   set(_cmake_helpers_library_sources_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common}
 
