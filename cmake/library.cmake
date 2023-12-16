@@ -195,14 +195,14 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_sources_reject_relpath_regexes_common "/test/" "/3rdparty/" "/_deps/" "^test/" "^3rdparty/" "^_deps/")
 
   set(_cmake_helpers_library_sources_accept_relpath_regexes)
-  set(_cmake_helpers_library_sources_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common}
+  set(_cmake_helpers_library_sources_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
 
   set(_cmake_helpers_library_headers)
   set(_cmake_helpers_library_headers_auto                         TRUE)
   set(_cmake_helpers_library_headers_prefix                       include)
   set(_cmake_helpers_library_headers_globs                        *.h *.hh *.hpp *.hxx)
   set(_cmake_helpers_library_headers_accept_relpath_regexes)
-  set(_cmake_helpers_library_headers_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common}
+  set(_cmake_helpers_library_headers_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
   set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal/" "/_" "^internal/" "^_")
   set(_cmake_helpers_library_pods_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR})
   set(_cmake_helpers_library_pods)
@@ -210,7 +210,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_pods_prefix                          pod)
   set(_cmake_helpers_library_pods_globs                           *.pod)
   set(_cmake_helpers_library_pods_accept_relpath_regexes)
-  set(_cmake_helpers_library_pods_reject_relpath_regexes          ${_cmake_helpers_library_sources_reject_relpath_regexes_common}
+  set(_cmake_helpers_library_pods_reject_relpath_regexes          ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
   set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
   #
   # Parse Arguments
