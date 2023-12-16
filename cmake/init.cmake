@@ -56,7 +56,7 @@ function(cmake_helpers_init)
     check_symbol_exists(log "math.h" HAVE_LOG)
     check_symbol_exists(exp "math.h" HAVE_EXP)
     if(HAVE_LOG AND HAVE_EXP)
-      set(CMAKE_MATH_LIBS "m" CACHE STRING "Math library")
+      set(CMAKE_MATH_LIBS "m" CACHE STRING "Math library" FORCE)
       mark_as_advanced(CMAKE_MATH_LIBS)
       #
       # Use the math library for the try_run tests
@@ -75,7 +75,7 @@ function(cmake_helpers_init)
     else()
       unset(_c_inline_is_inline)
     endif()
-    set(C_INLINE_IS_INLINE ${_c_inline_is_inline} CACHE BOOL "C inline keyword is inline")
+    set(C_INLINE_IS_INLINE ${_c_inline_is_inline} CACHE BOOL "C inline keyword is inline" FORCE)
     mark_as_advanced(C_INLINE_IS_INLINE)
   endif()
   cmake_helpers_try_run(C_FORCEINLINE ${PROJECT_SOURCE_DIR}/cmake/forceinline.c forceinline __forceinline__ forceinline__ __forceinline)
@@ -92,7 +92,7 @@ function(cmake_helpers_init)
     # We must have a value for CHAR_BIT...
     #
     message(WARNING "Unable to find CHAR_BIT - Assuming 8")
-    set(C_CHAR_BIT "8" CACHE STRING "C_CHAR_BIT forced value")
+    set(C_CHAR_BIT "8" CACHE STRING "C_CHAR_BIT forced value" FORCE)
     mark_as_advanced(C_CHAR_BIT)
   endif()
   #
@@ -404,6 +404,12 @@ function(cmake_helpers_init)
 	      endif()
             endif()
           endforeach()
+          set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
+          set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
+          set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
+          set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
+          set(${_MYTYPEMIN} ${${_MYTYPEMIN}} CACHE STRING "Have ${_MYTYPEMIN}" FORCE)
+          set(${_MYTYPEMAX} ${${_MYTYPEMAX}} CACHE STRING "Have ${_MYTYPEMAX}" FORCE)
           mark_as_advanced(
             HAVE_${_MYTYPE}
             SIZEOF_${_MYTYPE}
@@ -461,6 +467,10 @@ function(cmake_helpers_init)
               break()
             endif()
           endif()
+          set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
+          set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
+          set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
+          set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
           mark_as_advanced(
             HAVE_${_MYTYPE}
             SIZEOF_${_MYTYPE}
