@@ -858,7 +858,6 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_PKGCONFIGDIR: ${CMAKE_HELPERS_PKGCONFIGDIR}")
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR    : ${CMAKE_HELPERS_CMAKEDIR}")
-  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKE_CONFIG: ${CMAKE_HELPERS_CMAKE_CONFIG}")
 endif()
 
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
@@ -1176,9 +1175,9 @@ endif()
       endif()
       file(WRITE ${cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript} "  set(_cmake_helpers_logprefix \"cmake_helpers/${PROJECT_NAME}/library/pkgconfig\")
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS \"[\${_cmake_helpers_logprefix}] ============================\")
-    message(STATUS \"[\${_cmake_helpers_logprefix}] Starting [\${CMAKE_HELPERS_CMAKE_CONFIG}]\")
-    message(STATUS \"[\${_cmake_helpers_logprefix}] ============================\")
+    message(STATUS \"[\${_cmake_helpers_logprefix}] ========\")
+    message(STATUS \"[\${_cmake_helpers_logprefix}] Starting\")
+    message(STATUS \"[\${_cmake_helpers_logprefix}] ========\")
   endif()
   set(_destination \${CMAKE_INSTALL_PREFIX})
   cmake_path(CONVERT \"\${_destination}\" TO_CMAKE_PATH_LIST _destination NORMALIZE)
@@ -1244,7 +1243,7 @@ endif()
   set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
   set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_CMAKE_CONFIG=\${CMAKE_HELPERS_CMAKE_CONFIG} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     \${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
@@ -1289,10 +1288,10 @@ endif()
       set(_cmake_helpers_cmake_config)
     endif()
     #
-    # CMAKE_HELPERS_CMAKE_CONFIG is used only for logging
+    # Execute the script that will call the pkgconfig hooks in a local generated project
     #
     execute_process(
-      COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_CMAKE_CONFIG=\${_cmake_helpers_cmake_config} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
+      COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_INSTALL_PREFIX=\${_cmake_install_prefix} -DCMAKE_HELPERS_INSTALL_PKGCONFIGDIR=\${_cmake_helpers_install_pkgconfigdir} -DCMAKE_HELPERS_INSTALL_CMAKEDIR=\${_cmake_helpers_install_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -P \${_script}
       WORKING_DIRECTORY \${_cmake_current_binary_dir}
       \${_cmake_helpers_process_command_echo_stdout}
       COMMAND_ERROR_IS_FATAL ANY
