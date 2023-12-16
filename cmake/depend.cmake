@@ -74,7 +74,7 @@ function(cmake_helpers_depend depname)
       #
       set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
     endif()
-    set(_cmake_helpers_depend_configure_step_config_option    "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_configure_step_config_option    "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
