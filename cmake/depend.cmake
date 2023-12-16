@@ -39,7 +39,7 @@ function(cmake_helpers_depend depname)
     FIND_PACKAGE_ARGS
   )
   #
-  # Options default values
+  # Default values
   #
   set(_cmake_helpers_depend_file                            "")
   set(_cmake_helpers_depend_version                         "")
@@ -56,9 +56,6 @@ function(cmake_helpers_depend depname)
     # Multi-generator. config is not know until build/install steps.
     #
     set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
-    set(_cmake_helpers_depend_configure_step_config_option)
-    set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
-    set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
   else()
     #
     # Single generator.
@@ -74,14 +71,35 @@ function(cmake_helpers_depend depname)
       #
       set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
     endif()
-    set(_cmake_helpers_depend_configure_step_config_option    "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
-    set(_cmake_helpers_depend_build_step_config_option)
-    set(_cmake_helpers_depend_install_step_config_option)
   endif()
+  #
+  # Multi-value options default values
+  #
+  set(_cmake_helpers_depend_externalproject_add_args)
+  set(_cmake_helpers_depend_find_package_args)
+  #
+  # Parse Arguments
+  #
+  cmake_helpers_parse_arguments(package _cmake_helpers_depend "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
   # CMake generate options
   #
   cmake_generate_options(_cmake_helpers_depend_cmake_generate_options)
+  if(_cmake_helpers_depend_generator_is_multi_config)
+    #
+    # Multi-generator. config is not know until build/install steps.
+    #
+    set(_cmake_helpers_depend_configure_step_config_option)
+    set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
+  else()
+    #
+    # Single generator.
+    #
+    set(_cmake_helpers_depend_configure_step_config_option    "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
+    set(_cmake_helpers_depend_build_step_config_option)
+    set(_cmake_helpers_depend_install_step_config_option)
+  endif()
   #
   # Import mapping. We always want to fallback to:
   # - our default (case we build/install locally)
@@ -139,15 +157,6 @@ function(cmake_helpers_depend depname)
       endif()
     endif()
   endforeach()
-  #
-  # Multi-value options default values
-  #
-  set(_cmake_helpers_depend_externalproject_add_args)
-  set(_cmake_helpers_depend_find_package_args)
-  #
-  # Parse Arguments
-  #
-  cmake_helpers_parse_arguments(package _cmake_helpers_depend "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
   # Disable FILE option if it does not exist
   #
