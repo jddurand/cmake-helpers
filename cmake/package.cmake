@@ -149,7 +149,6 @@ function(cmake_helpers_package)
     FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
   endif()
   FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
-  SET (CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
   #
   # pkgconfig hooks are running just before CPack installs the components
   #
@@ -201,8 +200,9 @@ endif()
       # By definition, we have $<CONFIG>
       #
       foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
+        set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
 	file(GENERATE
-	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake
+	  OUTPUT ${_cmake_helpers_package_cpack_pre_build_script}
 	  CONTENT "
 #
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
@@ -243,9 +243,15 @@ foreach(_pc IN LISTS _pcs)
 endforeach()
 "
         )
+        if(CMAKE_HELPERS_DEBUG)
+          message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
+          file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
+          message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
+        endif()
       endforeach()
     else()
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake
+      set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake)
+      file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
 	"
 #
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
@@ -290,36 +296,47 @@ foreach(_pc IN LISTS _pcs)
 endforeach()
 "
       )
+      if(CMAKE_HELPERS_DEBUG)
+        message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
+        file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
+        message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
+      endif()
     endif()
+  endif()
+  SET (CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_project_config_file}")
+    file(READ ${_cmake_helpers_package_cpack_project_config_file} _cmake_helpers_package_cpack_project_config_file_content)
+    message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_project_config_file_content}")
   endif()
   #
   # Set common CPack variables
   #
-  set(CPACK_PACKAGE_NAME                ${_cmake_helpers_package_name})
-  set(CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
-  set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
+  cmake_helpers_call(set CPACK_PACKAGE_NAME                ${_cmake_helpers_package_name})
+  cmake_helpers_call(set CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
+  cmake_helpers_call(set CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
+  cmake_helpers_call(set CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
+  cmake_helpers_call(set CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
   if(EXISTS ${_cmake_helpers_package_license})
     configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
-    set(CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
+    cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
   endif()
   #
   # Get all components in one package
   #
-  set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+  cmake_helpers_call(set CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
   #
   # And explicit show them
   #
-  set(CPACK_MONOLITHIC_INSTALL FALSE)
+  cmake_helpers_call(set CPACK_MONOLITHIC_INSTALL FALSE)
   #
   # Always enable archive
   #
-  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+  cmake_helpers_call(set CPACK_ARCHIVE_COMPONENT_INSTALL ON)
   #
   # Components
   #
-  set(CPACK_COMPONENTS_ALL)
+  cmake_helpers_call(set CPACK_COMPONENTS_ALL)
   foreach(_part
       runtime
       library
@@ -340,13 +357,13 @@ endforeach()
   #
   if(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
-      set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win64)")
-      set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win64")
+      cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+      cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win64)")
+      cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win64")
     else()
-      set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
-      set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win32)")
-      set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win32")
+      cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+      cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win32)")
+      cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win32")
     endif()
   endif()
   #
