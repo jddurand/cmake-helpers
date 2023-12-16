@@ -198,10 +198,9 @@ endif()
     else()
       set(_cmake_helpers_package_configs)
     endif()
-    if(_cmake_helpers_package_configs)
-      foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
-        set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
-	file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
+    foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
+      set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
+      file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
 "#
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
@@ -240,18 +239,19 @@ foreach(_pc IN LISTS _pcs)
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
 "
-        )
-        if(CMAKE_HELPERS_DEBUG)
-          message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
-          file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
-          message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
-        endif()
-      endforeach()
-    else()
-      set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake)
-      file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
-	"
-#
+      )
+      if(CMAKE_HELPERS_DEBUG)
+        message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
+        file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
+        message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
+      endif()
+    endforeach()
+    #
+    # In case CPack is call without --config, we always generate the corresponding cpack_pre_build_script
+    #
+    set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake)
+    file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
+"#
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
 unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
@@ -293,15 +293,14 @@ foreach(_pc IN LISTS _pcs)
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
 "
-      )
-      if(CMAKE_HELPERS_DEBUG)
-        message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
-        file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
-        message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
-      endif()
+    )
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
+      file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
+      message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
     endif()
   endif()
-  SET (CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
+  cmake_helpers_call(set CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_project_config_file}")
     file(READ ${_cmake_helpers_package_cpack_project_config_file} _cmake_helpers_package_cpack_project_config_file_content)
