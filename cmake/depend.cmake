@@ -200,19 +200,34 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_depend_find_package_have_alternatives FALSE)
   endif()
-  set(_cmake_helpers_depend_find_package_args_tmp ${_cmake_helpers_depend_find_package_args}) 
-  set(_cmake_helpers_depend_find_package_args_tmp ${_cmake_helpers_depend_find_package_args})
-  if(NOT "QUIET" IN_LIST _cmake_helpers_depend_find_package_args_tmp)
+  #
+  # Look the original QUIET and REQUIRED options
+  #
+  if("QUIET" IN_LIST _cmake_helpers_depend_find_package_args)
     set(_cmake_helpers_depend_have_quiet TRUE)
+  else()
+    set(_cmake_helpers_depend_have_quiet FALSE)
+  endif()
+  if("REQUIRED" IN_LIST _cmake_helpers_depend_find_package_args)
+    set(_cmake_helpers_depend_have_required TRUE)
+  else()
+    set(_cmake_helpers_depend_have_required FALSE)
+  endif()
+  set(_cmake_helpers_depend_find_package_args_tmp ${_cmake_helpers_depend_find_package_args}) 
+  if(_cmake_helpers_depend_have_required)
     if(_cmake_helpers_depend_find_package_have_alternatives)
-      list(APPEND _cmake_helpers_depend_find_package_args_tmp "QUIET")
+      #
+      # There are two alternatives. Make sure the first one is QUIET and not REQUIRED
+      #
+      if(NOT _cmake_helpers_depend_have_quiet)
+	list(APPEND _cmake_helpers_depend_find_package_args_tmp "QUIET")
+      endif()
       list(REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "REQUIRED")
       set(_cmake_helper_depend_find_package_must_succeed FALSE)
     else()
       set(_cmake_helper_depend_find_package_must_succeed TRUE)
     endif()
   else()
-    set(_cmake_helpers_depend_have_quiet FALSE)
     set(_cmake_helper_depend_find_package_must_succeed FALSE)
   endif()
   #
@@ -303,10 +318,14 @@ function(cmake_helpers_depend depname)
     endif()
   endforeach()
   #
-  # If not populated and not QUIET, this is an error
+  # If not populated and not REQUIRED, this is an error
   #
-  if((NOT ${_depname_tolower}_POPULATED) AND (NOT _cmake_helpers_depend_have_quiet))
-    message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} cannot be populated")
+  if(NOT ${_depname_tolower}_POPULATED)
+    if(_cmake_helpers_depend_have_required)
+      message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} cannot be populated")
+    else()
+      return()
+    endif()
   endif()
   #
   # We do a local installation, and do not mind about $<CONFIG>: we want the default from this package
@@ -318,7 +337,7 @@ function(cmake_helpers_depend depname)
     else()
       set(_cmake_helpers_process_command_echo_stdout)
     endif()
-    if(NOT _cmake_helpers_depend_have_quiet)
+    if(_cmake_helpers_depend_have_required)
       set(_cmake_helpers_process_command_error_is_fatal "COMMAND_ERROR_IS_FATAL" "ANY")
     else()
       set(_cmake_helpers_process_command_error_is_fatal)
