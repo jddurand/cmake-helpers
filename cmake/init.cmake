@@ -211,300 +211,300 @@ function(cmake_helpers_init)
   # Common sizes checks
   #
   include(CheckTypeSize)
-  block()
-    if(HAVE_STDINT_H)
-      list(APPEND CMAKE_EXTRA_INCLUDE_FILES stdint.h)
-    endif()
-    if(HAVE_INTTYPES_H)
-      list(APPEND CMAKE_EXTRA_INCLUDE_FILES inttypes.h)
-    endif()
-    if(HAVE_SYS_INTTYPES_H)
-      list(APPEND CMAKE_EXTRA_INCLUDE_FILES sys/inttypes.h)
-    endif()
-    if(HAVE_STDDEF_H)
-      list(APPEND CMAKE_EXTRA_INCLUDE_FILES stddef.h)
-    endif()
-    check_type_size("char" SIZEOF_CHAR)
-    check_type_size("short" SIZEOF_SHORT)
-    check_type_size("int" SIZEOF_INT)
-    check_type_size("long" SIZEOF_LONG)
-    check_type_size("long long" SIZEOF_LONG_LONG)
-    check_type_size("float" SIZEOF_FLOAT)
-    check_type_size("double" SIZEOF_DOUBLE)
-    check_type_size("long double" SIZEOF_LONG_DOUBLE)
-    check_type_size("unsigned char" SIZEOF_UNSIGNED_CHAR)
-    check_type_size("unsigned short" SIZEOF_UNSIGNED_SHORT)
-    check_type_size("unsigned int" SIZEOF_UNSIGNED_INT)
-    check_type_size("unsigned long" SIZEOF_UNSIGNED_LONG)
-    check_type_size("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG)
-    check_type_size("size_t" SIZEOF_SIZE_T)
-    check_type_size("void *" SIZEOF_VOID_STAR)
-    check_type_size("ptrdiff_t" SIZEOF_PTRDIFF_T)
+  set(CMAKE_EXTRA_INCLUDE_FILES_BACKUP ${CMAKE_EXTRA_INCLUDE_FILES})
+  if(HAVE_STDINT_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES stdint.h)
+  endif()
+  if(HAVE_INTTYPES_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES inttypes.h)
+  endif()
+  if(HAVE_SYS_INTTYPES_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES sys/inttypes.h)
+  endif()
+  if(HAVE_STDDEF_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES stddef.h)
+  endif()
+  check_type_size("char" SIZEOF_CHAR)
+  check_type_size("short" SIZEOF_SHORT)
+  check_type_size("int" SIZEOF_INT)
+  check_type_size("long" SIZEOF_LONG)
+  check_type_size("long long" SIZEOF_LONG_LONG)
+  check_type_size("float" SIZEOF_FLOAT)
+  check_type_size("double" SIZEOF_DOUBLE)
+  check_type_size("long double" SIZEOF_LONG_DOUBLE)
+  check_type_size("unsigned char" SIZEOF_UNSIGNED_CHAR)
+  check_type_size("unsigned short" SIZEOF_UNSIGNED_SHORT)
+  check_type_size("unsigned int" SIZEOF_UNSIGNED_INT)
+  check_type_size("unsigned long" SIZEOF_UNSIGNED_LONG)
+  check_type_size("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG)
+  check_type_size("size_t" SIZEOF_SIZE_T)
+  check_type_size("void *" SIZEOF_VOID_STAR)
+  check_type_size("ptrdiff_t" SIZEOF_PTRDIFF_T)
+  #
+  # Integer types
+  #
+  foreach(_sign "" "u")
     #
-    # Integer types
+    # Remember that CHAR_BIT minimum value is 8 -;
     #
-    foreach(_sign "" "u")
+    foreach(_size 8 16 32 64)
+      math(EXPR _sizeof "${_size} / ${C_CHAR_BIT}")
       #
-      # Remember that CHAR_BIT minimum value is 8 -;
+      # Speciying a MIN for unsigned case is meaningless (it is always zero) and not in the standard.
+      # We neverthless set it, well, to zero.
       #
-      foreach(_size 8 16 32 64)
-	math(EXPR _sizeof "${_size} / ${C_CHAR_BIT}")
-	#
-	# Speciying a MIN for unsigned case is meaningless (it is always zero) and not in the standard.
-	# We neverthless set it, well, to zero.
-	#
-	set(_mytypemin CMAKE_HELPERS_${_sign}int${_size}_MIN)
-	string(TOUPPER ${_mytypemin} _MYTYPEMIN)
-	set(_mytypemax CMAKE_HELPERS_${_sign}int${_size}_MAX)
-	string(TOUPPER ${_mytypemax} _MYTYPEMAX)
-	#
-	# Always define the CMAKE_HELPERS_XXX_MIN and CMAKE_HELPERS_XXX_MAX
-	#
-	foreach(_c "char" "short" "int" "long" "long long")
-          #
-          # Without an extension, integer literal is always int,
-          # so we have to handle the case of "long" and "long long"
-          #
-          if(_c STREQUAL "char")
-            set(_extension "")
-          elseif(_c STREQUAL "short")
-            set(_extension "")
-          elseif (_c STREQUAL "int")
-            set(_extension "")
-          elseif(_c STREQUAL "long")
-            if("x${_sign}" STREQUAL "x")
-              set(_extension "L")
-            elseif(_sign STREQUAL "u")
-              set(_extension "UL")
-            else()
-              message(FATAL_ERROR "Unsupported size ${_size}")
-            endif()
-          elseif(_c STREQUAL "long long")
-            #
-            # By definition, this C supports "long long", so it must support the "LL" suffix
-	    #
-            if("x${_sign}" STREQUAL "x")
-              set(_extension "LL")
-            elseif(_sign STREQUAL "u")
-              set(_extension "ULL")
-            else()
-              message(FATAL_ERROR "Unsupported size ${_size}")
-            endif()
+      set(_mytypemin CMAKE_HELPERS_${_sign}int${_size}_MIN)
+      string(TOUPPER ${_mytypemin} _MYTYPEMIN)
+      set(_mytypemax CMAKE_HELPERS_${_sign}int${_size}_MAX)
+      string(TOUPPER ${_mytypemax} _MYTYPEMAX)
+      #
+      # Always define the CMAKE_HELPERS_XXX_MIN and CMAKE_HELPERS_XXX_MAX
+      #
+      foreach(_c "char" "short" "int" "long" "long long")
+        #
+        # Without an extension, integer literal is always int,
+        # so we have to handle the case of "long" and "long long"
+        #
+        if(_c STREQUAL "char")
+          set(_extension "")
+        elseif(_c STREQUAL "short")
+          set(_extension "")
+        elseif (_c STREQUAL "int")
+          set(_extension "")
+        elseif(_c STREQUAL "long")
+          if("x${_sign}" STREQUAL "x")
+            set(_extension "L")
+          elseif(_sign STREQUAL "u")
+            set(_extension "UL")
           else()
-            message(FATAL_ERROR "Unsupported c ${_c}")
+            message(FATAL_ERROR "Unsupported size ${_size}")
+          endif()
+        elseif(_c STREQUAL "long long")
+          #
+          # By definition, this C supports "long long", so it must support the "LL" suffix
+	  #
+          if("x${_sign}" STREQUAL "x")
+            set(_extension "LL")
+          elseif(_sign STREQUAL "u")
+            set(_extension "ULL")
+          else()
+            message(FATAL_ERROR "Unsupported size ${_size}")
+          endif()
+        else()
+          message(FATAL_ERROR "Unsupported c ${_c}")
+        endif()
+        string(TOUPPER ${_c} _C)
+        string(REPLACE " " "_" _C "${_C}")
+        if(HAVE_SIZEOF_${_C})
+          if(${SIZEOF_${_C}} EQUAL ${_sizeof})
+            #
+            # In C language, a decimal constant without a u/U is always signed,
+            # but an hexadecimal constant is signed or unsigned, depending on value and integer type range
+	    #
+            if(_size EQUAL 8)
+	      if("x${_sign}" STREQUAL "x")
+                set(${_MYTYPEMIN} "(-127${_extension} - 1${_extension})")
+                set(${_MYTYPEMAX} "127${_extension}")
+	      elseif(_sign STREQUAL "u")
+		set(${_MYTYPEMIN} "0x00${_extension}")
+                set(${_MYTYPEMAX} "0xFF${_extension}")
+	      else()
+                message(FATAL_ERROR "Unsupported size ${_size}")
+	      endif()
+            elseif(_size EQUAL 16)
+	      if("x${_sign}" STREQUAL "x")
+                set(${_MYTYPEMIN} "(-32767${_extension} - 1${_extension})")
+                set(${_MYTYPEMAX} "32767${_extension}")
+	      elseif(_sign STREQUAL "u")
+                set(${_MYTYPEMIN} "0x0000${_extension}")
+                set(${_MYTYPEMAX} "0xFFFF${_extension}")
+	      else()
+                message(FATAL_ERROR "Unsupported size ${_size}")
+	      endif()
+            elseif(_size EQUAL 32)
+	      if("x${_sign}" STREQUAL "x")
+                set(${_MYTYPEMIN} "(-2147483647${_extension} - 1${_extension})")
+                set(${_MYTYPEMAX} "2147483647${_extension}")
+	      elseif(_sign STREQUAL "u")
+                set(${_MYTYPEMIN} "0x00000000${_extension}")
+                set(${_MYTYPEMAX} "0xFFFFFFFF${_extension}")
+	      else()
+                message(FATAL_ERROR "Unsupported size ${_size}")
+	      endif()
+            elseif(_size EQUAL 64)
+	      if("x${_sign}" STREQUAL "x")
+                set(${_MYTYPEMIN} "(-9223372036854775807${_extension} - 1${_extension})")
+                set(${_MYTYPEMAX} "9223372036854775807${_extension}")
+	      elseif(_sign STREQUAL "u")
+                set(${_MYTYPEMIN} "0x0000000000000000${_extension}")
+                set(${_MYTYPEMAX} "0xFFFFFFFFFFFFFFFF${_extension}")
+	      else()
+                message(FATAL_ERROR "Unsupported size ${_size}")
+	      endif()
+            else()
+	      MESSAGE(FATAL_ERROR "Unsupported size ${_size}")
+            endif()
+          endif()
+        endif()
+      endforeach()
+      #
+      # We handle the _least and _fast variations
+      #
+      foreach(_variation "" "_least" "_fast")
+
+        set(_ctype    ${_sign}int${_variation}${_size}_t)
+        string(TOUPPER ${_ctype} _CTYPE)
+
+        set(_mytype    CMAKE_HELPERS_${_sign}int${_variation}${_size})
+        string(TOUPPER ${_mytype} _MYTYPE)
+
+        set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
+
+        unset(HAVE_${_MYTYPE})
+        set(${_MYTYPE} "")
+        set(${_MYTYPEDEF} "")
+
+        #
+        # Try with C types
+        #
+        set(_found_type FALSE)
+        foreach(_c "char" "short" "int" "long" "long long")
+          if(_sign STREQUAL "u")
+	    set(_c "unsigned ${_c}")
           endif()
           string(TOUPPER ${_c} _C)
           string(REPLACE " " "_" _C "${_C}")
           if(HAVE_SIZEOF_${_C})
-            if(${SIZEOF_${_C}} EQUAL ${_sizeof})
-              #
-              # In C language, a decimal constant without a u/U is always signed,
-              # but an hexadecimal constant is signed or unsigned, depending on value and integer type range
-	      #
-              if(_size EQUAL 8)
-		if("x${_sign}" STREQUAL "x")
-                  set(${_MYTYPEMIN} "(-127${_extension} - 1${_extension})")
-                  set(${_MYTYPEMAX} "127${_extension}")
-		elseif(_sign STREQUAL "u")
-		  set(${_MYTYPEMIN} "0x00${_extension}")
-                  set(${_MYTYPEMAX} "0xFF${_extension}")
-		else()
-                  message(FATAL_ERROR "Unsupported size ${_size}")
-		endif()
-              elseif(_size EQUAL 16)
-		if("x${_sign}" STREQUAL "x")
-                  set(${_MYTYPEMIN} "(-32767${_extension} - 1${_extension})")
-                  set(${_MYTYPEMAX} "32767${_extension}")
-		elseif(_sign STREQUAL "u")
-                  set(${_MYTYPEMIN} "0x0000${_extension}")
-                  set(${_MYTYPEMAX} "0xFFFF${_extension}")
-		else()
-                  message(FATAL_ERROR "Unsupported size ${_size}")
-		endif()
-              elseif(_size EQUAL 32)
-		if("x${_sign}" STREQUAL "x")
-                  set(${_MYTYPEMIN} "(-2147483647${_extension} - 1${_extension})")
-                  set(${_MYTYPEMAX} "2147483647${_extension}")
-		elseif(_sign STREQUAL "u")
-                  set(${_MYTYPEMIN} "0x00000000${_extension}")
-                  set(${_MYTYPEMAX} "0xFFFFFFFF${_extension}")
-		else()
-                  message(FATAL_ERROR "Unsupported size ${_size}")
-		endif()
-              elseif(_size EQUAL 64)
-		if("x${_sign}" STREQUAL "x")
-                  set(${_MYTYPEMIN} "(-9223372036854775807${_extension} - 1${_extension})")
-                  set(${_MYTYPEMAX} "9223372036854775807${_extension}")
-		elseif(_sign STREQUAL "u")
-                  set(${_MYTYPEMIN} "0x0000000000000000${_extension}")
-                  set(${_MYTYPEMAX} "0xFFFFFFFFFFFFFFFF${_extension}")
-		else()
-                  message(FATAL_ERROR "Unsupported size ${_size}")
-		endif()
-              else()
-		MESSAGE(FATAL_ERROR "Unsupported size ${_size}")
+	    if("x${_variation}" STREQUAL "x")
+              if(${SIZEOF_${_C}} EQUAL ${_sizeof})
+                set(HAVE_${_MYTYPE} 1)
+                set(SIZEOF_${_MYTYPE} ${${_TYPE}})
+                set(${_MYTYPEDEF} ${_c})
+                break()
               endif()
-            endif()
+	    elseif(_variation STREQUAL "_least")
+              if(NOT (${SIZEOF_${_C}} LESS ${_sizeof}))
+                set(HAVE_${_MYTYPE} 1)
+                set(SIZEOF_${_MYTYPE} ${${_TYPE}})
+                set(${_MYTYPEDEF} ${_c})
+                break()
+              endif()
+	    elseif(_variation STREQUAL "_fast")
+              #
+              # We give the same result as _least
+              #
+              if(NOT (${SIZEOF_${_C}} LESS ${_sizeof}))
+                set(HAVE_${_MYTYPE} 1)
+                set(SIZEOF_${_MYTYPE} ${${_TYPE}})
+                set(${_MYTYPEDEF} ${_c})
+                break()
+              endif()
+	    else()
+              message(FATAL_ERROR "Unsupported variation ${_variation}")
+	    endif()
           endif()
-	endforeach()
-	#
-	# We handle the _least and _fast variations
-	#
-	foreach(_variation "" "_least" "_fast")
-
-          set(_ctype    ${_sign}int${_variation}${_size}_t)
-          string(TOUPPER ${_ctype} _CTYPE)
-
-          set(_mytype    CMAKE_HELPERS_${_sign}int${_variation}${_size})
-          string(TOUPPER ${_mytype} _MYTYPE)
-
-          set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
-
-          unset(HAVE_${_MYTYPE})
-          set(${_MYTYPE} "")
-          set(${_MYTYPEDEF} "")
-
-          #
-          # Try with C types
-          #
-          set(_found_type FALSE)
-          foreach(_c "char" "short" "int" "long" "long long")
-            if(_sign STREQUAL "u")
-	      set(_c "unsigned ${_c}")
-            endif()
-            string(TOUPPER ${_c} _C)
-            string(REPLACE " " "_" _C "${_C}")
-            if(HAVE_SIZEOF_${_C})
-	      if("x${_variation}" STREQUAL "x")
-                if(${SIZEOF_${_C}} EQUAL ${_sizeof})
-                  set(HAVE_${_MYTYPE} 1)
-                  set(SIZEOF_${_MYTYPE} ${${_TYPE}})
-                  set(${_MYTYPEDEF} ${_c})
-                  break()
-                endif()
-	      elseif(_variation STREQUAL "_least")
-                if(NOT (${SIZEOF_${_C}} LESS ${_sizeof}))
-                  set(HAVE_${_MYTYPE} 1)
-                  set(SIZEOF_${_MYTYPE} ${${_TYPE}})
-                  set(${_MYTYPEDEF} ${_c})
-                  break()
-                endif()
-	      elseif(_variation STREQUAL "_fast")
-                #
-                # We give the same result as _least
-                #
-                if(NOT (${SIZEOF_${_C}} LESS ${_sizeof}))
-                  set(HAVE_${_MYTYPE} 1)
-                  set(SIZEOF_${_MYTYPE} ${${_TYPE}})
-                  set(${_MYTYPEDEF} ${_c})
-                  break()
-                endif()
-	      else()
-                message(FATAL_ERROR "Unsupported variation ${_variation}")
-	      endif()
-            endif()
-          endforeach()
-          set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
-          set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
-          set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
-          set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
-          set(${_MYTYPEMIN} ${${_MYTYPEMIN}} CACHE STRING "Have ${_MYTYPEMIN}" FORCE)
-          set(${_MYTYPEMAX} ${${_MYTYPEMAX}} CACHE STRING "Have ${_MYTYPEMAX}" FORCE)
-          mark_as_advanced(
-            HAVE_${_MYTYPE}
-            SIZEOF_${_MYTYPE}
-            HAVE_${_CTYPE}
-            ${_MYTYPEDEF}
-            ${_MYTYPEMIN}
-            ${_MYTYPEMAX}
-	  )
-	endforeach()
+        endforeach()
+        set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
+        set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
+        set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
+        set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
+        set(${_MYTYPEMIN} ${${_MYTYPEMIN}} CACHE STRING "Have ${_MYTYPEMIN}" FORCE)
+        set(${_MYTYPEMAX} ${${_MYTYPEMAX}} CACHE STRING "Have ${_MYTYPEMAX}" FORCE)
+        mark_as_advanced(
+          HAVE_${_MYTYPE}
+          SIZEOF_${_MYTYPE}
+          HAVE_${_CTYPE}
+          ${_MYTYPEDEF}
+          ${_MYTYPEMIN}
+          ${_MYTYPEMAX}
+	)
       endforeach()
     endforeach()
-    #
-    # Integer type capable of holding object pointers
-    #
-    foreach(_sign "" "u")
-      set(_sizeof ${SIZEOF_VOID_STAR})
-      set(_ctype    ${_sign}intptr_t)
-      string(TOUPPER ${_ctype} _CTYPE)
-      set(_mytype    CMAKE_HELPERS_${_sign}intptr)
-      string(TOUPPER ${_mytype} _MYTYPE)
-      set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
+  endforeach()
+  #
+  # Integer type capable of holding object pointers
+  #
+  foreach(_sign "" "u")
+    set(_sizeof ${SIZEOF_VOID_STAR})
+    set(_ctype    ${_sign}intptr_t)
+    string(TOUPPER ${_ctype} _CTYPE)
+    set(_mytype    CMAKE_HELPERS_${_sign}intptr)
+    string(TOUPPER ${_mytype} _MYTYPE)
+    set(_MYTYPEDEF ${_MYTYPE}_TYPEDEF)
 
-      unset(HAVE_${_MYTYPE})
-      set(${_MYTYPE} "")
-      set(${_MYTYPEDEF} "")
+    unset(HAVE_${_MYTYPE})
+    set(${_MYTYPE} "")
+    set(${_MYTYPEDEF} "")
 
-      set(_type ${_sign}intptr_t)
-      string(TOUPPER ${_type} _TYPE)
-      check_type_size(${_type} ${_TYPE})
-      if(HAVE_${_TYPE})
-	set(HAVE_${_MYTYPE} 1)
-	set(SIZEOF_${_MYTYPE} ${${_TYPE}})
-	set(${_MYTYPEDEF} ${_type})
-	if(${_type} STREQUAL ${_ctype})
-          set(HAVE_${_CTYPE} 1)
-	else()
-          unset(HAVE_${_CTYPE})
-	endif()
+    set(_type ${_sign}intptr_t)
+    string(TOUPPER ${_type} _TYPE)
+    check_type_size(${_type} ${_TYPE})
+    if(HAVE_${_TYPE})
+      set(HAVE_${_MYTYPE} 1)
+      set(SIZEOF_${_MYTYPE} ${${_TYPE}})
+      set(${_MYTYPEDEF} ${_type})
+      if(${_type} STREQUAL ${_ctype})
+        set(HAVE_${_CTYPE} 1)
+      else()
+        unset(HAVE_${_CTYPE})
       endif()
-      IF (NOT HAVE_${_MYTYPE})
-	#
-	# Try with C types
-	#
-	foreach(_c "char" "short" "int" "long" "long long")
-          if("${_sign}" STREQUAL "u")
-            set(_c "unsigned ${_c}")
+    endif()
+    IF (NOT HAVE_${_MYTYPE})
+      #
+      # Try with C types
+      #
+      foreach(_c "char" "short" "int" "long" "long long")
+        if("${_sign}" STREQUAL "u")
+          set(_c "unsigned ${_c}")
+        endif()
+        string(TOUPPER ${_c} _C)
+        string(REPLACE " " "_" _C "${_C}")
+        if(HAVE_SIZEOF_${_C})
+          if(${SIZEOF_${_C}} EQUAL ${_sizeof})
+            set(HAVE_${_MYTYPE} 1)
+            set(SIZEOF_${_MYTYPE} ${${_TYPE}})
+            set(${_MYTYPEDEF} ${_c})
+            break()
           endif()
-          string(TOUPPER ${_c} _C)
-          string(REPLACE " " "_" _C "${_C}")
-          if(HAVE_SIZEOF_${_C})
-            if(${SIZEOF_${_C}} EQUAL ${_sizeof})
-              set(HAVE_${_MYTYPE} 1)
-              set(SIZEOF_${_MYTYPE} ${${_TYPE}})
-              set(${_MYTYPEDEF} ${_c})
-              break()
-            endif()
-          endif()
-          set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
-          set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
-          set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
-          set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
-          mark_as_advanced(
-            HAVE_${_MYTYPE}
-            SIZEOF_${_MYTYPE}
-            HAVE_${_CTYPE}
-            ${_MYTYPEDEF}
-	  )
-	endforeach()
-      endif()
-    endforeach()
-    #
-    # Header files generation
-    #
-    set(_header_files_generated FALSE)
-    set(_output_gen_dir ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
-    if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H)
-      set(_output_file ${_output_gen_dir}/stdint.h)
-      message(STATUS "Generating ${_output_file}")
-      configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
-      get_filename_component(_cmake_helpers_stdint_h_directory ${_output_file} DIRECTORY)
-      set(_header_files_generated TRUE)
+        endif()
+        set(HAVE_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE BOOL "Have ${_MYTYPE}" FORCE)
+        set(SIZEOF_${_MYTYPE} ${HAVE_${_MYTYPE}} CACHE INTERNAL "Size of ${_MYTYPE}" FORCE)
+        set(HAVE_${_CTYPE} ${HAVE_${_CTYPE}} CACHE BOOL "Have ${_CTYPE}" FORCE)
+        set(${_MYTYPEDEF} ${${_MYTYPEDEF}} CACHE STRING "Have ${_MYTYPEDEF}" FORCE)
+        mark_as_advanced(
+          HAVE_${_MYTYPE}
+          SIZEOF_${_MYTYPE}
+          HAVE_${_CTYPE}
+          ${_MYTYPEDEF}
+	)
+      endforeach()
     endif()
-    if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H)
-      set(_output_file ${_output_gen_dir}/inttypes.h)
-      message(STATUS "Generating ${_output_file}")
-      configure_file(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
-      get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
-      set(_header_files_generated TRUE)
+  endforeach()
+  #
+  # Header files generation
+  #
+  set(_header_files_generated FALSE)
+  set(_output_gen_dir ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
+  if((NOT HAVE_STDINT_H) AND CMAKE_HELPERS_GENERATE_STDINT_H)
+    set(_output_file ${_output_gen_dir}/stdint.h)
+    message(STATUS "Generating ${_output_file}")
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/stdint.h.in ${_output_file})
+    get_filename_component(_cmake_helpers_stdint_h_directory ${_output_file} DIRECTORY)
+    set(_header_files_generated TRUE)
+  endif()
+  if((NOT HAVE_INTTYPES_H) AND CMAKE_HELPERS_GENERATE_INTTYPES_H)
+    set(_output_file ${_output_gen_dir}/inttypes.h)
+    message(STATUS "Generating ${_output_file}")
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/inttypes.h.in ${_output_file})
+    get_filename_component(_cmake_helpers_inttypes_h_directory ${_output_file} DIRECTORY)
+    set(_header_files_generated TRUE)
+  endif()
+  if(_header_files_generated)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "${_output_gen_dir} should be added by caller to its include path")
     endif()
-    if(_header_files_generated)
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "${_output_gen_dir} should be added by caller to its include path")
-      endif()
-    endif()
-  endblock()
+  endif()
+  set(CMAKE_EXTRA_INCLUDE_FILES ${CMAKE_EXTRA_INCLUDE_FILES_BACKUP})
   #
   # Check GNU features
   #
