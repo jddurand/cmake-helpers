@@ -285,11 +285,13 @@ function(cmake_helpers_depend depname)
       # FILE alternative - we can check if if exiss
       #
       set(_cmake_helpers_depend_content_options URL ${_cmake_helpers_depend_file})
+      message(STATUS "[${_cmake_helpers_logprefix}] Fetching ${depname} using ${_cmake_helpers_depend_file}")
     elseif(_cmake_helpers_depend_alternative STREQUAL "externalproject_add_args")
       #
       # EXTERNALPROJECT_ADD_ARGS generic alternative
       #
       set(_cmake_helpers_depend_content_options ${_cmake_helpers_depend_externalproject_add_args})
+      message(STATUS "[${_cmake_helpers_logprefix}] Fetching ${depname}")
     else()
       message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
     endif()
@@ -310,6 +312,7 @@ function(cmake_helpers_depend depname)
       message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_POPULATED: ${${_depname_tolower}_POPULATED}")
     endif()
     if(${_depname_tolower}_POPULATED)
+      message(STATUS "[${_cmake_helpers_logprefix}] Populated ${depname}")
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_SOURCE_DIR: ${${_depname_tolower}_SOURCE_DIR}")
 	message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_BINARY_DIR: ${${_depname_tolower}_BINARY_DIR}")
@@ -342,6 +345,7 @@ function(cmake_helpers_depend depname)
     else()
       set(_cmake_helpers_process_command_error_is_fatal)
     endif()
+    message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
     execute_process(
       COMMAND ${CMAKE_COMMAND}
         -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
@@ -354,6 +358,7 @@ function(cmake_helpers_depend depname)
 	${_cmake_helpers_process_command_error_is_fatal}
     )
     if((NOT _result_variable) OR (_result_variable EQUAL 0))
+      message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           --build ${${_depname_tolower}_BINARY_DIR}
@@ -364,6 +369,7 @@ function(cmake_helpers_depend depname)
       )
     endif()
     if((NOT _result_variable) OR (_result_variable EQUAL 0))
+      message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           --install ${${_depname_tolower}_BINARY_DIR}
