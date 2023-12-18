@@ -111,7 +111,7 @@ function(cmake_helpers_pod)
     endif()
     if(_cmake_helpers_pod_gzip OR _cmake_helpers_pod_7z)
       if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] Converting ${_cmake_helpers_pod_input} to man")
+	message(STATUS "[${_cmake_helpers_logprefix}] Creating target to convert ${_cmake_helpers_pod_input} to man")
       endif()
       #
       # pod -> man${section} -> man${section}.gz custom target
@@ -183,7 +183,7 @@ function(cmake_helpers_pod)
     # pod -> html custom target
     #
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] Converting ${_cmake_helpers_pod_input} to html")
+      message(STATUS "[${_cmake_helpers_logprefix}] Creating target to convert ${_cmake_helpers_pod_input} to html")
     endif()
     if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/html)
       file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html)
