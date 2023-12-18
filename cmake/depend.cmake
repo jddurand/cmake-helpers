@@ -29,7 +29,6 @@ function(cmake_helpers_depend depname)
   set(_options)
   set(_oneValueArgs
     FILE
-    VERSION
     EXCLUDE_FROM_ALL
     SYSTEM
     FIND
@@ -44,7 +43,6 @@ function(cmake_helpers_depend depname)
   # Default values
   #
   set(_cmake_helpers_depend_file                            "")
-  set(_cmake_helpers_depend_version                         "")
   set(_cmake_helpers_depend_exclude_from_all                TRUE)
   set(_cmake_helpers_depend_system                          FALSE)
   set(_cmake_helpers_depend_find                            TRUE)
