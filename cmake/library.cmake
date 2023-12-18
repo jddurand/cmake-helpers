@@ -240,7 +240,14 @@ function(cmake_helpers_library)
       # _find_depend is splitted using the space
       #
       separate_arguments(_args UNIX_COMMAND "${_cmake_helpers_library_find_dependency}")
-      cmake_helpers_call(find_package ${_args})
+      #
+      # First argument is always the dependency name
+      #
+      list(POP_FRONT _args _depname)
+      #
+      # Call our depend macro, that is aware of local installs and deals with import map
+      #
+      cmake_helpers_depend(${_depname} FIND TRUE INSTALL FALSE FIND_PACKAGE_ARGS ${_args})
     endforeach()
   endif()
   #
