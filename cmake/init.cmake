@@ -253,9 +253,9 @@ function(cmake_helpers_init)
       # Speciying a MIN for unsigned case is meaningless (it is always zero) and not in the standard.
       # We neverthless set it, well, to zero.
       #
-      set(_mytypemin CMAKE_HELPERS_${_sign}int${_size}_MIN)
+      set(_mytypemin CMAKE_HELPERS_${_sign}int${_size}_min)
       string(TOUPPER ${_mytypemin} _MYTYPEMIN)
-      set(_mytypemax CMAKE_HELPERS_${_sign}int${_size}_MAX)
+      set(_mytypemax CMAKE_HELPERS_${_sign}int${_size}_max)
       string(TOUPPER ${_mytypemax} _MYTYPEMAX)
       #
       # Always define the CMAKE_HELPERS_XXX_MIN and CMAKE_HELPERS_XXX_MAX
