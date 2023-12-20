@@ -32,6 +32,8 @@ function(cmake_helpers_depend depname)
     EXCLUDE_FROM_ALL
     SYSTEM
     FIND
+    SOURCE_DIR_OUTVAR
+    BINARY_DIR_OUTVAR
     INSTALL
     CONFIG
   )
@@ -46,6 +48,8 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_exclude_from_all                TRUE)
   set(_cmake_helpers_depend_system                          FALSE)
   set(_cmake_helpers_depend_find                            TRUE)
+  set(_cmake_helpers_depend_source_dir_outvar               cmake_helpers_exe_source_dir)
+  set(_cmake_helpers_depend_binary_dir_outvar               cmake_helpers_exe_binary_dir)
   set(_cmake_helpers_depend_install                         TRUE)
   #
   # In the case we are doing a local installation, we want to know the configuration type.
@@ -404,13 +408,18 @@ function(cmake_helpers_depend depname)
 	cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
       endif()
     endif()
-    #
-    # End
-    #
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] ======")
-      message(STATUS "[${_cmake_helpers_logprefix}] Ending")
-      message(STATUS "[${_cmake_helpers_logprefix}] ======")
-    endif()
+  endif()
+  #
+  # Send-out variables
+  #
+  set(${_cmake_helpers_depend_source_dir_outvar} "${${_depname_tolower}_SOURCE_DIR}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_binary_dir_outvar} "${${_depname_tolower}_BINARY_DIR}" PARENT_SCOPE)
+  #
+  # End
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
+    message(STATUS "[${_cmake_helpers_logprefix}] Ending")
+    message(STATUS "[${_cmake_helpers_logprefix}] ======")
   endif()
 endfunction()
