@@ -864,6 +864,7 @@ cmake_minimum_required(VERSION 3.16)
 project(pc_@PROJECT_NAME@)
 
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
+# set(CMAKE_HELPERS_DEBUG ON) # JDD
 set(_cmake_helpers_logprefix "cmake_helpers/@PROJECT_NAME@/library/pc.@PROJECT_NAME@/build")
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
@@ -872,11 +873,16 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_PKGCONFIGDIR: ${CMAKE_HELPERS_PKGCONFIGDIR}")
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR    : ${CMAKE_HELPERS_CMAKEDIR}")
 endif()
-
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
 #
-# We are going to do a find_package, so we also need to collect the dependencies we
-# installed locally.
+# We reload the cache at ${CMAKE_CURRENT_BINARY_DIR}: it contains all the *_DIR, *_ROOT information
+# needed to find dependencies that would be outside of CMAKE_HELPERS_CMAKEDIR. They are
+# guaranteed to be accurate because it is with these values that this project got built and
+# is being installed.
+#
+load_cache("@CMAKE_CURRENT_BINARY_DIR@")
+#
+# We append to ENV{PKG_CONFIG_PATH} the directories where are .pc files we
+# eventually installed locally.
 #
 if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
   set(_cmake_helpers_install_path "@PROJECT_BINARY_DIR@/cmake_helpers_install")
@@ -884,26 +890,49 @@ if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
 else()
   set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
 endif()
-file(GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
-set(_cmake_helpers_depend_prefix_paths)
-foreach(_cmake IN LISTS _cmakes)
-  get_filename_component(_dir ${_cmake} DIRECTORY)
-  if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
+set(_pcdirs)
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.pc)
+foreach(_pc IN LISTS _pcs)
+  get_filename_component(_dir ${_pc} DIRECTORY)
+  if(NOT _dir IN_LIST _pcdirs)
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] Found CMake prefix path: ${_dir}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Found pkgconfig dir: ${_dir}")
     endif()
-    list(APPEND _cmake_helpers_depend_prefix_paths ${_dir})
+    cmake_path(CONVERT ${_dir} TO_CMAKE_PATH_LIST _dir NORMALIZE)
+    list(APPEND _pcdirs ${_dir})
   endif()
 endforeach()
-list(APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
+message(STATUS "[${_cmake_helpers_logprefix}] _pcdirs: ${_pcdirs}")
+if(_pcdirs)
+  if(WIN32 AND NOT CYGWIN)
+    set(_path_separator ";")
+  else()
+    set(_path_separator ":")
+  endif()
+  if("x$ENV{PKG_CONFIG_PATH}" STREQUAL "x")
+    list(JOIN _pcdirs "${_path_separator}" _pcdirs_join)
+    set(ENV{PKG_CONFIG_PATH} ${_pcdirs_join})
+  else()
+    list(JOIN _pcdirs "${_path_separator}" _pcdirs_join)
+    set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}${_path_separator}${_pcdirs_join}")
+  endif()
+endif()
+message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CONFIG_PATH}")
+#
+# We know we are installed in CMAKE_HELPERS_CMAKEDIR: append it also to CMAKE_PREFIX_PATH
+#
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
+#
+# Say to find_package to use CMAKE_PREFIX_PATH
+#
 set(CMAKE_FIND_USE_CMAKE_PATH TRUE)
+#
+# find ourselves
+#
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
   message(STATUS "[${_cmake_helpers_logprefix}] find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)")
 endif()
-#
-# Note that the configuration type is fixed by caller, either via CMAKE_BUILD_TYPE, or via CMAKE_CONFIGURATION_TYPEs
-#
 find_package(@PROJECT_NAME@ @PROJECT_VERSION@ REQUIRED CONFIG COMPONENTS Development)
 #
 # Helper that transform a filename to a pkgconfig link
@@ -950,6 +979,15 @@ endfunction()
 # _cmake_helpers_library_${_cmake_helpers_library_target_type}_private_links
 # _cmake_helpers_library_${_cmake_helpers_library_target_type}_private_defs
 #
+# Requires section: we loop on our find_dependencies and each entry that is found
+# becomes a strong pkgconfig dependency IF this can be verified using FindPkgConfig
+#
+# set(PKG_CONFIG_ARGN "--debug")
+include(FindPkgConfig)
+if(NOT PKG_CONFIG_FOUND)
+  message(STATUS "[${_cmake_helpers_logprefix}] No pkg-config in path: Requires field not processed")
+endif()
+
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
   #
   # Get target name
@@ -1063,13 +1101,20 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
   # Requires: known targets from _cmake_helpers_library_links
   #
   set(_requires)
-  foreach(_cmake_helpers_library_link IN LISTS _cmake_helpers_library_links)
-    if(TARGET ${_cmake_helpers_library_link})
-      string(REGEX REPLACE ".*::" "" _cmake_helpers_library_link ${_cmake_helpers_library_link})
-      list(APPEND _requires ${_cmake_helpers_library_link})
-    endif()
-  endforeach()
-  list(JOIN _requires "," _requires)
+  if(PKG_CONFIG_FOUND)
+    foreach(_cmake_helpers_library_link IN LISTS _cmake_helpers_library_links)
+      if(TARGET ${_cmake_helpers_library_link})
+        string(REGEX REPLACE ".*::" "" _cmake_helpers_library_link ${_cmake_helpers_library_link})
+        message(STATUS "[${_cmake_helpers_logprefix}] pkg_check_modules(PC_${_cmake_helpers_library_link} ${_cmake_helpers_library_link})")
+        set(PC_${_cmake_helpers_library_link}_FOUND "")
+        pkg_check_modules(PC_${_cmake_helpers_library_link} ${_cmake_helpers_library_link})
+        if(PC_${_cmake_helpers_library_link}_FOUND)
+          list(APPEND _requires ${_cmake_helpers_library_link})
+        endif()
+      endif()
+    endforeach()
+    list(JOIN _requires "," _requires)
+  endif()
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] ... Requires: ${_requires}")
   endif()
