@@ -223,12 +223,10 @@ Function(cmake_helpers_exe name)
     if(_cmake_helpers_exe_test)
       enable_testing()
       #
-      # PATH wooes. Even if there is ENVIRONMENT_MODIFICATION I failed to prepend more than one value to the path using
-      # this method.
-      #
-      # So I switch to a much more complated thing: ${CMAKE_COMMAND} -E env "PATH=${_name_test_path}"
-      #
-      # Get list of paths to prepend
+      # Environment modification:
+      # - Environment set by the caller
+      # - Imported directories by a recursive lookup of dependencies
+      # - Test executable target directory
       #
       set(_imported_directories)
       if(CMAKE_HELPERS_DEBUG)
@@ -249,11 +247,10 @@ Function(cmake_helpers_exe name)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] prepend paths: ${_cmake_helpers_exe_prepend_paths}")
       endif()
+      #
+      # Make sure they are expressed as native paths
+      #
       cmake_path(CONVERT "${_cmake_helpers_exe_prepend_paths}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_prepend_native_paths)
-      #
-      # In any case, escape backslash
-      #
-      # string(REPLACE "\\" "\\\\" _cmake_helpers_exe_prepend_native_paths "${_cmake_helpers_exe_prepend_native_paths}")
       #
       # Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
       #
