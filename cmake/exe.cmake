@@ -77,6 +77,9 @@ Function(cmake_helpers_exe name)
     DEPENDS
     DEPENDS_EXT
     TARGETS_OUTVAR
+    TEST_TARGETS_OUTVAR
+    BUILD_TARGETS_OUTVAR
+    ENVIRONMENT
   )
   #
   # Options default values
@@ -91,6 +94,9 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_depends)
   set(_cmake_helpers_exe_depends_ext)
   set(_cmake_helpers_exe_targets_outvar)
+  set(_cmake_helpers_exe_test_targets_outvar)
+  set(_cmake_helpers_exe_build_targets_outvar)
+  set(_cmake_helpers_exe_environment)
   #
   # Parse Arguments
   #
@@ -99,6 +105,8 @@ Function(cmake_helpers_exe name)
   # Add an executable using all library targets. We are not supposed to have none, but we support this case anyway.
   #
   set(_cmake_helpers_exe_targets)
+  set(_cmake_helpers_exe_test_targets)
+  set(_cmake_helpers_exe_build_targets)
   if(NOT cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
     set(cmake_helpers_property_${PROJECT_NAME}_LibraryTargets FALSE)
   endif()
@@ -108,11 +116,11 @@ Function(cmake_helpers_exe name)
       if(_cmake_helpers_library_type STREQUAL "SHARED_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_shared")
 	set(_cmake_helpers_exe_link_type PUBLIC)
-	set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
+	# set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
       elseif(_cmake_helpers_library_type STREQUAL "STATIC_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_static")
 	set(_cmake_helpers_exe_link_type PUBLIC)
-	set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
+	# set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
       elseif(_cmake_helpers_library_type STREQUAL "MODULE_LIBRARY")
         #
         # One cannot link with a module library
@@ -121,10 +129,10 @@ Function(cmake_helpers_exe name)
       elseif(_cmake_helpers_library_type STREQUAL "INTERFACE_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_iface")
 	set(_cmake_helpers_exe_link_type PUBLIC)
-	set(_cmake_helpers_exe_target_dir)
+	# set(_cmake_helpers_exe_target_dir)
       elseif(_cmake_helpers_library_type STREQUAL "OBJECT_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_objs")
-	set(_cmake_helpers_exe_target_dir)
+	# set(_cmake_helpers_exe_target_dir)
       else()
         message(FATAL_ERROR "Unsupported library type ${_cmake_helpers_library_type}")
       endif()
@@ -214,9 +222,13 @@ Function(cmake_helpers_exe name)
     endif()
     if(_cmake_helpers_exe_test)
       enable_testing()
-      cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_target}_test COMMAND ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_test_args})
       #
-      # Search path for the imported dependencies
+      # PATH wooes. Even if there is ENVIRONMENT_MODIFICATION I failed to prepend more than one value to the path using
+      # this method.
+      #
+      # So I switch to a much more complated thing: ${CMAKE_COMMAND} -E env "PATH=${_name_test_path}"
+      #
+      # Get list of paths to prepend
       #
       set(_imported_directories)
       if(CMAKE_HELPERS_DEBUG)
@@ -233,12 +245,36 @@ Function(cmake_helpers_exe name)
 	  message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_exe_target} imported directories:")
 	endif()
       endif()
-      foreach(_imported_directory IN LISTS _imported_directories)
-	cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<$<BOOL:${WIN32}>:${_imported_directory}>")
-      endforeach()
-      if(_cmake_helpers_exe_target_dir)
-	cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<$<BOOL:${WIN32}>:${_cmake_helpers_exe_target_dir}>")
+      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_imported_directories} ${_cmake_helpers_exe_target_dir})
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] prepend paths: ${_cmake_helpers_exe_prepend_paths}")
       endif()
+      cmake_path(CONVERT "${_cmake_helpers_exe_prepend_paths}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_prepend_native_paths)
+      #
+      # In any case, escape backslash
+      #
+      # string(REPLACE "\\" "\\\\" _cmake_helpers_exe_prepend_native_paths "${_cmake_helpers_exe_prepend_native_paths}")
+      #
+      # Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
+      #
+      cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
+      string(SUBSTRING "${_xy}" 1 1 _cmake_helpers_exe_test_sep)
+      if(_cmake_helpers_exe_test_sep STREQUAL ";")
+	string(REPLACE ";" "\\\;" _cmake_helpers_exe_prepend_native_paths "${_cmake_helpers_exe_prepend_native_paths}")
+      endif()
+      #
+      # Add test
+      #
+      set(_cmake_helpers_exe_test_target ${_cmake_helpers_exe_target}_test)
+      list(APPEND _cmake_helpers_exe_test_targets ${_cmake_helpers_exe_test_target})
+      cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_test_target} COMMAND ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_test_args})
+      #
+      # Apply path modification
+      #
+      set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
+      #
+      # Apply dependencies
+      #
       if(_cmake_helpers_exe_depends)
 	#
 	# This must be a list of two items at every iteration: scope, lib
@@ -263,9 +299,7 @@ Function(cmake_helpers_exe name)
 	      else()
 		set(_cmake_helpers_exe_depend_lib_dir)
 	      endif()
-	      if(_cmake_helpers_exe_depend_lib_dir)
-		cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<$<BOOL:${WIN32}>:${_cmake_helpers_exe_depend_lib_dir}>")
-	      endif()
+	      list(APPEND _cmake_helpers_exe_environment ${_cmake_helpers_exe_depend_lib_dir})
 	    endif()
 	  endforeach()
 	endif()
@@ -297,7 +331,7 @@ Function(cmake_helpers_exe name)
 		set(_cmake_helpers_exe_depend_lib_dir)
 	      endif()
 	      if(_cmake_helpers_exe_depend_lib_dir)
-		cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<$<BOOL:${WIN32}>:${_cmake_helpers_exe_depend_lib_dir}>")
+		list(APPEND _cmake_helpers_exe_environment ${_cmake_helpers_exe_depend_lib_dir})
 	      endif()
 	    endif()
 	  endforeach()
@@ -307,12 +341,14 @@ Function(cmake_helpers_exe name)
       # A tiny hook to force ctest to build the executable
       #
       cmake_helpers_call(get_property _cmake_helpers_exe_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+      set(_cmake_helpers_exe_build_target ${_cmake_helpers_exe_target}_build)
+      list(APPEND _cmake_helpers_exe_build_targets ${_cmake_helpers_exe_build_target})
       if(_cmake_helpers_exe_generator_is_multi_config)
-        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --config $<CONFIG> --target ${_cmake_helpers_exe_target})
+        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_build_target} COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --config $<CONFIG> --target ${_cmake_helpers_exe_target})
       else()
-        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_target}_build COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --target ${_cmake_helpers_exe_target})
+        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_build_target} COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}" --target ${_cmake_helpers_exe_target})
       endif()
-      cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_target}_test PROPERTIES DEPENDS ${_cmake_helpers_exe_target}_build)
+      cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_test_target} PROPERTIES DEPENDS ${_cmake_helpers_exe_build_target})
     endif()
   endforeach()
   #
@@ -320,6 +356,12 @@ Function(cmake_helpers_exe name)
   #
   if(_cmake_helpers_exe_targets_outvar)
     set(${_cmake_helpers_exe_targets_outvar} ${_cmake_helpers_exe_targets} PARENT_SCOPE)
+  endif()
+  if(_cmake_helpers_exe_test_targets_outvar)
+    set(${_cmake_helpers_exe_test_targets_outvar} ${_cmake_helpers_exe_test_targets} PARENT_SCOPE)
+  endif()
+  if(_cmake_helpers_exe_build_targets_outvar)
+    set(${_cmake_helpers_exe_build_targets_outvar} ${_cmake_helpers_exe_build_targets} PARENT_SCOPE)
   endif()
   #
   # Save properties
