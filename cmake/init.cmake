@@ -52,6 +52,7 @@ function(cmake_helpers_init)
   if(NOT (HAVE_LOG AND HAVE_EXP))
     unset(HAVE_LOG CACHE)
     unset(HAVE_EXP CACHE)
+    set(CMAKE_REQUIRED_LIBRARIES_BACKUP ${CMAKE_REQUIRED_LIBRARIES})
     list(APPEND CMAKE_REQUIRED_LIBRARIES "m")
     check_symbol_exists(log "math.h" HAVE_LOG)
     check_symbol_exists(exp "math.h" HAVE_EXP)
@@ -59,9 +60,13 @@ function(cmake_helpers_init)
       set(CMAKE_MATH_LIBS "m" CACHE STRING "Math library" FORCE)
       mark_as_advanced(CMAKE_MATH_LIBS)
       #
-      # Use the math library for the try_run tests
+      # Continue the tests with the math lib
       #
-      list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_MATH_LIBS})
+    else()
+      #
+      # Restore original CMAKE_REQUIRED_LIBRARIES
+      #
+      set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_BACKUP})
     endif()
   endif()
   #
