@@ -39,6 +39,7 @@ function(cmake_helpers_depend depname)
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
+    CMAKE_ARGS
     FIND_PACKAGE_ARGS
   )
   #
@@ -82,6 +83,7 @@ function(cmake_helpers_depend depname)
   # Multi-value options default values
   #
   set(_cmake_helpers_depend_externalproject_add_args)
+  set(_cmake_helpers_depend_cmake_args)
   set(_cmake_helpers_depend_find_package_args)
   #
   # Parse Arguments
@@ -95,14 +97,14 @@ function(cmake_helpers_depend depname)
     #
     # Multi-generator. config is not know until build/install steps.
     #
-    set(_cmake_helpers_depend_configure_step_config_option)
+    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args})
     set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
     set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
   else()
     #
     # Single generator.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
+    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
