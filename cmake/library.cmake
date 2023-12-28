@@ -141,6 +141,7 @@ function(cmake_helpers_library)
     PODS_REJECT_RELPATH_REGEXES
     PODS_REJECT_RELPATH_REGEXES_APPEND
     PODS_RENAME_README_TO_NAMESPACE
+    TYPE_ANY_COMPILE_OPTIONS
   )
   #
   # Single-value arguments default values
@@ -226,6 +227,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_pods_reject_relpath_regexes          ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
   set(_cmake_helpers_library_pods_reject_relpath_regexes_append)
   set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
+  set(_cmake_helpers_library_type_any_compile_options)
   #
   # Parse Arguments
   #
@@ -396,6 +398,9 @@ function(cmake_helpers_library)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
     cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
+    if(_cmake_helpers_library_type_any_compile_options)
+      cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
+    endif()
   endforeach()
   #
   # FILE_SETs
