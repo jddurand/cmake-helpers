@@ -94,6 +94,24 @@ function(cmake_helpers_depend depname)
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_depend "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # If we install we must build
+  #
+  if(_cmake_helpers_depend_install)
+    if(NOT _cmake_helpers_depend_build)
+      message(STATUS "[${_cmake_helpers_logprefix}] Install option is true: enforcing build option to true")
+      set(_cmake_helpers_depend_build ON)
+    endif()
+  endif()
+  #
+  # If we build we must configure
+  #
+  if(_cmake_helpers_depend_build)
+    if(NOT _cmake_helpers_depend_configure)
+      message(STATUS "[${_cmake_helpers_logprefix}] Build option is true: enforcing configure option to true")
+      set(_cmake_helpers_depend_configure ON)
+    endif()
+  endif()
+  #
   # CMake generate options
   #
   cmake_generate_options(_cmake_helpers_depend_cmake_generate_options)
@@ -353,68 +371,71 @@ function(cmake_helpers_depend depname)
     else()
       set(_cmake_helpers_process_command_error_is_fatal)
     endif()
-    message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND}
-        -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
-        ${_cmake_helpers_depend_cmake_generate_options}
-        -S ${${_depname_tolower}_SOURCE_DIR}
-        -B ${${_depname_tolower}_BINARY_DIR}
-        ${_cmake_helpers_depend_configure_step_config_option}
-      RESULT_VARIABLE _result_variable
-      ${_cmake_helpers_process_command_echo_stdout}
-      ${_cmake_helpers_process_command_error_is_fatal}
-    )
-    if((NOT _result_variable) OR (_result_variable EQUAL 0))
-      if(_cmake_helpers_depend_build OR _cmake_helpers_depend_install)
-        message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
-        execute_process(
+    if(_cmake_helpers_depend_configure)
+      #
+      # Configure
+      #
+      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+      execute_process(
+	COMMAND ${CMAKE_COMMAND}
+          -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
+          ${_cmake_helpers_depend_cmake_generate_options}
+          -S ${${_depname_tolower}_SOURCE_DIR}
+          -B ${${_depname_tolower}_BINARY_DIR}
+          ${_cmake_helpers_depend_configure_step_config_option}
+        RESULT_VARIABLE _result_variable
+	${_cmake_helpers_process_command_echo_stdout}
+	${_cmake_helpers_process_command_error_is_fatal}
+      )
+      if(_cmake_helpers_depend_build AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
+	#
+	# Build
+	#
+	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+	execute_process(
           COMMAND ${CMAKE_COMMAND}
             --build ${${_depname_tolower}_BINARY_DIR}
             ${_cmake_helpers_depend_build_step_config_option}
           RESULT_VARIABLE _result_variable
           ${_cmake_helpers_process_command_echo_stdout}
           ${_cmake_helpers_process_command_error_is_fatal}
-      )
-    endif()
-    if((NOT _result_variable) OR (_result_variable EQUAL 0))
-      if(_cmake_helpers_depend_install)
-        message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
-        execute_process(
-          COMMAND ${CMAKE_COMMAND}
-            --install ${${_depname_tolower}_BINARY_DIR}
-	    --prefix ${_cmake_helpers_install_path}
-            ${_cmake_helpers_depend_install_step_config_option}
-          RESULT_VARIABLE _result_variable
-          ${_cmake_helpers_process_command_echo_stdout}
-          ${_cmake_helpers_process_command_error_is_fatal}
-        )
-      endif()
-    endif()
-    if((NOT _result_variable) OR (_result_variable EQUAL 0))
-      #
-      # Re-do a find_package
-      #
-      if(_cmake_helpers_depend_find)
-	#
-	# We look for all *.cmake in ${_cmake_helpers_install_path}, collect the directories in CMAKE_PREFIX_PATH,
-	# Make sure that NO_CMAKE_PATH is not in find_package arguments nor that CMAKE_FIND_USE_CMAKE_PATH is FALSE.
-	#
-	cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
-	set(_cmake_helpers_depend_prefix_paths)
-	foreach(_cmake IN LISTS _cmakes)
-	  get_filename_component(_dir ${_cmake} DIRECTORY)
-	  if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
-	    if(CMAKE_HELPERS_DEBUG)
-	      message(STATUS "[${_cmake_helpers_logprefix}] CMake prefix path: ${_dir}")
-	    endif()
-	    list(APPEND _cmake_helpers_depend_prefix_paths ${_dir})
+	)
+	if(_cmake_helpers_depend_install AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
+          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
+          execute_process(
+            COMMAND ${CMAKE_COMMAND}
+              --install ${${_depname_tolower}_BINARY_DIR}
+	      --prefix ${_cmake_helpers_install_path}
+              ${_cmake_helpers_depend_install_step_config_option}
+            RESULT_VARIABLE _result_variable
+            ${_cmake_helpers_process_command_echo_stdout}
+            ${_cmake_helpers_process_command_error_is_fatal}
+          )
+	  if(_cmake_helpers_depend_find AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
+	    #
+	    # Re-do a find_package
+	    #
+	    #
+	    # We look for all *.cmake in ${_cmake_helpers_install_path}, collect the directories in CMAKE_PREFIX_PATH,
+	    # Make sure that NO_CMAKE_PATH is not in find_package arguments nor that CMAKE_FIND_USE_CMAKE_PATH is FALSE.
+	    #
+	    cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
+	    set(_cmake_helpers_depend_prefix_paths)
+	    foreach(_cmake IN LISTS _cmakes)
+	      get_filename_component(_dir ${_cmake} DIRECTORY)
+	      if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
+		if(CMAKE_HELPERS_DEBUG)
+		  message(STATUS "[${_cmake_helpers_logprefix}] CMake prefix path: ${_dir}")
+		endif()
+		list(APPEND _cmake_helpers_depend_prefix_paths ${_dir})
+	      endif()
+	    endforeach()
+	    cmake_helpers_call(list APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
+	    cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args "NO_CMAKE_PATH")
+	    cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
+	    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
 	  endif()
-	endforeach()
-	cmake_helpers_call(list APPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
-	cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args "NO_CMAKE_PATH")
-	cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
-	cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
+	endif()
       endif()
     endif()
   endif()
