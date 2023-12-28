@@ -398,6 +398,18 @@ function(cmake_helpers_library)
   foreach(_cmake_helpers_library_type IN LISTS _cmake_helpers_library_types)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
     cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
+    #
+    # We always create interfaces version of all libraries that are not pure interfaces
+    #
+    if(
+	(_cmake_helpers_library_type STREQUAL "SHARED") OR
+	(_cmake_helpers_library_type STREQUAL "STATIC") OR
+	(_cmake_helpers_library_type STREQUAL "MODULE") OR
+	(_cmake_helpers_library_type STREQUAL "OBJECT")
+      )
+      cmake_helpers_call(add_library ${_cmake_helpers_library_target}_iface INTERFACE)
+      cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target}_iface INTERFACE ${_cmake_helpers_library_target} $<TARGET_OBJECTS:${${_cmake_helpers_library_target}}>)
+    endif()
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
     if(_cmake_helpers_library_type_any_compile_options)
       cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
