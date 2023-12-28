@@ -34,6 +34,8 @@ function(cmake_helpers_depend depname)
     FIND
     SOURCE_DIR_OUTVAR
     BINARY_DIR_OUTVAR
+    CONFIGURE
+    BUILD
     INSTALL
     CONFIG
   )
@@ -51,6 +53,8 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_find                            TRUE)
   set(_cmake_helpers_depend_source_dir_outvar               cmake_helpers_exe_source_dir)
   set(_cmake_helpers_depend_binary_dir_outvar               cmake_helpers_exe_binary_dir)
+  set(_cmake_helpers_depend_configure                       TRUE)
+  set(_cmake_helpers_depend_build                           TRUE)
   set(_cmake_helpers_depend_install                         TRUE)
   #
   # In the case we are doing a local installation, we want to know the configuration type.
@@ -338,7 +342,7 @@ function(cmake_helpers_depend depname)
   # We do a local installation, and do not mind about $<CONFIG>: we want the default from this package
   # as per FetchContent_Declare content options.
   #
-  if(_cmake_helpers_depend_install)
+  if(_cmake_helpers_depend_configure OR _cmake_helpers_depend_build OR _cmake_helpers_depend_install)
     if(CMAKE_HELPERS_DEBUG)
       set(_cmake_helpers_process_command_echo_stdout "COMMAND_ECHO" "STDOUT")
     else()
@@ -353,36 +357,39 @@ function(cmake_helpers_depend depname)
     execute_process(
       COMMAND ${CMAKE_COMMAND}
         -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
-	${_cmake_helpers_depend_cmake_generate_options}
-	-S ${${_depname_tolower}_SOURCE_DIR}
-	-B ${${_depname_tolower}_BINARY_DIR}
-	${_cmake_helpers_depend_configure_step_config_option}
-	RESULT_VARIABLE _result_variable
-	${_cmake_helpers_process_command_echo_stdout}
-	${_cmake_helpers_process_command_error_is_fatal}
+        ${_cmake_helpers_depend_cmake_generate_options}
+        -S ${${_depname_tolower}_SOURCE_DIR}
+        -B ${${_depname_tolower}_BINARY_DIR}
+        ${_cmake_helpers_depend_configure_step_config_option}
+      RESULT_VARIABLE _result_variable
+      ${_cmake_helpers_process_command_echo_stdout}
+      ${_cmake_helpers_process_command_error_is_fatal}
     )
     if((NOT _result_variable) OR (_result_variable EQUAL 0))
-      message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
-      execute_process(
-	COMMAND ${CMAKE_COMMAND}
-          --build ${${_depname_tolower}_BINARY_DIR}
-          ${_cmake_helpers_depend_build_step_config_option}
-	  RESULT_VARIABLE _result_variable
+      if(_cmake_helpers_depend_build OR _cmake_helpers_depend_install)
+        message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+        execute_process(
+          COMMAND ${CMAKE_COMMAND}
+            --build ${${_depname_tolower}_BINARY_DIR}
+            ${_cmake_helpers_depend_build_step_config_option}
+          RESULT_VARIABLE _result_variable
           ${_cmake_helpers_process_command_echo_stdout}
           ${_cmake_helpers_process_command_error_is_fatal}
       )
     endif()
     if((NOT _result_variable) OR (_result_variable EQUAL 0))
-      message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
-      execute_process(
-	COMMAND ${CMAKE_COMMAND}
-          --install ${${_depname_tolower}_BINARY_DIR}
-	  --prefix ${_cmake_helpers_install_path}
-          ${_cmake_helpers_depend_install_step_config_option}
-	  RESULT_VARIABLE _result_variable
+      if(_cmake_helpers_depend_install)
+        message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
+        execute_process(
+          COMMAND ${CMAKE_COMMAND}
+            --install ${${_depname_tolower}_BINARY_DIR}
+	    --prefix ${_cmake_helpers_install_path}
+            ${_cmake_helpers_depend_install_step_config_option}
+          RESULT_VARIABLE _result_variable
           ${_cmake_helpers_process_command_echo_stdout}
           ${_cmake_helpers_process_command_error_is_fatal}
-      )
+        )
+      endif()
     endif()
     if((NOT _result_variable) OR (_result_variable EQUAL 0))
       #
