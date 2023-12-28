@@ -244,7 +244,7 @@ function(cmake_helpers_library)
     if(${_cmake_helpers_library_regex}_append)
       list(APPEND ${_cmake_helpers_library_regex} ${${_cmake_helpers_library_regex}_append})
     endif()
-  endif()
+  endforeach()
   #
   # A variable to echo execute_process commands in debug mode
   #
