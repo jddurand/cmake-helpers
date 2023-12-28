@@ -117,22 +117,29 @@ function(cmake_helpers_library)
     SOURCES_BASE_DIRS
     SOURCES_GLOBS
     SOURCES_ACCEPT_RELPATH_REGEXES
+    SOURCES_ACCEPT_RELPATH_REGEXES_APPEND
     SOURCES_REJECT_RELPATH_REGEXES
+    SOURCES_REJECT_RELPATH_REGEXES_APPEND
     HEADERS
     HEADERS_AUTO
     HEADERS_PREFIX
     HEADERS_BASE_DIRS
     HEADERS_GLOBS
     HEADERS_ACCEPT_RELPATH_REGEXES
+    HEADERS_ACCEPT_RELPATH_REGEXES_APPEND
     HEADERS_REJECT_RELPATH_REGEXES
+    HEADERS_REJECT_RELPATH_REGEXES_APPEND
     PRIVATE_HEADERS_RELPATH_REGEXES
+    PRIVATE_HEADERS_RELPATH_REGEXES_APPEND
     PODS
     PODS_AUTO
     PODS_PREFIX
     PODS_BASE_DIRS
     PODS_GLOBS
     PODS_ACCEPT_RELPATH_REGEXES
+    PODS_ACCEPT_RELPATH_REGEXES_APPEND
     PODS_REJECT_RELPATH_REGEXES
+    PODS_REJECT_RELPATH_REGEXES_APPEND
     PODS_RENAME_README_TO_NAMESPACE
   )
   #
@@ -195,27 +202,49 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_sources_reject_relpath_regexes_common "/test/" "/3rdparty/" "/_deps/" "^test/" "^3rdparty/" "^_deps/")
 
   set(_cmake_helpers_library_sources_accept_relpath_regexes)
+  set(_cmake_helpers_library_sources_accept_relpath_regexes_append)
   set(_cmake_helpers_library_sources_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
+  set(_cmake_helpers_library_sources_reject_relpath_regexes_append)
 
   set(_cmake_helpers_library_headers)
   set(_cmake_helpers_library_headers_auto                         TRUE)
   set(_cmake_helpers_library_headers_prefix                       include)
   set(_cmake_helpers_library_headers_globs                        *.h *.hh *.hpp *.hxx)
   set(_cmake_helpers_library_headers_accept_relpath_regexes)
+  set(_cmake_helpers_library_headers_accept_relpath_regexes_append)
   set(_cmake_helpers_library_headers_reject_relpath_regexes       ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
+  set(_cmake_helpers_library_headers_reject_relpath_regexes_append)
   set(_cmake_helpers_library_private_headers_relpath_regexes      "/internal/" "/_" "^internal/" "^_")
+  set(_cmake_helpers_library_private_headers_relpath_regexes_append)
   set(_cmake_helpers_library_pods_base_dirs                       ${CMAKE_CURRENT_SOURCE_DIR})
   set(_cmake_helpers_library_pods)
   set(_cmake_helpers_library_pods_auto                            TRUE)
   set(_cmake_helpers_library_pods_prefix                          pod)
   set(_cmake_helpers_library_pods_globs                           *.pod)
   set(_cmake_helpers_library_pods_accept_relpath_regexes)
+  set(_cmake_helpers_library_pods_accept_relpath_regexes_append)
   set(_cmake_helpers_library_pods_reject_relpath_regexes          ${_cmake_helpers_library_sources_reject_relpath_regexes_common})
+  set(_cmake_helpers_library_pods_reject_relpath_regexes_append)
   set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
   #
   # Parse Arguments
   #
   cmake_helpers_parse_arguments(library _cmake_helpers_library "" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
+  #
+  # Do the eventual appends
+  #
+  foreach(_cmake_helpers_library_regex
+      _cmake_helpers_library_sources_accept_relpath_regexes
+      _cmake_helpers_library_sources_reject_relpath_regexes
+      _cmake_helpers_library_headers_accept_relpath_regexes
+      _cmake_helpers_library_headers_reject_relpath_regexes
+      _cmake_helpers_library_private_headers_relpath_regexes
+      _cmake_helpers_library_pods_accept_relpath_regexes
+      _cmake_helpers_library_pods_reject_relpath_regexes)
+    if(${_cmake_helpers_library_regex}_append)
+      list(APPEND ${_cmake_helpers_library_regex} ${${_cmake_helpers_library_regex}_append})
+    endif()
+  endif()
   #
   # A variable to echo execute_process commands in debug mode
   #
