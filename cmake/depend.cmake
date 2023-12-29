@@ -37,7 +37,7 @@ function(cmake_helpers_depend depname)
     CONFIGURE
     BUILD
     INSTALL
-    CONFIG
+    GENERATOR_CONFIG
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -61,12 +61,12 @@ function(cmake_helpers_depend depname)
   # We always end up with a find_package, so we also want to specify import configuration mapping.
   #
   cmake_helpers_call(get_property _cmake_helpers_depend_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-  set(_cmake_helpers_depend_config_default                  RelWithDebInfo)
+  set(_cmake_helpers_depend_generator_config_default        RelWithDebInfo)
   if(_cmake_helpers_depend_generator_is_multi_config)
     #
     # Multi-generator. config is not know until build/install steps.
     #
-    set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+    set(_cmake_helpers_depend_generator_config              ${_cmake_helpers_depend_generator_config_default})
   else()
     #
     # Single generator.
@@ -75,12 +75,12 @@ function(cmake_helpers_depend depname)
       #
       # If caller did set CMAKE_BUILD_TYPE, use it in the configure step.
       #
-      set(_cmake_helpers_depend_config                          "${CMAKE_BUILD_TYPE}")
+      set(_cmake_helpers_depend_generator_config            "${CMAKE_BUILD_TYPE}")
     else()
       #
       # Force our default.
       #
-      set(_cmake_helpers_depend_config                          ${_cmake_helpers_depend_config_default})
+      set(_cmake_helpers_depend_generator_config            ${_cmake_helpers_depend_generator_config_default})
     endif()
   endif()
   #
@@ -120,13 +120,13 @@ function(cmake_helpers_depend depname)
     # Multi-generator. config is not know until build/install steps.
     #
     set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args})
-    set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_config})
-    set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_config})
+    set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_generator_config})
+    set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_generator_config})
   else()
     #
     # Single generator.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_config}")
+    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_generator_config}")
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
