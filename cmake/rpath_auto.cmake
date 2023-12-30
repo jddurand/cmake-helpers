@@ -36,9 +36,9 @@ Function(cmake_helpers_rpath_auto target)
           # Although this is true by default since CMP0042, set it anyway on macOS or iOS
           #
           cmake_helpers_call(set_target_properties ${target} PROPERTIES MACOSX_RPATH TRUE)
-          set(_cmake_helpers_library_rpath_prefix "@rpath/../${CMAKE_INSTALL_LIBDIR}")
+          set(_cmake_helpers_library_rpath_prefix "@rpath:@rpath/../${CMAKE_INSTALL_LIBDIR}")
         else()
-          set(_cmake_helpers_library_rpath_prefix "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+          set(_cmake_helpers_library_rpath_prefix "$ORIGIN:$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
         endif()
         cmake_helpers_call(set_property TARGET ${target} APPEND PROPERTY INSTALL_RPATH ${_cmake_helpers_library_rpath_prefix})
       endif()
