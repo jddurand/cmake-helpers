@@ -95,6 +95,7 @@ function(cmake_helpers_library)
     WITH__NETBSD_SOURCE_IF_AVAILABLE
     WITH__REENTRANT
     WITH__THREAD_SAFE
+    RPATH_AUTO
     COMPATIBILITY
     EXPORT_HEADER
     EXPORT_HEADER_TARGET_AUTO
@@ -167,6 +168,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_with__netbsd_source_if_available     TRUE)
   set(_cmake_helpers_library_with__reentrant                      TRUE)
   set(_cmake_helpers_library_with__thread_safe                    TRUE)
+  set(_cmake_helpers_library_rpath_auto                           TRUE)
   set(_cmake_helpers_library_compatibility                        SameMajorVersion)
   set(_cmake_helpers_library_export_header                        TRUE)
   set(_cmake_helpers_library_export_header_target_auto            TRUE)
@@ -634,6 +636,9 @@ function(cmake_helpers_library)
     endif()
     if(_cmake_helpers_library_with_visibility_inlines_hidden)
       cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)
+    endif()
+    if(_cmake_helpers_library_rpath_auto)
+      cmake_helpers_rpath_auto(${_cmake_helpers_library_target})
     endif()
     #
     # Compiler specifics

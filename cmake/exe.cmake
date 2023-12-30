@@ -70,6 +70,7 @@ Function(cmake_helpers_exe name)
   set(_oneValueArgs
     INSTALL
     TEST
+    RPATH_AUTO
   )
   set(_multiValueArgs
     SOURCES
@@ -86,6 +87,7 @@ Function(cmake_helpers_exe name)
   #
   set(_cmake_helpers_exe_install                    FALSE)
   set(_cmake_helpers_exe_test                       FALSE)
+  set(_cmake_helpers_exe_rpath_auto                 TRUE)
   #
   # Multi-value options default values
   #
@@ -147,6 +149,9 @@ Function(cmake_helpers_exe name)
       cmake_helpers_call(add_executable ${_cmake_helpers_exe_target} EXCLUDE_FROM_ALL ${_cmake_helpers_exe_sources})
     else()
       cmake_helpers_call(add_executable ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_sources})
+    endif()
+    if(_cmake_helpers_exe_rpath_auto)
+      cmake_helpers_rpath_auto(${_cmake_helpers_exe_target})
     endif()
     list(APPEND _cmake_helpers_exe_targets ${_cmake_helpers_exe_target})
     cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES OUTPUT_NAME ${_cmake_helpers_exe_output_name})
