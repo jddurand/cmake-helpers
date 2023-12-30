@@ -7,10 +7,6 @@ Function(cmake_helpers_rpath_auto target)
         (_cmake_helpers_rpath_auto_target_type STREQUAL "EXECUTABLE")
       )
       #
-      # Although this is true by default since CMP0042, set it anyway on macOS or iOS
-      #
-      cmake_helpers_call(set_target_properties ${target} PROPERTIES MACOSX_RPATH TRUE)
-      #
       # C.f. https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
       #
       # Do not skip rpath for the build tree
@@ -35,7 +31,12 @@ Function(cmake_helpers_rpath_auto target)
         # UNIX is true also on UNIX-like OSes, e.g. APPLE and CYGWIN
         #
         if(APPLE)
-          set(_cmake_helpers_library_rpath_prefix "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
+          #
+          # Set directory portion of install_name in @rpath.
+          # Although this is true by default since CMP0042, set it anyway on macOS or iOS
+          #
+          cmake_helpers_call(set_target_properties ${target} PROPERTIES MACOSX_RPATH TRUE)
+          set(_cmake_helpers_library_rpath_prefix "@rpath/../${CMAKE_INSTALL_LIBDIR}")
         else()
           set(_cmake_helpers_library_rpath_prefix "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
         endif()
