@@ -12,15 +12,15 @@ Function(cmake_helpers_rpath_auto target)
       #
       # Do not skip rpath for the build tree
       #
-      cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES SKIP_BUILD_RPATH FALSE)
+      cmake_helpers_call(set_target_properties ${target} PROPERTIES SKIP_BUILD_RPATH FALSE)
       #
       # Use $ORIGIN in rpath when building target if supported
       #
-      cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES BUILD_RPATH_USE_ORIGIN TRUE)
+      cmake_helpers_call(set_target_properties ${target} PROPERTIES BUILD_RPATH_USE_ORIGIN TRUE)
       #
       # When building, don't use the install RPATH already (but later on when installing)
       #
-      cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
+      cmake_helpers_call(set_target_properties ${target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
       #
       # Set install rpath on platforms that support this feature
       # C.f. https://gitlab.kitware.com/vtk/vtk/-/blob/master/CMake/vtkModule.cmake
@@ -31,7 +31,7 @@ Function(cmake_helpers_rpath_auto target)
         else()
           set(_cmake_helpers_library_rpath_prefix "$ORIGIN")
         endif()
-        cmake_helpers_call(set_property TARGET ${_cmake_helpers_exe_target} APPEND PROPERTY INSTALL_RPATH ${_cmake_helpers_library_rpath_prefix})
+        cmake_helpers_call(set_property TARGET ${target} APPEND PROPERTY INSTALL_RPATH ${_cmake_helpers_library_rpath_prefix})
       endif()
     endif()
   endif()
