@@ -81,6 +81,7 @@ Function(cmake_helpers_exe name)
     TEST_TARGETS_OUTVAR
     BUILD_TARGETS_OUTVAR
     ENVIRONMENT
+    COMMAND
   )
   #
   # Options default values
@@ -99,6 +100,7 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_test_targets_outvar)
   set(_cmake_helpers_exe_build_targets_outvar)
   set(_cmake_helpers_exe_environment)
+  set(_cmake_helpers_exe_command)
   #
   # Parse Arguments
   #
@@ -269,7 +271,11 @@ Function(cmake_helpers_exe name)
       #
       set(_cmake_helpers_exe_test_target ${_cmake_helpers_exe_target}_test)
       list(APPEND _cmake_helpers_exe_test_targets ${_cmake_helpers_exe_test_target})
-      cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_test_target} COMMAND ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_test_args})
+      if(_cmake_helpers_exe_command)
+        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_test_target} COMMAND ${_cmake_helpers_exe_command})
+      else()
+        cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_test_target} COMMAND ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_test_args})
+      endif()
       #
       # Apply path modification
       #
