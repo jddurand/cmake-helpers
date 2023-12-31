@@ -80,8 +80,7 @@ Function(cmake_helpers_exe name)
     TARGETS_OUTVAR
     TEST_TARGETS_OUTVAR
     BUILD_TARGETS_OUTVAR
-    ENVIRONMENT              # Reserved to PATH
-    ENVIRONMENTS             # Can be anything
+    ENVIRONMENT
     COMMAND
   )
   #
@@ -101,7 +100,6 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_test_targets_outvar)
   set(_cmake_helpers_exe_build_targets_outvar)
   set(_cmake_helpers_exe_environment)
-  set(_cmake_helpers_exe_environments)
   set(_cmake_helpers_exe_command)
   #
   # Parse Arguments
@@ -281,8 +279,7 @@ Function(cmake_helpers_exe name)
       #
       # Apply path modification
       #
-      set(_cmake_helpers_exe_environment_modification ${_cmake_helpers_exe_environments} "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
-      set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION ${_cmake_helpers_exe_environment_modification})
+      set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
       #
       # Apply dependencies
       #
