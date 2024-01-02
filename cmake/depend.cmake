@@ -205,6 +205,16 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
   endif()
+  if("x$ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}" STREQUAL "x")
+    set(_cmake_helpers_fetchcontent_base_dir ${PROJECT_BINARY_DIR}/cmake_helpers_deps)
+    set(ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} ${_cmake_helpers_fetchcontent_base_dir})
+  else()
+    set(_cmake_helpers_fetchcontent_base_dir $ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR})
+  endif()
+  set(FETCHCONTENT_BASE_DIR ${_cmake_helpers_fetchcontent_base_dir} CACHE PATH "FetchContent base dir" FORCE)
+  #
+  # Prepare already installed dependencies for find_package
+  #
   file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.cmake)
   set(_cmake_helpers_depend_prefix_paths)
   foreach(_cmake IN LISTS _cmakes)
