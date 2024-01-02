@@ -80,7 +80,8 @@ Function(cmake_helpers_exe name)
     TARGETS_OUTVAR
     TEST_TARGETS_OUTVAR
     BUILD_TARGETS_OUTVAR
-    ENVIRONMENT
+    ENVIRONMENT                     # Only for PATH
+    ENVIRONMENTS                    # Array of MYVAR=OP:VALUE (can be used to affect PATH if needed)
     COMMAND
   )
   #
@@ -100,6 +101,7 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_test_targets_outvar)
   set(_cmake_helpers_exe_build_targets_outvar)
   set(_cmake_helpers_exe_environment)
+  set(_cmake_helpers_exe_environments)
   set(_cmake_helpers_exe_command)
   #
   # Parse Arguments
@@ -120,11 +122,9 @@ Function(cmake_helpers_exe name)
       if(_cmake_helpers_library_type STREQUAL "SHARED_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_shared")
 	set(_cmake_helpers_exe_link_type PUBLIC)
-	# set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
       elseif(_cmake_helpers_library_type STREQUAL "STATIC_LIBRARY")
         set(_cmake_helpers_exe_output_name "${name}_static")
 	set(_cmake_helpers_exe_link_type PUBLIC)
-	# set(_cmake_helpers_exe_target_dir $<TARGET_FILE_DIR:${_cmake_helpers_library_target}>)
       elseif(_cmake_helpers_library_type STREQUAL "MODULE_LIBRARY")
         #
         # One cannot link with a module library
@@ -230,41 +230,65 @@ Function(cmake_helpers_exe name)
     if(_cmake_helpers_exe_test)
       enable_testing()
       #
-      # Environment modification:
-      # - Environment set by the caller
-      # - Imported directories by a recursive lookup of dependencies
-      # - Test executable target directory
-      #
-      set(_imported_directories)
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] Inspecting ${_cmake_helpers_exe_target} imported targets directories")
-      endif()
-      getImportedDirectories(${_cmake_helpers_exe_target} _imported_directories)
-      if(CMAKE_HELPERS_DEBUG)
-	if(_imported_directories)
-	  message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_exe_target} imported directories: ${_imported_directories}")
-	else()
-	  #
-	  # We are not interested in printing xxx-NOTFOUND
-	  #
-	  message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_exe_target} imported directories:")
-	endif()
-      endif()
-      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_imported_directories} ${_cmake_helpers_exe_target_dir})
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] prepend paths: ${_cmake_helpers_exe_prepend_paths}")
-      endif()
-      #
-      # Make sure they are expressed as native paths
-      #
-      cmake_path(CONVERT "${_cmake_helpers_exe_prepend_paths}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_prepend_native_paths)
-      #
       # Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
       #
       cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
       string(SUBSTRING "${_xy}" 1 1 _cmake_helpers_exe_test_sep)
+      #
+      # Environment modification:
+      # - Environment set by the caller
+      # - Target directory
+      # - Locations of dependencies
+      #
+      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_target_dir})
+      appendPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths)
+      #
+      # Make sure they are expressed as native paths
+      #
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] PATH hook")
+      endif()
+      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_prepend_paths} ${_cmake_helpers_exe_target_dir})
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}]   prepend paths       : ${_cmake_helpers_exe_prepend_paths}")
+      endif()
+      cmake_path(CONVERT "${_cmake_helpers_exe_prepend_paths}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_prepend_native_paths)
       if(_cmake_helpers_exe_test_sep STREQUAL ";")
 	string(REPLACE ";" "\\\;" _cmake_helpers_exe_prepend_native_paths "${_cmake_helpers_exe_prepend_native_paths}")
+      endif()
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}]   prepend native paths: ${_cmake_helpers_exe_prepend_native_paths}")
+      endif()
+      #
+      # Use-specific environment variables
+      #
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] User environments hook")
+      endif()
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}]   User        environments: ${_cmake_helpers_exe_environments}")
+      endif()
+      if(_cmake_helpers_exe_environments)
+	#
+	# The ";" separator will remain, to separate MYVAR=OP:VALUE elements
+	#
+	set(_cmake_helpers_exe_native_environments)
+	foreach(_cmake_helpers_exe_environment IN LISTS _cmake_helpers_exe_environments)
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[${_cmake_helpers_logprefix}]     User        environment: ${_cmake_helpers_exe_environment}")
+	  endif()
+	  cmake_path(CONVERT "${_cmake_helpers_exe_environment}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_native_environment)
+	  if(_cmake_helpers_exe_test_sep STREQUAL ";")
+	    string(REPLACE ";" "\\\;" _cmake_helpers_exe_native_environment "${_cmake_helpers_exe_native_environment}")
+	  endif()
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[${_cmake_helpers_logprefix}]     User native environment: ${_cmake_helpers_exe_native_environment}")
+	  endif()
+	  list(APPEND _cmake_helpers_exe_native_environments ${_cmake_helpers_exe_native_environment})
+	endforeach()
+      endif()
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}]   User native environments: ${_cmake_helpers_exe_native_environments}")
       endif()
       #
       # Add test
@@ -279,7 +303,11 @@ Function(cmake_helpers_exe name)
       #
       # Apply path modification
       #
-      set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
+      if(_cmake_helpers_exe_native_environments)
+	set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths};${_cmake_helpers_exe_native_environments}")
+      else()
+	set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
+      endif()
       #
       # Apply dependencies
       #
@@ -401,7 +429,7 @@ endfunction()
 #
 # Adapted from https://stackoverflow.com/questions/57099207/simple-way-to-get-all-paths-to-interface-link-libraries-of-an-imported-target-re
 #
-function(getImportedLocations target locations_outvar)
+function(getPathLocations target locations_outvar)
   set(_locations)
   cmake_helpers_call(get_target_property _libraries ${target} INTERFACE_LINK_LIBRARIES)
   if(_libraries)
@@ -435,11 +463,24 @@ function(getImportedLocations target locations_outvar)
 	    list(APPEND _locations ${_location})
 	  endif()
 	else()
-	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[${_cmake_helpers_logprefix}] Link library ${_library} is not an imported target")
+	  get_target_property(_type ${_library} TYPE)
+	  if(
+	      (_type STREQUAL "STATIC_LIBRARY") OR
+	      (_type STREQUAL "MODULE_LIBRARY") OR
+	      (_type STREQUAL "SHARED_LIBRARY") OR
+	      (_type STREQUAL "EXECUTABLE")
+	    )
+	    list(APPEND _locations $<TARGET_FILE_DIR:${_library}>)
+	    if(CMAKE_HELPERS_DEBUG)
+	      message(STATUS "[${_cmake_helpers_logprefix}] Link library ${_library} is not an imported target, using $<TARGET_FILE_DIR:${_library}>")
+	    endif()
+	  else()
+	    if(CMAKE_HELPERS_DEBUG)
+	      message(STATUS "[${_cmake_helpers_logprefix}] Link library ${_library} is not an imported target, nor a static, module, shared or executable target type: ${_type}")
+	    endif()
 	  endif()
 	endif()
-	getImportedLocations(${_library} _sublocations)
+	getPathLocations(${_library} _sublocations)
 	list(APPEND _locations ${_sublocations})
       else()
 	if(CMAKE_HELPERS_DEBUG)
@@ -451,20 +492,31 @@ function(getImportedLocations target locations_outvar)
   set(${locations_outvar} ${_locations} PARENT_SCOPE)
 endfunction()
 
-function(getImportedDirectories target directories_outvar)
+function(appendPathDirectories target directories_outvar)
   set(_locations)
-  getImportedLocations(${target} _locations)
+  getPathLocations(${target} _locations)
   set(_directories)
   foreach(_location IN LISTS _locations)
-    cmake_path(IS_ABSOLUTE _location _location_is_absolute)
-    if(_location_is_absolute)
-      set(_location_absolute ${_location})
+    #
+    # We do not process location if it contains a generator expression, assume to start with "$<"
+    #
+    string(REGEX MATCH "^\\$<" _generator_expression ${_location})
+    if(NOT _generator_expression)
+      cmake_path(IS_ABSOLUTE _location _location_is_absolute)
+      if(_location_is_absolute)
+	set(_location_absolute ${_location})
+      else()
+	cmake_path(ABSOLUTE_PATH _location BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE _location_absolute)
+      endif()
+      cmake_path(GET _location_absolute PARENT_PATH _directory)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] ${_location} => ${_directory}")
+      endif()
     else()
-      cmake_path(ABSOLUTE_PATH _location BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE _location_absolute)
-    endif()
-    cmake_path(GET _location_absolute PARENT_PATH _directory)
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] ${_location} => ${_directory}")
+      set(_directory ${_location})
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] ${_location} => ${_directory}")
+      endif()
     endif()
     if(_directory)
       cmake_path(CONVERT ${_directory} TO_CMAKE_PATH_LIST _directory NORMALIZE)
