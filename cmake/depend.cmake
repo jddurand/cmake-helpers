@@ -129,14 +129,14 @@ function(cmake_helpers_depend depname)
     #
     # Multi-generator. config is not know until build/install steps.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    "-DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}" ${_cmake_helpers_depend_cmake_args})
+    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args})
     set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_generator_config})
     set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_generator_config})
   else()
     #
     # Single generator.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    "-DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}" ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_generator_config}")
+    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_generator_config}")
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
