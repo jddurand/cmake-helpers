@@ -112,6 +112,16 @@ function(cmake_helpers_depend depname)
     endif()
   endif()
   #
+  # For recursive calls, make sure we always fetch in the same directory
+  #
+  if("x$ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}" STREQUAL "x")
+    set(_cmake_helpers_fetchcontent_base_dir ${PROJECT_BINARY_DIR}/_deps)
+    set(ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} ${_cmake_helpers_fetchcontent_base_dir})
+  else()
+    set(_cmake_helpers_fetchcontent_base_dir $ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR})
+  endif()
+  set(FETCHCONTENT_BASE_DIR ${_cmake_helpers_fetchcontent_base_dir} CACHE PATH "FetchContent base dir" FORCE)
+  #
   # CMake generate options
   #
   cmake_generate_options(_cmake_helpers_depend_cmake_generate_options)
@@ -119,14 +129,14 @@ function(cmake_helpers_depend depname)
     #
     # Multi-generator. config is not know until build/install steps.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args})
+    set(_cmake_helpers_depend_configure_step_config_option    "-DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}" ${_cmake_helpers_depend_cmake_args})
     set(_cmake_helpers_depend_build_step_config_option        "--config" ${_cmake_helpers_depend_generator_config})
     set(_cmake_helpers_depend_install_step_config_option      "--config" ${_cmake_helpers_depend_generator_config})
   else()
     #
     # Single generator.
     #
-    set(_cmake_helpers_depend_configure_step_config_option    ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_generator_config}")
+    set(_cmake_helpers_depend_configure_step_config_option    "-DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}" ${_cmake_helpers_depend_cmake_args} "-DCMAKE_BUILD_TYPE=${_cmake_helpers_depend_generator_config}")
     set(_cmake_helpers_depend_build_step_config_option)
     set(_cmake_helpers_depend_install_step_config_option)
   endif()
@@ -205,13 +215,6 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
   endif()
-  if("x$ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}" STREQUAL "x")
-    set(_cmake_helpers_fetchcontent_base_dir ${PROJECT_BINARY_DIR}/_deps)
-    set(ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} ${_cmake_helpers_fetchcontent_base_dir})
-  else()
-    set(_cmake_helpers_fetchcontent_base_dir $ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR})
-  endif()
-  set(FETCHCONTENT_BASE_DIR ${_cmake_helpers_fetchcontent_base_dir} CACHE PATH "FetchContent base dir" FORCE)
   #
   # Prepare already installed dependencies for find_package
   #
