@@ -303,13 +303,12 @@ Function(cmake_helpers_exe name)
       #
       # Apply PATH (Windows), LIBPATH (AIX), LD_LIBRARY_PATH (Linux, cygwin), DYLD_LIBRARY_PATH (OSX) etc
       #
-      foreach(_cmake_helpers_exe_environment_variable "PATH" "LIBPATH" "LD_LIBRARY_PATH" "DYLD_LIBRARY")
-	if(_cmake_helpers_exe_native_environments)
-	  set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "${_cmake_helpers_exe_environment_variable}=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths};${_cmake_helpers_exe_native_environments}")
-	else()
-	  set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "${_cmake_helpers_exe_environment_variable}=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
-	endif()
+      set(_cmake_helpers_exe_managed_environment_variables)
+      foreach(_cmake_helpers_exe_managed_environment_variable PATH LIBPATH LD_LIBRARY_PATH DYLD_LIBRARY_PATH)
+	list(APPEND _cmake_helpers_exe_managed_environment_variables ${_cmake_helpers_exe_managed_environment_variable}=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths})
       endforeach()
+      list(APPEND _cmake_helpers_exe_managed_environment_variables ${_cmake_helpers_exe_native_environments})
+      set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "${_cmake_helpers_exe_managed_environment_variables}")
       #
       # Apply dependencies
       #
