@@ -28,7 +28,6 @@ function(cmake_helpers_depend depname)
   #
   set(_options)
   set(_oneValueArgs
-    FETCHCONTENT_BASE_DIR_AUTO
     FILE
     EXCLUDE_FROM_ALL
     SYSTEM
@@ -48,7 +47,6 @@ function(cmake_helpers_depend depname)
   #
   # Default values
   #
-  set(_cmake_helpers_depend_fetchcontent_base_dir_auto      TRUE)
   set(_cmake_helpers_depend_file                            "")
   set(_cmake_helpers_depend_exclude_from_all                TRUE)
   set(_cmake_helpers_depend_system                          FALSE)
@@ -116,12 +114,13 @@ function(cmake_helpers_depend depname)
   #
   # For recursive calls, make sure we always fetch in the same directory
   #
-  if(_cmake_helpers_depend_fetchcontent_base_dir_auto)
-    if(NOT FETCHCONTENT_BASE_DIR)
-      set(FETCHCONTENT_BASE_DIR ${PROJECT_BINARY_DIR}/_deps CACHE PATH "FetchContent base dir" FORCE)
-    endif()
-    list(APPEND _cmake_helpers_depend_cmake_args -DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR})
+  if("x$ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}" STREQUAL "x")
+    set(_cmake_helpers_fetchcontent_base_dir ${PROJECT_BINARY_DIR}/_deps)
+    set(ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} ${_cmake_helpers_fetchcontent_base_dir})
+  else()
+    set(_cmake_helpers_fetchcontent_base_dir $ENV{CMAKE_HELPERS_FETCHCONTENT_BASE_DIR})
   endif()
+  set(FETCHCONTENT_BASE_DIR ${_cmake_helpers_fetchcontent_base_dir} CACHE PATH "FetchContent base dir" FORCE)
   #
   # CMake generate options
   #
