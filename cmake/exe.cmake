@@ -301,13 +301,15 @@ Function(cmake_helpers_exe name)
         cmake_helpers_call(add_test NAME ${_cmake_helpers_exe_test_target} COMMAND ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_test_args})
       endif()
       #
-      # Apply path modification
+      # Apply PATH (Windows), LIBPATH (AIX), LD_LIBRARY_PATH (Linux, cygwin), DYLD_LIBRARY_PATH (OSX) etc
       #
-      if(_cmake_helpers_exe_native_environments)
-	set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths};${_cmake_helpers_exe_native_environments}")
-      else()
-	set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
-      endif()
+      foreach(_cmake_helpers_exe_environment_variable "PATH" "LD_LIBRARY_PATH" "DYLD_LIBRARY"_"PATH LIBPATH")
+	if(_cmake_helpers_exe_native_environments)
+	  set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "${_cmake_helpers_exe_environment_variable}=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths};${_cmake_helpers_exe_native_environments}")
+	else()
+	  set_tests_properties(${_cmake_helpers_exe_test_target} PROPERTIES ENVIRONMENT_MODIFICATION "${_cmake_helpers_exe_environment_variable}=path_list_prepend:${_cmake_helpers_exe_prepend_native_paths}")
+	endif()
+      endforeach()
       #
       # Apply dependencies
       #
