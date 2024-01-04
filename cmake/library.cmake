@@ -106,6 +106,7 @@ function(cmake_helpers_library)
     EXPORT_HEADER_STATIC_DEFINE
     NTRACE
     TARGETS_OUTVAR
+    ADD_VERSION_DEFINES
   )
   set(_multiValueArgs
     FIND_DEPENDENCIES
@@ -179,6 +180,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
+  set(_cmake_helpers_library_add_version_defines                  TRUE)
   #
   # Multiple-value arguments default values
   #
@@ -579,18 +581,22 @@ function(cmake_helpers_library)
     string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_toupper)
 
     if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
+      if(_cmake_helpers_library_add_version_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} INTERFACE -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
+      endif()
     else()
       if(_cmake_helpers_library_ntrace)
 	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME_toupper}_NTRACE -DNTRACE)
       endif()
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
+      if(_cmake_helpers_library_add_version_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_MINOR=${PROJECT_VERSION_MINOR})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${PROJECT_NAME_toupper}_VERSION="${PROJECT_VERSION}")
+      endif()
 
       if(WIN32 AND _cmake_helpers_library_with_msvc_minimal_headers)
 	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -DWIN32_LEAN_AND_MEAN)
