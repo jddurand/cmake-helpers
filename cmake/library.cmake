@@ -1061,6 +1061,13 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
     message(STATUS "[${_cmake_helpers_logprefix}] ... Type: ${_cmake_helpers_library_target_type}")
   endif()
   #
+  # Get target imported location
+  #
+  get_target_property(_cmake_helpers_library_target_imported_location ${_cmake_helpers_library_target} IMPORTED_LOCATION)
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Imported location: ${_cmake_helpers_library_target_imported_location}")
+  endif()
+  #
   # Set defs
   #
   get_target_property(_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs ${_cmake_helpers_library_target} INTERFACE_COMPILE_DEFINITIONS)
