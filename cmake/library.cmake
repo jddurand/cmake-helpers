@@ -1109,8 +1109,10 @@ endif()
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
   set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
 
-  get_target_property(_cmake_helpers_library_target_output_name ${_cmake_helpers_library_target} OUTPUT_NAME)
-  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_target_output_name}.pc")
+  get_target_property(_cmake_helpers_library_target_imported_location ${_cmake_helpers_library_target} IMPORTED_LOCATION)
+  get_filename_component(_cmake_helpers_library_target_filename_we ${_cmake_helpers_library_target_imported_location} NAME_WE)
+
+  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_target_filename_we}.pc")
   message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
 
   get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
