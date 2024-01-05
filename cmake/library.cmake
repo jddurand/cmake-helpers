@@ -1117,9 +1117,18 @@ foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_ta
   set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
 
   get_target_property(_cmake_helpers_library_target_location ${_cmake_helpers_library_target} LOCATION)
-  get_filename_component(_cmake_helpers_library_target_filename_we ${_cmake_helpers_library_target_location} NAME_WE)
+  cmake_path(GET _cmake_helpers_library_target_location FILENAME _cmake_helpers_library_target_filename)
+  cmake_path(GET _cmake_helpers_library_target_filename EXTENSION LAST_ONLY _cmake_helpers_library_target_filename_last_extension)
+  if(_cmake_helpers_library_target_filename_last_extension)
+    string(LENGTH "${_cmake_helpers_library_target_filename_last_extension}" _cmake_helpers_library_target_filename_last_extension_length)
+    string(LENGTH "${_cmake_helpers_library_target_filename}" _cmake_helpers_library_target_filename_length)
+    math(EXPR _cmake_helpers_library_target_filename_length_without_last_extension "${_cmake_helpers_library_target_filename_length} - ${_cmake_helpers_library_target_filename_last_extension_length}")
+    string(SUBSTRING "${_cmake_helpers_library_target_filename}" 0 ${_cmake_helpers_library_target_filename_length_without_last_extension} _cmake_helpers_library_target_filename_without_last_extension)
+  else()
+    message(FATAL_ERROR "Could not find last extension in \"${_cmake_helpers_library_target_filename}\"")
+  endif()
 
-  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_target_filename_we}.pc")
+  set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_target_filename_without_last_extension}.pc")
   message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
 
   get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
