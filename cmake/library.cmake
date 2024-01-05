@@ -1107,13 +1107,13 @@ endif()
 # Loop on all targets and assign target generated properties. Note that we always a string for convenience.
 #
 foreach(_cmake_helpers_library_install_target @_cmake_helpers_library_install_targets@)
-  get_target_property(_cmake_helpers_library_target_output_name ${_cmake_helpers_library_install_target} OUTPUT_NAME)
+  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
+
+  get_target_property(_cmake_helpers_library_target_output_name ${_cmake_helpers_library_target} OUTPUT_NAME)
   set(_file "${CMAKE_HELPERS_PKGCONFIGDIR}/${_cmake_helpers_library_target_output_name}.pc")
   message(STATUS "[${_cmake_helpers_logprefix}] Generating ${_file}")
 
-  set(_cmake_helpers_library_target @PROJECT_NAME@::${_cmake_helpers_library_install_target})
   get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
-
   set(_cmake_helpers_library_links         ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_links})
   set(_cmake_helpers_library_defs          ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_defs})
   set(_cmake_helpers_library_private_links ${_cmake_helpers_library_${_cmake_helpers_library_target_type}_private_links})
