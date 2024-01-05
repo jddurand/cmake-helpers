@@ -1292,15 +1292,39 @@ endif()
 	if(CMAKE_HELPERS_DEBUG)
 	  message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy pc for target ${_cmake_helpers_library_install_target}")
 	endif()
-	file(GENERATE
-	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
-	  CONTENT "# Content of this file is overwriten during install or package phases"
-	)
-	cmake_helpers_call(install
-	  FILES ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
-	  DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
-	  COMPONENT ${PROJECT_NAME}ConfigComponent
-	)
+	get_target_property(_cmake_helpers_library_install_target_type ${_cmake_helpers_library_install_target} TYPE)
+	if(_cmake_helpers_library_install_target_type STREQUAL "INTERFACE_LIBRARY")
+	  #
+	  # This is not producing a library, just install header files
+	  #
+	  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target}.pc
+	    "# Content of this file is overwriten during install or package phases"
+	  )
+	  cmake_helpers_call(install
+	    FILES ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target}.pc
+	    DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
+	    COMPONENT ${PROJECT_NAME}ConfigComponent
+	  )
+	elseif(
+	    (_cmake_helpers_library_install_target_type STREQUAL "SHARED_LIBRARY") OR
+	    (_cmake_helpers_library_install_target_type STREQUAL "STATIC_LIBRARY") OR
+	    (_cmake_helpers_library_install_target_type STREQUAL "MODULE_LIBRARY") OR
+	    file(GENERATE
+	      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
+	      CONTENT "# Content of this file is overwriten during install or package phases"
+	    )
+	    cmake_helpers_call(install
+	      FILES ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
+	      DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
+	      COMPONENT ${PROJECT_NAME}ConfigComponent
+	    )
+	  elseif(_cmake_helpers_library_install_target_type STREQUAL "OBJECT_LIBRARY")
+	    #
+	    # This is producing nothing
+	    #
+	  else()
+	    message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_install_target_type}")
+	  endif()
       endforeach()
       #
       # Generate a cmake file that will process CMAKE_INSTALL_PREFIX to send correct parameters
