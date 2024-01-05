@@ -755,19 +755,13 @@ function(cmake_helpers_library)
       if(_cmake_helpers_public_headers)
 	cmake_helpers_call(set cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent TRUE)
       endif()
-      if(_cmake_helpers_public_headers OR _cmake_helpers_private_headers)
-	#
-	# If there is a file set, exported or not, CMake requires a FILE_SET argument in install()
-	#
-	cmake_helpers_call(set _cmake_helpers_install_files_set_public_header_args FILE_SET public_headers DESTINATION ${CMAKE_HELPERS_INSTALL_INCLUDEDIR} COMPONENT ${PROJECT_NAME}HeaderComponent)
-      endif()
       cmake_helpers_call(install
 	TARGETS                 ${_cmake_helpers_library_install_targets}
 	EXPORT                  ${PROJECT_NAME}DevelopmentTargets
 	RUNTIME                 DESTINATION ${CMAKE_HELPERS_INSTALL_BINDIR}     COMPONENT ${PROJECT_NAME}RuntimeComponent
 	LIBRARY                 DESTINATION ${CMAKE_HELPERS_INSTALL_LIBDIR}     COMPONENT ${PROJECT_NAME}LibraryComponent
 	ARCHIVE                 DESTINATION ${CMAKE_HELPERS_INSTALL_LIBDIR}     COMPONENT ${PROJECT_NAME}ArchiveComponent
-	${_cmake_helpers_install_files_set_public_header_args}
+	FILE_SET public_headers DESTINATION ${CMAKE_HELPERS_INSTALL_INCLUDEDIR} COMPONENT ${PROJECT_NAME}HeaderComponent
       )
 
       if(CMAKE_HELPERS_DEBUG)
