@@ -71,6 +71,10 @@ Function(cmake_helpers_exe name)
     INSTALL
     TEST
     RPATH_AUTO
+    EXE_USING_SHARED_LIBRARY
+    EXE_USING_STATIC_LIBRARY
+    EXE_USING_INTERFACE_LIBRARY
+    EXE_USING_OBJECT_LIBRARY
   )
   set(_multiValueArgs
     SOURCES
@@ -90,6 +94,10 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_install                    FALSE)
   set(_cmake_helpers_exe_test                       FALSE)
   set(_cmake_helpers_exe_rpath_auto                 TRUE)
+  set(_cmake_helpers_exe_using_shared_library       TRUE)
+  set(_cmake_helpers_exe_using_static_library       TRUE)
+  set(_cmake_helpers_exe_using_interface_library    TRUE)
+  set(_cmake_helpers_exe_using_object_library       TRUE)
   #
   # Multi-value options default values
   #
@@ -120,23 +128,39 @@ Function(cmake_helpers_exe name)
     if(TARGET ${_cmake_helpers_library_target})
       get_target_property(_cmake_helpers_library_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_type STREQUAL "SHARED_LIBRARY")
-        set(_cmake_helpers_exe_output_name "${name}_shared")
-	set(_cmake_helpers_exe_link_type PUBLIC)
+	if(NOT _cmake_helpers_exe_using_shared_library)
+	  continue()
+	else()
+          set(_cmake_helpers_exe_output_name "${name}_shared")
+	  set(_cmake_helpers_exe_link_type PUBLIC)
+	endif()
       elseif(_cmake_helpers_library_type STREQUAL "STATIC_LIBRARY")
-        set(_cmake_helpers_exe_output_name "${name}_static")
-	set(_cmake_helpers_exe_link_type PUBLIC)
+	if(NOT _cmake_helpers_exe_using_static_library)
+	  continue()
+	else()
+          set(_cmake_helpers_exe_output_name "${name}_static")
+	  set(_cmake_helpers_exe_link_type PUBLIC)
+	endif()
       elseif(_cmake_helpers_library_type STREQUAL "MODULE_LIBRARY")
         #
         # One cannot link with a module library
         #
         continue()
       elseif(_cmake_helpers_library_type STREQUAL "INTERFACE_LIBRARY")
-        set(_cmake_helpers_exe_output_name "${name}_iface")
-	set(_cmake_helpers_exe_link_type PUBLIC)
-	# set(_cmake_helpers_exe_target_dir)
+	if(NOT _cmake_helpers_exe_using_interface_library)
+	  continue()
+	else()
+          set(_cmake_helpers_exe_output_name "${name}_iface")
+	  set(_cmake_helpers_exe_link_type PUBLIC)
+	  # set(_cmake_helpers_exe_target_dir)
+	endif()
       elseif(_cmake_helpers_library_type STREQUAL "OBJECT_LIBRARY")
-        set(_cmake_helpers_exe_output_name "${name}_objs")
-	# set(_cmake_helpers_exe_target_dir)
+	if(NOT _cmake_helpers_exe_using_object_library)
+	  continue()
+	else()
+          set(_cmake_helpers_exe_output_name "${name}_objs")
+	  # set(_cmake_helpers_exe_target_dir)
+	endif()
       else()
         message(FATAL_ERROR "Unsupported library type ${_cmake_helpers_library_type}")
       endif()
