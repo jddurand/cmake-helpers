@@ -978,7 +978,7 @@ message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CON
 #
 # We know we are installed in CMAKE_HELPERS_CMAKEDIR: append it also to CMAKE_PREFIX_PATH
 #
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
+list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
 #
 # Say to find_package to use CMAKE_PREFIX_PATH
 #
