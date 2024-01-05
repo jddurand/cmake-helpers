@@ -1289,14 +1289,15 @@ endif()
       # Install dummy .pc files that will overwriten during install, c.f. install(CODE ...) below
       #
       foreach(_cmake_helpers_library_install_target IN LISTS _cmake_helpers_library_install_targets)
-	get_target_property(_cmake_helpers_library_install_target_output_name ${_cmake_helpers_library_install_target} OUTPUT_NAME)
-	set(_cmake_helpers_library_pc ${CMAKE_CURRENT_BINARY_DIR}/${_cmake_helpers_library_install_target_output_name}.pc)
 	if(CMAKE_HELPERS_DEBUG)
-	  message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy ${_cmake_helpers_library_pc}")
+	  message(STATUS "[${_cmake_helpers_logprefix}] Generating dummy pc for target ${_cmake_helpers_library_install_target}")
 	endif()
-	file(WRITE ${_cmake_helpers_library_pc} "# Content of this file is overwriten during install or package phases")
+	file(GENERATE
+	  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
+	  CONTENT "# Content of this file is overwriten during install or package phases"
+	)
 	cmake_helpers_call(install
-	  FILES ${_cmake_helpers_library_pc}
+	  FILES ${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${_cmake_helpers_library_install_target}>.pc
 	  DESTINATION ${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR}
 	  COMPONENT ${PROJECT_NAME}ConfigComponent
 	)
