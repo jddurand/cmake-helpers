@@ -261,7 +261,7 @@ function(cmake_helpers_depend depname)
       # There are two alternatives. Make sure the first one is QUIET and not REQUIRED
       #
       if(NOT _cmake_helpers_depend_have_quiet)
-	list(PREPEND _cmake_helpers_depend_find_package_args_tmp "QUIET")
+	list(APPEND _cmake_helpers_depend_find_package_args_tmp "QUIET")
       endif()
       list(REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "REQUIRED")
       set(_cmake_helper_depend_find_package_must_succeed FALSE)
