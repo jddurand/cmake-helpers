@@ -38,7 +38,7 @@ function(cmake_helpers_depend depname)
     BUILD
     INSTALL
     FIND_PACKAGE_NAME
-    MAKEAVAILABLE
+    MAKEAVAILABLE                   # Note that MAKEAVAILABLE has precedence, if set, over the configure/build/install phases
     GENERATOR_CONFIG
   )
   set(_multiValueArgs
@@ -474,6 +474,15 @@ function(cmake_helpers_depend depname)
     #
     # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
     #
+    if(NOT _cmake_helpers_depend_exclude_from_all)
+      #
+      # If the sub-library is using our framework, disable the automatic skip of install rules
+      # when current project is not the top-level project
+      #
+      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
+    else()
+      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
+    endif()
     cmake_helpers_call(add_subdirectory
       ${${_depname_tolower}_SOURCE_DIR}
       ${${_depname_tolower}_BINARY_DIR}
