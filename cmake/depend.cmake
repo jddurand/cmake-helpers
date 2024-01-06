@@ -37,6 +37,7 @@ function(cmake_helpers_depend depname)
     CONFIGURE
     BUILD
     INSTALL
+    FIND_PACKAGE_NAME
     GENERATOR_CONFIG
   )
   set(_multiValueArgs
@@ -56,6 +57,7 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_configure                       TRUE)
   set(_cmake_helpers_depend_build                           TRUE)
   set(_cmake_helpers_depend_install                         TRUE)
+  set(_cmake_helpers_depend_find_package_name               ${depname})
   #
   # In the case we are doing a local installation, we want to know the configuration type.
   # We always end up with a find_package, so we also want to specify import configuration mapping.
@@ -278,7 +280,7 @@ function(cmake_helpers_depend depname)
     cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
   endif()
   if(_cmake_helpers_depend_find)
-    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args_tmp})
+    cmake_helpers_call(find_package ${_cmake_helpers_depend_find_package_name} ${_cmake_helpers_depend_find_package_args_tmp})
     if(${depname}_FOUND)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} found")
@@ -446,7 +448,7 @@ function(cmake_helpers_depend depname)
 	    cmake_helpers_call(list PREPEND CMAKE_PREFIX_PATH ${_cmake_helpers_depend_prefix_paths})
 	    cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args "NO_CMAKE_PATH")
 	    cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
-	    cmake_helpers_call(find_package ${depname} ${_cmake_helpers_depend_find_package_args})
+	    cmake_helpers_call(find_package ${_cmake_helpers_depend_find_package_name} ${_cmake_helpers_depend_find_package_args})
 	  endif()
 	endif()
       endif()
