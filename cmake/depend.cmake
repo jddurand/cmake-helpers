@@ -460,6 +460,7 @@ function(cmake_helpers_depend depname)
   # Caller wants to have access to some development targets
   #
   if(_cmake_helpers_depend_makeavailable)
+    message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
     cmake_helpers_call(FetchContent_MakeAvailable ${depname})
   endif()
   #
