@@ -292,6 +292,10 @@ function(cmake_helpers_depend depname)
 	# We return if the caller do not want some targets in its build process
 	#
 	return()
+      else()
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] Continuing up to the makeavailable step")
+	endif()
       endif()
     else()
       #
