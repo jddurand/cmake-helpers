@@ -287,12 +287,22 @@ function(cmake_helpers_depend depname)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} found")
       endif()
-      return()
+      if(NOT _cmake_helpers_depend_makeavailable)
+	#
+	# We return if the caller do not want some targets in its build process
+	#
+	return()
+      else()
+	#
+	# We want to execute FetchContent steps
+	#
+	break()
+      endif()
     endif()
     #
     # Check if we raise a fatal error or not when it is not found
     #
-    if((NOT ${depname}_FOUND) AND _cmake_helper_depend_find_package_must_succeed)
+    if((NOT ${_cmake_helpers_depend_find_package_name}_FOUND) AND _cmake_helper_depend_find_package_must_succeed)
       message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} is not found - use the FILE or EXTERNALPROJECT_ADD_ARGS options to continue")
     endif()
   endif()
