@@ -1,5 +1,18 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR) # We require BUILD_LOCAL_INTERFACE
+#
+# General local install path, intentionaly under PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+# Intentionaly done before project definition to recuperate parent's PROJECT_BINARY_DIR.
+#
+if(DEFINED PROJECT_BINARY_DIR)
+  set(CMAKE_HELPERS_INSTALL_PATH ${PROJECT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
+else()
+  unset(CMAKE_HELPERS_INSTALL_PATH)
+endif()
 project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
+if(NOT DEFINED CMAKE_HELPERS_INSTALL_PATH)
+  # No project() in the parent
+  set(CMAKE_HELPERS_INSTALL_PATH ${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
+endif()
 #
 # Load our includes, once
 #
@@ -68,7 +81,3 @@ foreach(_cmake_helpers_type html cmake pkgconfig)
   string(TOUPPER "${_cmake_helpers_type}" _cmake_helpers_type_toupper)
   set(CMAKE_HELPERS_INSTALL_${_cmake_helpers_type_toupper}DIR ${_cmake_helpers_install_${_cmake_helpers_type}dir_default} CACHE PATH "${_cmake_helpers_type} install directory" FORCE)
 endforeach()
-#
-# ... General local install path, intentionaly under PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
-#
-set(CMAKE_HELPERS_INSTALL_PATH ${PROJECT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
