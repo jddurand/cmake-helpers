@@ -942,7 +942,7 @@ load_cache("@CMAKE_CURRENT_BINARY_DIR@")
 # eventually installed locally.
 #
 if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
-  set(_cmake_helpers_install_path "@PROJECT_BINARY_DIR@/cmake_helpers_install")
+  set(_cmake_helpers_install_path "@CMAKE_HELPERS_INSTALL_PATH@")
   set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
 else()
   set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
