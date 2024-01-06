@@ -927,6 +927,7 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
   message(STATUS "[${_cmake_helpers_logprefix}] Starting")
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
+  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_INSTALL_PATH: ${CMAKE_HELPERS_INSTALL_PATH}")
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_PKGCONFIGDIR: ${CMAKE_HELPERS_PKGCONFIGDIR}")
   message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR    : ${CMAKE_HELPERS_CMAKEDIR}")
 endif()
@@ -941,14 +942,8 @@ load_cache("@CMAKE_CURRENT_BINARY_DIR@")
 # We append to ENV{PKG_CONFIG_PATH} the directories where are .pc files we
 # eventually installed locally.
 #
-if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
-  set(_cmake_helpers_install_path "@CMAKE_HELPERS_INSTALL_PATH@")
-  set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
-else()
-  set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
-endif()
 set(_pcdirs)
-file(GLOB_RECURSE _pcs LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.pc)
+file(GLOB_RECURSE _pcs LIST_DIRECTORIES false ${CMAKE_HELPERS_INSTALL_PATH}/*.pc)
 foreach(_pc IN LISTS _pcs)
   get_filename_component(_dir ${_pc} DIRECTORY)
   if(NOT _dir IN_LIST _pcdirs)
@@ -978,7 +973,7 @@ message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CON
 #
 # We know we are installed in CMAKE_HELPERS_CMAKEDIR: append it also to CMAKE_PREFIX_PATH
 #
-list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR})
+list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PATH} ${CMAKE_HELPERS_CMAKEDIR})
 #
 # Say to find_package to use CMAKE_PREFIX_PATH
 #
@@ -1400,6 +1395,7 @@ endif()
   endif()
   set(_cmake_helpers_pkgconfigdir \${_destination}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR})
   set(_cmake_helpers_cmakedir \${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR})
+  set(_cmake_helpers_install_path \${_destination})
   #
   # CMake config files for the project has already beeing installed prior to this CODE hook
   #
@@ -1408,7 +1404,7 @@ endif()
   set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
   set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_INSTALL_PATH=\${_cmake_helpers_install_path} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     \${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
