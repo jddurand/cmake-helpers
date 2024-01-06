@@ -44,6 +44,7 @@ function(cmake_helpers_depend depname)
     EXTERNALPROJECT_ADD_ARGS
     CMAKE_ARGS
     FIND_PACKAGE_ARGS
+    MAKEAVAILABLE_ARGS
   )
   #
   # Default values
@@ -91,6 +92,7 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_externalproject_add_args)
   set(_cmake_helpers_depend_cmake_args)
   set(_cmake_helpers_depend_find_package_args)
+  set(_cmake_helpers_depend_makeavailable_args)
   #
   # Parse Arguments
   #
@@ -453,6 +455,12 @@ function(cmake_helpers_depend depname)
 	endif()
       endif()
     endif()
+  endif()
+  #
+  # Caller wants to have access to some development targets
+  #
+  if(_cmake_helpers_depend_makeavailable_args)
+    cmake_helpers_call(FetchContent_MakeAvailable ${depname} ${_cmake_helpers_depend_makeavailable_args})
   endif()
   #
   # Send-out variables
