@@ -927,9 +927,9 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
   message(STATUS "[${_cmake_helpers_logprefix}] Starting")
   message(STATUS "[${_cmake_helpers_logprefix}] ========")
-  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_INSTALL_PATH: ${CMAKE_HELPERS_INSTALL_PATH}")
-  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_PKGCONFIGDIR: ${CMAKE_HELPERS_PKGCONFIGDIR}")
-  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR    : ${CMAKE_HELPERS_CMAKEDIR}")
+  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_INSTALL_PREFIX: ${CMAKE_HELPERS_INSTALL_PREFIX}")
+  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_PKGCONFIGDIR  : ${CMAKE_HELPERS_PKGCONFIGDIR}")
+  message(STATUS "[${_cmake_helpers_logprefix}] CMAKE_HELPERS_CMAKEDIR      : ${CMAKE_HELPERS_CMAKEDIR}")
 endif()
 #
 # We reload the cache at ${CMAKE_CURRENT_BINARY_DIR}: it contains all the *_DIR, *_ROOT information
@@ -973,7 +973,7 @@ message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CON
 #
 # We know we are installed in CMAKE_HELPERS_CMAKEDIR: append it also to CMAKE_PREFIX_PATH
 #
-list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PATH} ${CMAKE_HELPERS_CMAKEDIR})
+list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PREFIX} ${CMAKE_HELPERS_CMAKEDIR})
 #
 # Say to find_package to use CMAKE_PREFIX_PATH
 #
@@ -1395,7 +1395,7 @@ endif()
   endif()
   set(_cmake_helpers_pkgconfigdir \${_destination}/${CMAKE_HELPERS_INSTALL_PKGCONFIGDIR})
   set(_cmake_helpers_cmakedir \${_destination}/${CMAKE_HELPERS_INSTALL_CMAKEDIR})
-  set(_cmake_helpers_install_path \${_destination})
+  set(_cmake_helpers_install_prefix \${_destination})
   #
   # CMake config files for the project has already beeing installed prior to this CODE hook
   #
@@ -1404,7 +1404,7 @@ endif()
   set(_cmake_helpers_cmake_command_echo_stdout ${_cmake_helpers_cmake_command_echo_stdout_injection})
   set(_cmake_helpers_debug \"${CMAKE_HELPERS_DEBUG}\")
   execute_process(
-    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_INSTALL_PATH=\${_cmake_helpers_install_path} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
+    COMMAND \"${CMAKE_COMMAND}\" \${_cmake_helpers_library_cmake_generate_options} -DCMAKE_HELPERS_PKGCONFIGDIR=\${_cmake_helpers_pkgconfigdir} -DCMAKE_HELPERS_CMAKEDIR=\${_cmake_helpers_cmakedir} -DCMAKE_HELPERS_INSTALL_PREFIX=\${_cmake_helpers_install_prefix} -DCMAKE_HELPERS_DEBUG=\${_cmake_helpers_debug} -S \"pc.${PROJECT_NAME}\" -B \"pc.${PROJECT_NAME}/build\"
     \${_cmake_helpers_process_command_echo_stdout}
     COMMAND_ERROR_IS_FATAL ANY
   )
