@@ -471,7 +471,15 @@ function(cmake_helpers_depend depname)
   #
   if(_cmake_helpers_depend_makeavailable)
     message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
-    cmake_helpers_call(FetchContent_MakeAvailable ${depname})
+    #
+    # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
+    #
+    cmake_helpers_call(add_subdirectory
+      ${${_depname_tolower}_SOURCE_DIR}
+      ${${_depname_tolower}_BINARY_DIR}
+      ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
+      ${_cmake_helpers_depend_fetchcontent_declare_system}
+    )
   endif()
   #
   # Send-out variables
