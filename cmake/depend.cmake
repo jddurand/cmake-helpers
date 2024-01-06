@@ -221,7 +221,7 @@ function(cmake_helpers_depend depname)
   # Prepare already installed dependencies for find_package
   #
   file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.cmake)
-  set(_cmake_helpers_depend_prefix_paths)
+  set(_cmake_helpers_depend_prefix_paths ${_cmake_helpers_install_path})
   foreach(_cmake IN LISTS _cmakes)
     get_filename_component(_dir ${_cmake} DIRECTORY)
     if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
