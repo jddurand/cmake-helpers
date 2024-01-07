@@ -99,32 +99,34 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_package_name}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_package_name}")
+  
   set(_cmake_helpers_package_developmentgroup_display_name     "Development")
   set(_cmake_helpers_package_developmentgroup_description      "Development\n\nLibraries, Headers and Configuration files")
   set(_cmake_helpers_package_documentationgroup_display_name   "Documentation")
   set(_cmake_helpers_package_documentationgroup_description    "Documentation\n\nDocumentation in various formats")
   set(_cmake_helpers_package_runtimegroup_display_name         "Runtime")
   set(_cmake_helpers_package_runtimegroup_description          "Runtime\n\nApplications")
-  set(_cmake_helpers_package_runtime_display_name              "Runtime")
-  set(_cmake_helpers_package_runtime_description               "Runtime libraries")
-  set(_cmake_helpers_package_library_display_name              "Libraries")
-  set(_cmake_helpers_package_library_description               "Shared libraries")
-  set(_cmake_helpers_package_archive_display_name              "Archive")
+
+  set(_cmake_helpers_package_runtime_display_name              "${PROJECT_NAME} Runtime")
+  set(_cmake_helpers_package_runtime_description               "${PROJECT_NAME} Runtime libraries")
+  set(_cmake_helpers_package_library_display_name              "${PROJECT_NAME} Libraries")
+  set(_cmake_helpers_package_library_description               "${PROJECT_NAME} Shared libraries")
+  set(_cmake_helpers_package_archive_display_name              "${PROJECT_NAME} Archive")
   if(WIN32 OR CYGWIN)
-    set(_cmake_helpers_package_archive_description               "Import/export libraries")
+    set(_cmake_helpers_package_archive_description               "${PROJECT_NAME} Import/export libraries")
   else()
-    set(_cmake_helpers_package_archive_description               "Static libraries")
+    set(_cmake_helpers_package_archive_description               "${PROJECT_NAME} Static libraries")
   endif()
-  set(_cmake_helpers_package_header_display_name               "Headers")
-  set(_cmake_helpers_package_header_description                "C/C++ Header files")
-  set(_cmake_helpers_package_config_display_name               "Configuration")
-  set(_cmake_helpers_package_config_description                "CMake and pkgconfig configuration files")
-  set(_cmake_helpers_package_man_display_name                  "Man")
-  set(_cmake_helpers_package_man_description                   "Documentation in the man format")
-  set(_cmake_helpers_package_html_display_name                 "Html")
-  set(_cmake_helpers_package_html_description                  "Documentation in the html format")
-  set(_cmake_helpers_package_application_display_name          "Applications")
-  set(_cmake_helpers_package_application_description           "Runtime executables")
+  set(_cmake_helpers_package_header_display_name               "${PROJECT_NAME} headers")
+  set(_cmake_helpers_package_header_description                "${PROJECT_NAME} C/C++ Header files")
+  set(_cmake_helpers_package_config_display_name               "${PROJECT_NAME} configuration")
+  set(_cmake_helpers_package_config_description                "${PROJECT_NAME} CMake and pkgconfig configuration files")
+  set(_cmake_helpers_package_man_display_name                  "${PROJECT_NAME} man")
+  set(_cmake_helpers_package_man_description                   "${PROJECT_NAME} documentation in the man format")
+  set(_cmake_helpers_package_html_display_name                 "${PROJECT_NAME} html")
+  set(_cmake_helpers_package_html_description                  "${PROJECT_NAME} documentation in the html format")
+  set(_cmake_helpers_package_application_display_name          "${PROJECT_NAME} applications")
+  set(_cmake_helpers_package_application_description           "${PROJECT_NAME} executables")
   #
   # Parse Arguments
   #
@@ -138,24 +140,88 @@ function(cmake_helpers_package)
     set(_cmake_helpers_package_command_echo_stdout)
   endif()
   #
-  # Set CPack hooks
+  # Whatever the level, we accumulate components information on CMAKE_BINARY_DIR properties.
   #
+  # - HaveXxxComponent generates aggregation under cmake_helpers_package_Components
+  # - Every single component X records its component display name and description, e.g. XComponent is recording:
+  #   cmake_helpers_package_X_display_name
+  #   cmake_helpers_package_X_description
+  # - Licenses  generates aggregation under cmake_helpers_package_Licenses_header and cmake_helpers_package_Licenses
   #
-  # We need a way to know if make install is running under CPACK or not
-  #
-  set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_CURRENT_BINARY_DIR}/cpack_project_config_file.cmake)
-  FILE (WRITE ${_cmake_helpers_package_cpack_project_config_file} "# ${PROJECT_NAME} CPack configuration file\n")
-  if(CMAKE_HELPERS_DEBUG)
-    FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
+  set(_developmentGroupParts runtime library archive header config)
+  set(_documentationGroupParts man html)
+  set(_runtimeGroupParts exe)
+  foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
+    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+    set(_component "${_part_toupper_firstletter}Component")
+    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
+      set(_property cmake_helpers_package_${_component}s)
+      set(_value ${PROJECT_NAME}${_component})
+      cmake_helpers_call(set_property
+	DIRECTORY ${CMAKE_BINARY_DIR}
+	APPEND
+	PROPERTY ${_property} ${_value}
+      )
+      cmake_helpers_call(set_property
+	DIRECTORY ${CMAKE_BINARY_DIR}
+	APPEND
+	PROPERTY cmake_helpers_package_${_value}_display_name ${_cmake_helpers_package_${_part}_display_name}
+      )
+      cmake_helpers_call(set_property
+	DIRECTORY ${CMAKE_BINARY_DIR}
+	APPEND
+	PROPERTY cmake_helpers_package_${_value}_description ${_cmake_helpers_package_${_part}_description}
+      )
+    endif()
+  endforeach()
+  if(EXISTS ${_cmake_helpers_package_license})
+    #
+    # Current licenses
+    #
+    set(_property cmake_helpers_package_Licenses)
+    cmake_helpers_call(get_property
+      _licenses
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
+    #
+    # Licenses header
+    #
+    set(_property cmake_helpers_package_Licenses_header)
+    cmake_helpers_call(get_property
+      _licenses_header
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
+    if(NOT _licenses)
+      set(_licenses_header "The following licenses applies to this package:\n\n")
+      set(_license_number 1)
+    else()
+      list(LENGTH _licenses _license_number)
+      math(EXPR _license_number "${_license_number} + 1")
+    endif()
+    set(_licenses_header "${_licenses_header}${_license_number}. ${PROJECT_NAME}\n")
+    cmake_helpers_call(set_property
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property} ${_licenses_header}
+    )
+    #
+    # Current license
+    #
+    set(_property cmake_helpers_package_Licenses)
+    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt _value)
+    cmake_helpers_call(set_property
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      APPEND
+      PROPERTY ${_property} "\n${_license_number}. ${PROJECT_NAME} license:\n\n${_value}\n"
+    )
   endif()
-  FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
-  if(CMAKE_HELPERS_DEBUG)
-    FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] CPACK_BUILD_CONFIG: \${CPACK_BUILD_CONFIG}\")\n")
-  endif()
   #
-  # pkgconfig hooks are running just before CPack installs the components
+  # - PkgConfigHookScript generates aggregation under cmake_helpers_package_cpack_pre_build_scripts
   #
   if(cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent AND cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+    set(_property cmake_helpers_package_cpack_pre_build_scripts)
     #
     # CPack install things breaked into components. But we want a true install to generate the .pc files.
     # So we install in a local directory, and copy back the .pc files in the CPack's CMAKE_INSTALL_PREFIX/component pkgconfig dir.
@@ -165,47 +231,101 @@ function(cmake_helpers_package)
     # described in https://cmake.org/pipermail/cmake-developers/2015-April/025082.html .
     # When $<CONFIG> is set, CMake will redo every file(GENERATE ...) call.
     #
-    file(APPEND ${_cmake_helpers_package_cpack_project_config_file} "
+    set(_value "
+#
+# ${PROJECT_NAME} pre-build pkgconfig hook
+#
 if(NOT(\"x\${CPACK_BUILD_CONFIG}\" STREQUAL \"x\"))
+  #
+  # The next line is executed only when \\\${CPACK_BUILD_CONFIG} is set
+  #
   list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
 else()
   list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake\")
 endif()
-"
+")
+    cmake_helpers_call(set_property
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      APPEND
+      PROPERTY ${_property} ${_value}
     )
+  endif()
+  #
+  # Set CPack hooks
+  #
+  # - CPACK_PROJECT_CONFIG_FILE: there is only one occurence, so it belongs to top-project level.
+  #
+  # In this case CMAKE_BINARY_DIR equals to CMAKE_CURRENT_BINARY_DIR, but we intentionaly write CMAKE_BINARY_DIR
+  # to show that it is normal to use this (usually not recommended) variable.
+  #
+  set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_BINARY_DIR}/cpack_project_config_file.cmake)
+  if(PROJECT_IS_TOP_LEVEL)
+    cmake_helpers_call(set CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
+    # 
+    # In CPACK_PROJECT_CONFIG_FILE we:
+    # - Set environment variable CMAKE_HELPERS_CPACK_IS_RUNNING
+    # - Append to CPACK_PRE_BUILD_SCRIPTS the eventual pkgconfig hooks
     #
-    # Generate a script for every configuration. This will
-    # - do a local install
-    # - use this local install to generate correct .pc files
-    # - copy these .pc files in the CPack staging area
+    FILE (WRITE ${_cmake_helpers_package_cpack_project_config_file} "# ${PROJECT_NAME} CPack configuration file\n")
+    if(CMAKE_HELPERS_DEBUG)
+      FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] Setting ENV{CMAKE_HELPERS_CPACK_IS_RUNNING}\")\n")
+    endif()
+    FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)\n")
+    if(CMAKE_HELPERS_DEBUG)
+      FILE (APPEND ${_cmake_helpers_package_cpack_project_config_file} "message(STATUS \"[${_cmake_helpers_logprefix}] CPACK_BUILD_CONFIG: \${CPACK_BUILD_CONFIG}\")\n")
+    endif()
     #
-    # In the pre-build script we want to remember the CMAKE_INSTALL_PREFIX of the local staging area...
+    # Append pkgconfig hooks to CPACK_PRE_BUILD_SCRIPTS: they will run just before CPack installs the components
     #
-    set(_cpack_install_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_install_script.cmake)
-    set(_cpack_local_install_prefix_txt ${CMAKE_CURRENT_BINARY_DIR}/cpack_local_install_prefix.txt)
+    set(_property cmake_helpers_package_cpack_pre_build_scripts)
+    cmake_helpers_call(get_property
+      _pre_build_scripts
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
+    foreach(_pre_build_script IN LISTS _pre_build_scripts)
+      file(APPEND ${_cmake_helpers_package_cpack_project_config_file} ${_pre_build_script})
+    endforeach()
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_project_config_file}")
+    endif()
+  endif()
+  #
+  # In the eventual pre-build scripts we want to get the CMAKE_INSTALL_PREFIX of the local staging area. The only way I found
+  # to remember that is via CPACK_INSTALL_SCRIPTS.
+  #
+  set(_cpack_install_script ${CMAKE_BINARY_DIR}/cpack_install_script.cmake)
+  set(_cpack_local_install_prefix_txt ${CMAKE_BINARY_DIR}/cpack_local_install_prefix.txt)
+  if(PROJECT_IS_TOP_LEVEL)
     file(WRITE  ${_cpack_install_script} "message(STATUS \"Remembering local install prefix: \${CMAKE_INSTALL_PREFIX}\")\n")
     file(APPEND ${_cpack_install_script} "file(WRITE \"${_cpack_local_install_prefix_txt}\" \${CMAKE_INSTALL_PREFIX})\n")
     list(APPEND CPACK_INSTALL_SCRIPTS ${_cpack_install_script})
-    #
-    # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
-    #
-    if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
-      set(_cmake_helpers_install_path ${CMAKE_HELPERS_INSTALL_PATH})
-      set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
-    else()
-      set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
-    endif()
-    cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-    if(_cmake_helpers_package_generator_is_multi_config)
-      set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
-    elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
-      set(_cmake_helpers_package_configs ${CMAKE_BUILD_TYPE})
-    else()
-      set(_cmake_helpers_package_configs)
-    endif()
-    foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
-      set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
-      file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
+  endif()
+  #
+  # Per project, Generate a script for every configuration. This will
+  # - do a local install
+  # - use this local install to generate correct .pc files
+  # - copy these .pc files in the CPack staging area
+  #
+  # We intentionaly use PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
+  #
+  if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
+    set(_cmake_helpers_install_path ${CMAKE_HELPERS_INSTALL_PATH})
+    set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
+  else()
+    set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
+  endif()
+  cmake_helpers_call(get_property _cmake_helpers_package_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  if(_cmake_helpers_package_generator_is_multi_config)
+    set(_cmake_helpers_package_configs ${CMAKE_CONFIGURATION_TYPES})
+  elseif(NOT("x${CMAKE_BUILD_TYPE}" STREQUAL "x"))
+    set(_cmake_helpers_package_configs ${CMAKE_BUILD_TYPE})
+  else()
+    set(_cmake_helpers_package_configs)
+  endif()
+  foreach(_cmake_helpers_package_config IN LISTS _cmake_helpers_package_configs)
+    set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
+    file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
 "#
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
@@ -222,7 +342,9 @@ execute_process(
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
-
+if(NOT EXISTS \"${_cpack_local_install_prefix_txt}\")
+  message(FATAL_ERROR \"${_cpack_local_install_prefix_txt} does not exist\")
+endif()
 file(READ \"${_cpack_local_install_prefix_txt}\" _cpack_local_install_prefix_txt)
 set(_cmake_helpers_package_configcomponent_path \"\${_cpack_local_install_prefix_txt}/${PROJECT_NAME}ConfigComponent\")
 cmake_path(CONVERT \"\${_cmake_helpers_package_configcomponent_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_configcomponent_path NORMALIZE)
@@ -243,19 +365,21 @@ foreach(_pc IN LISTS _pcs)
   file(REMOVE \${_destination})
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
+#
+# Restore environment variable CMAKE_HELPERS_CPACK_IS_RUNNING
+#
+set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
 "
-      )
-      if(CMAKE_HELPERS_DEBUG)
-        message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
-        file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
-        message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
-      endif()
-    endforeach()
-    #
-    # In case CPack is call without --config, we always generate the corresponding cpack_pre_build_script
-    #
-    set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake)
-    file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
+    )
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
+    endif()
+  endforeach()
+  #
+  # In case CPack is call without --config, we always generate the corresponding cpack_pre_build_script
+  #
+  set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake)
+  file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
 "#
 # Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
@@ -272,6 +396,9 @@ execute_process(
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
+if(NOT EXISTS \"${_cpack_local_install_prefix_txt}\")
+  message(FATAL_ERROR \"${_cpack_local_install_prefix_txt} does not exist\")
+endif()
 file(READ \"${_cpack_local_install_prefix_txt}\" _cpack_local_install_prefix_txt)
 set(_cmake_helpers_package_configcomponent_path \"\${_cpack_local_install_prefix_txt}/${PROJECT_NAME}ConfigComponent\")
 cmake_path(CONVERT \"\${_cmake_helpers_package_configcomponent_path}\" TO_CMAKE_PATH_LIST _cmake_helpers_package_configcomponent_path NORMALIZE)
@@ -292,188 +419,192 @@ foreach(_pc IN LISTS _pcs)
   file(REMOVE \${_destination})
   file(COPY \${_pc} DESTINATION \${_cmake_helpers_package_pkgconfigdir_path})
 endforeach()
+#
+# Restore environment variable CMAKE_HELPERS_CPACK_IS_RUNNING
+#
+set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
 "
-    )
-    if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
-      file(READ ${_cmake_helpers_package_cpack_pre_build_script} _cmake_helpers_package_cpack_pre_build_script_content)
-      message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_pre_build_script_content}")
-    endif()
-  endif()
-  cmake_helpers_call(set CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
+  )
   if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_project_config_file}")
-    file(READ ${_cmake_helpers_package_cpack_project_config_file} _cmake_helpers_package_cpack_project_config_file_content)
-    message(STATUS "[${_cmake_helpers_logprefix}] Content:\n${_cmake_helpers_package_cpack_project_config_file_content}")
+    message(STATUS "[${_cmake_helpers_logprefix}] Generated ${_cmake_helpers_package_cpack_pre_build_script}")
   endif()
-  #
-  # Set common CPack variables
-  #
-  cmake_helpers_call(set CPACK_PACKAGE_NAME                ${_cmake_helpers_package_name})
-  cmake_helpers_call(set CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
-  cmake_helpers_call(set CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
-  cmake_helpers_call(set CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
-  cmake_helpers_call(set CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
-  if(EXISTS ${_cmake_helpers_package_license})
-    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
-    cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE     ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
-  endif()
-  #
-  # Get all components in one package
-  #
-  cmake_helpers_call(set CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
-  #
-  # And explicit show them
-  #
-  cmake_helpers_call(set CPACK_MONOLITHIC_INSTALL FALSE)
-  #
-  # Always enable archive
-  #
-  cmake_helpers_call(set CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-  #
-  # Components
-  #
-  cmake_helpers_call(set CPACK_COMPONENTS_ALL)
-  foreach(_part
-      runtime
-      library
-      archive
-      header
-      config
-      man
-      html
+  if(PROJECT_IS_TOP_LEVEL)
+    #
+    # Set common CPack variables
+    #
+    cmake_helpers_call(set CPACK_PACKAGE_NAME                ${_cmake_helpers_package_name})
+    cmake_helpers_call(set CPACK_PACKAGE_VENDOR              ${_cmake_helpers_package_vendor})
+    cmake_helpers_call(set CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
+    cmake_helpers_call(set CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
+    cmake_helpers_call(set CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
+    set(_property cmake_helpers_package_Licenses_header)
+    cmake_helpers_call(get_property
+      _licenses_header
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
     )
-    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
-    set(_component "${_part_toupper_firstletter}Component")
-    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
-      list(APPEND CPACK_COMPONENTS_ALL ${PROJECT_NAME}${_component})
+    if(_licenses_header)
+      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt ${_licenses_header})
+      set(_property cmake_helpers_package_Licenses)
+      cmake_helpers_call(get_property
+	_licenses
+	DIRECTORY ${CMAKE_BINARY_DIR}
+	PROPERTY ${_property}
+      )
+      if(_licenses)
+	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt ${_licenses})
+      endif()
+      cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
     endif()
-  endforeach()
-  #
-  # Specific to NSIS generator (if any)
-  #
-  if(WIN32)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
-      cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win64)")
-      cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win64")
+    #
+    # Get all components in one package
+    #
+    cmake_helpers_call(set CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+    #
+    # And explicit show them
+    #
+    cmake_helpers_call(set CPACK_MONOLITHIC_INSTALL FALSE)
+    #
+    # Always enable archive
+    #
+    cmake_helpers_call(set CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+    #
+    # Recuperate all CMAKE_BINARY_DIR properties
+    #
+    foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
+      _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+      set(_component "${_part_toupper_firstletter}Component")
+      set(_property cmake_helpers_package_${_component}s)
+      cmake_helpers_call(get_property
+	${_property}
+	DIRECTORY ${CMAKE_BINARY_DIR}
+	PROPERTY ${_property}
+      )
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] ${_property}: ${${_property}}")
+      endif()
+    endforeach()
+    #
+    # List of components to install
+    #
+    cmake_helpers_call(set CPACK_COMPONENTS_ALL)
+    foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
+      _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+      set(_component "${_part_toupper_firstletter}Component")
+      set(_property cmake_helpers_package_${_component}s)
+      if(${_property})
+	list(APPEND CPACK_COMPONENTS_ALL ${${_property}})
+      endif()
+    endforeach()
+    #
+    # Specific to NSIS generator (if any)
+    #
+    if(WIN32)
+      cmake_helpers_call(set CPACK_NSIS_MANIFEST_DPI_AWARE TRUE)
+      cmake_helpers_call(set CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
+      cmake_helpers_call(set CPACK_NSIS_COMPRESSOR "/SOLID lzma")
+      #
+      # Copy/pasted from inkscape's ConfigCPack.cmake
+      #
+      set(CPACK_NSIS_COMPRESSOR "${CPACK_NSIS_COMPRESSOR}\n  SetCompressorDictSize 64") # hack (improve compression)
+      set(CPACK_NSIS_COMPRESSOR "${CPACK_NSIS_COMPRESSOR}\n  BrandingText '${CPACK_PACKAGE_DESCRIPTION_SUMMARY}'") # hack (overwrite BrandingText)
+      set(CPACK_NSIS_COMPRESSOR "${CPACK_NSIS_COMPRESSOR}\n  !define MUI_COMPONENTSPAGE_SMALLDESC") # hack (better components page layout)
+      if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+	cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win64)")
+	cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win64")
+      else()
+	cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+	cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win32)")
+	cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win32")
+      endif()
+    endif()
+    #
+    # Include CPack - from now on we will have access to CPACK own macros
+    #
+    include(CPack)
+    #
+    # Component groups
+    #
+    if(cmake_helpers_package_RuntimeComponents OR cmake_helpers_package_LibraryComponents OR cmake_helpers_package_ArchiveComponents OR cmake_helpers_package_HeaderComponents OR cmake_helpers_package_ConfigComponents)
+      set(_cmake_helpers_package_can_developmentgroup TRUE)
     else()
-      cmake_helpers_call(set CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
-      cmake_helpers_call(set CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION} (Win32)")
-      cmake_helpers_call(set CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-win32")
+      set(_cmake_helpers_package_can_developmentgroup FALSE)
     endif()
-  endif()
-  #
-  # Include CPack - from now on we will have access to CPACK own macros
-  #
-  include(CPack)
-  #
-  # Add Groups
-  #
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent OR
-     cmake_helpers_property_${PROJECT_NAME}_HaveLibraryComponent OR
-     cmake_helpers_property_${PROJECT_NAME}_HaveArchiveComponent OR
-     cmake_helpers_property_${PROJECT_NAME}_HaveHeaderComponent OR
-     cmake_helpers_property_${PROJECT_NAME}_HaveConfigComponent)
-    set(_cmake_helpers_package_can_developmentgroup TRUE)
-  else()
-    set(_cmake_helpers_package_can_developmentgroup FALSE)
-  endif()
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveManComponent OR
-     cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent)
-    set(_cmake_helpers_package_can_documentationgroup TRUE)
-  else()
-    set(_cmake_helpers_package_can_documentationgroup FALSE)
-  endif()
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent)
-    set(_cmake_helpers_package_can_runtimegroup TRUE)
-  else()
-    set(_cmake_helpers_package_can_runtimegroup FALSE)
-  endif()
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] Development group  : ${_cmake_helpers_package_can_developmentgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Documentation group: ${_cmake_helpers_package_can_documentationgroup}")
-    message(STATUS "[${_cmake_helpers_logprefix}] Runtime group      : ${_cmake_helpers_package_can_runtimegroup}")
-  endif()
-  if(_cmake_helpers_package_can_developmentgroup)
-    cmake_helpers_call(cpack_add_component_group DevelopmentGroup
-      DISPLAY_NAME ${_cmake_helpers_package_developmentgroup_display_name}
-      DESCRIPTION ${_cmake_helpers_package_developmentgroup_description}
-      EXPANDED)
-  endif()
-  if(_cmake_helpers_package_can_documentationgroup)
-    cmake_helpers_call(cpack_add_component_group DocumentationGroup
-      DISPLAY_NAME ${_cmake_helpers_package_documentationgroup_display_name}
-      DESCRIPTION ${_cmake_helpers_package_documentationgroup_description}
-      EXPANDED)
-  endif()
-  if(_cmake_helpers_package_can_runtimegroup)
-    cmake_helpers_call(cpack_add_component_group RuntimeGroup
-      DISPLAY_NAME ${_cmake_helpers_package_runtimegroup_display_name}
-      DESCRIPTION ${_cmake_helpers_package_runtimegroup_description}
-      EXPANDED)
-  endif()
-  #
-  # Add Components - it must have the same logic that is setting CPACK_COMPONENTS_ALL
-  #
-  # DevelopmentGroup
-  #
-  foreach(_part
-      runtime
-      library
-      archive
-      header
-      config
-    )
-    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
-    set(_component "${_part_toupper_firstletter}Component")
-    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
-      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
-	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
-	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
-	GROUP DevelopmentGroup
-      )
+    if(cmake_helpers_package_ManComponents OR cmake_helpers_package_HtmlComponents)
+      set(_cmake_helpers_package_can_documentationgroup TRUE)
+    else()
+      set(_cmake_helpers_package_can_documentationgroup FALSE)
     endif()
-  endforeach()
-  #
-  # DocumentationGroup
-  #
-  foreach(_part
-      man
-      html
-    )
-    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
-    set(_component "${_part_toupper_firstletter}Component")
-    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
-      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
-	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
-	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
-	GROUP DocumentationGroup
-      )
+    if(cmake_helpers_package_ExeComponents)
+      set(_cmake_helpers_package_can_runtimegroup TRUE)
+    else()
+      set(_cmake_helpers_package_can_runtimegroup FALSE)
     endif()
-  endforeach()
-  #
-  # RuntimeGroup
-  #
-  if(cmake_helpers_property_${PROJECT_NAME}_HaveRuntimeComponent)
-    set(_cmake_helpers_package_exe_component_depends DEPENDS RuntimeComponent)
-  else()
-    set(_cmake_helpers_package_exe_component_depends)
-  endif()
-  foreach(_part
-      exe
-    )
-    _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
-    set(_component "${_part_toupper_firstletter}Component")
-    if(cmake_helpers_property_${PROJECT_NAME}_Have${_component})
-      cmake_helpers_call(cpack_add_component ${PROJECT_NAME}${_component}
-	DISPLAY_NAME ${_cmake_helpers_package_${_part}_display_name}
-	DESCRIPTION ${_cmake_helpers_package_${_part}_description}
-	GROUP RuntimeGroup
-	${_cmake_helpers_package_exe_component_depends}
-      )
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Development group  : ${_cmake_helpers_package_can_developmentgroup}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Documentation group: ${_cmake_helpers_package_can_documentationgroup}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Runtime group      : ${_cmake_helpers_package_can_runtimegroup}")
     endif()
-  endforeach()
+    if(_cmake_helpers_package_can_developmentgroup)
+      cmake_helpers_call(cpack_add_component_group DevelopmentGroup
+	DISPLAY_NAME ${_cmake_helpers_package_developmentgroup_display_name}
+	DESCRIPTION ${_cmake_helpers_package_developmentgroup_description}
+	EXPANDED)
+    endif()
+    if(_cmake_helpers_package_can_documentationgroup)
+      cmake_helpers_call(cpack_add_component_group DocumentationGroup
+	DISPLAY_NAME ${_cmake_helpers_package_documentationgroup_display_name}
+	DESCRIPTION ${_cmake_helpers_package_documentationgroup_description}
+	EXPANDED)
+    endif()
+    if(_cmake_helpers_package_can_runtimegroup)
+      cmake_helpers_call(cpack_add_component_group RuntimeGroup
+	DISPLAY_NAME ${_cmake_helpers_package_runtimegroup_display_name}
+	DESCRIPTION ${_cmake_helpers_package_runtimegroup_description}
+	EXPANDED)
+    endif()
+    #
+    # Assign components to component groups
+    #
+    # DevelopmentGroup
+    #
+    foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
+      set(_depends)
+      if(_part IN_LIST _developmentGroupParts)
+	set(_group DevelopmentGroup)
+      elseif(_part IN_LIST _documentationGroupParts)
+	set(_group DocumentationGroup)
+      elseif(_part IN_LIST _runtimeGroupParts)
+	set(_group RuntimeGroup)
+	if(cmake_helpers_package_RuntimeComponents)
+	  set(_depends DEPENDS RuntimeComponent)
+	endif()
+      else()
+	message(FATAL_ERROR "Unknown _part ${_part}")
+      endif()
+      _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
+      set(_component "${_part_toupper_firstletter}Component")
+      foreach(_component IN LISTS cmake_helpers_package_${_component}s)
+	cmake_helpers_call(get_property
+	  _display_name
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY cmake_helpers_package_${_component}_display_name
+	)
+	cmake_helpers_call(get_property
+	  _description
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY cmake_helpers_package_${_component}_description
+	)
+	cmake_helpers_call(cpack_add_component ${_component}
+	  DISPLAY_NAME ${_display_name}
+	  DESCRIPTION ${_description}
+	  GROUP ${_group}
+	  ${_depends}
+	)
+      endforeach()
+    endforeach()
+  endif(PROJECT_IS_TOP_LEVEL)
   #
   # End
   #
