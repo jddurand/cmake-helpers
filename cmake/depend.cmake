@@ -40,6 +40,7 @@ function(cmake_helpers_depend depname)
     FIND_PACKAGE_NAME
     MAKEAVAILABLE                   # Note that MAKEAVAILABLE has precedence, if set, over the configure/build/install phases
     GENERATOR_CONFIG
+    BUILD_DIR_SUFFIX                # We do not want to mix to the build/config/install steps with the add_subdirectory
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -87,6 +88,7 @@ function(cmake_helpers_depend depname)
       set(_cmake_helpers_depend_generator_config            ${_cmake_helpers_depend_generator_config_default})
     endif()
   endif()
+  set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
   #
   # Multi-value options default values
   #
@@ -407,8 +409,8 @@ function(cmake_helpers_depend depname)
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
           ${_cmake_helpers_depend_cmake_generate_options}
-          -S ${${_depname_tolower}_SOURCE_DIR}
-          -B ${${_depname_tolower}_BINARY_DIR}
+          -S "${${_depname_tolower}_SOURCE_DIR}"
+          -B "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
           ${_cmake_helpers_depend_configure_step_config_option}
         RESULT_VARIABLE _result_variable
 	${_cmake_helpers_process_command_echo_stdout}
@@ -421,7 +423,7 @@ function(cmake_helpers_depend depname)
 	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
 	execute_process(
           COMMAND ${CMAKE_COMMAND}
-            --build ${${_depname_tolower}_BINARY_DIR}
+            --build "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
             ${_cmake_helpers_depend_build_step_config_option}
           RESULT_VARIABLE _result_variable
           ${_cmake_helpers_process_command_echo_stdout}
@@ -431,8 +433,8 @@ function(cmake_helpers_depend depname)
           message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
           execute_process(
             COMMAND ${CMAKE_COMMAND}
-              --install ${${_depname_tolower}_BINARY_DIR}
-	      --prefix ${_cmake_helpers_install_path}
+              --install "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
+	      --prefix "${_cmake_helpers_install_path}"
               ${_cmake_helpers_depend_install_step_config_option}
             RESULT_VARIABLE _result_variable
             ${_cmake_helpers_process_command_echo_stdout}
