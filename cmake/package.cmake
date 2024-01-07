@@ -567,8 +567,6 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
     #
     # Assign components to component groups
     #
-    # DevelopmentGroup
-    #
     foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
       set(_depends)
       if(_part IN_LIST _developmentGroupParts)
