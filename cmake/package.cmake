@@ -451,6 +451,12 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
     cmake_helpers_call(set CPACK_PACKAGE_INSTALL_DIRECTORY   ${_cmake_helpers_package_install_directory})
     cmake_helpers_call(set CPACK_PACKAGE_DESCRIPTION_SUMMARY ${_cmake_helpers_package_description_summary})
     cmake_helpers_call(set CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
+    set(_property cmake_helpers_package_Licenses_count)
+    cmake_helpers_call(get_property
+      _licenses_count
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
     set(_property cmake_helpers_package_Licenses_header)
     cmake_helpers_call(get_property
       _licenses_header
@@ -463,9 +469,16 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property}
     )
-    if(_licenses_header AND licenses)
+    if(_licenses_count AND _licenses_header AND _licenses)
+      set(_licenses_txt ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] Creating ${_licenses_txt}, number of licenses: ${_licenses_count}")
+      endif()
       file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_licenses_header}")
       foreach(_license IN LISTS _licenses)
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] ... ${_licenses}")
+	endif()
 	file(READ ${_license} _license_content)
 	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_license_content}")
       endforeach()
