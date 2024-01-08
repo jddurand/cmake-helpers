@@ -146,7 +146,7 @@ function(cmake_helpers_package)
   # - Every single component X records its component display name and description, e.g. XComponent is recording:
   #   cmake_helpers_package_X_display_name
   #   cmake_helpers_package_X_description
-  # - Licenses generates aggregation under cmake_helpers_package_Licenses_header, cmake_helpers_package_Licenses_count and cmake_helpers_package_Licenses
+  # - Licenses generates aggregation under cmake_helpers_package_Licenses_header, cmake_helpers_package_Licenses_count, cmake_helpers_package_Licenses and cmake_helpers_package_OriginalLicenses
   # (that is a list of licenses files)
   #
   set(_developmentGroupParts runtime library archive header config)
@@ -219,11 +219,10 @@ function(cmake_helpers_package)
     #
     # Eventually configure the license file
     #
-    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp)
+    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.orig)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "\n${_licenses_count}. ${PROJECT_NAME} license:\n\n")
-    file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp _configured_license)
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.orig _configured_license)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "${_configured_license}")
-    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp)
     #
     # Save the list of licenses files in cmake_helpers_package_Licenses
     #
@@ -232,6 +231,15 @@ function(cmake_helpers_package)
       DIRECTORY ${CMAKE_BINARY_DIR}
       APPEND
       PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt
+    )
+    #
+    # Save the list of original licenses files in cmake_helpers_package_OriginalLicenses
+    #
+    set(_property cmake_helpers_package_OriginalLicenses)
+    cmake_helpers_call(set_property
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      APPEND
+      PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.orig
     )
   endif()
   #
@@ -469,20 +477,33 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property}
     )
+    set(_property cmake_helpers_package_OriginalLicenses)
+    cmake_helpers_call(get_property
+      _originalLicenses
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
     if(_licenses_count AND _licenses_header AND _licenses)
-      set(_licenses_txt ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] Creating ${_licenses_txt}, number of licenses: ${_licenses_count}")
-      endif()
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_licenses_header}")
-      foreach(_license IN LISTS _licenses)
+      if(_licenses_count EQUAL 1)
+	#
+	# Use the original license. By definition ${_originalLicenses} contains a single entry.
+	#
+	cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE ${_originalLicenses})
+      else()
+	set(_licenses_txt ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
 	if(CMAKE_HELPERS_DEBUG)
-	  message(STATUS "[${_cmake_helpers_logprefix}] ... ${_licenses}")
+	  message(STATUS "[${_cmake_helpers_logprefix}] Creating ${_licenses_txt}, number of licenses: ${_licenses_count}")
 	endif()
-	file(READ ${_license} _license_content)
-	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_license_content}")
-      endforeach()
-      cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_licenses_header}")
+	foreach(_license IN LISTS _licenses)
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[${_cmake_helpers_logprefix}] ... ${_license}")
+	  endif()
+	  file(READ ${_license} _license_content)
+	  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_license_content}")
+	endforeach()
+	cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
+      endif()
     endif()
     #
     # Get all components in one package
