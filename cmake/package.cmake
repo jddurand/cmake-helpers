@@ -146,7 +146,8 @@ function(cmake_helpers_package)
   # - Every single component X records its component display name and description, e.g. XComponent is recording:
   #   cmake_helpers_package_X_display_name
   #   cmake_helpers_package_X_description
-  # - Licenses  generates aggregation under cmake_helpers_package_Licenses_header, cmake_helpers_package_Licenses_count and cmake_helpers_package_Licenses
+  # - Licenses generates aggregation under cmake_helpers_package_Licenses_header, cmake_helpers_package_Licenses_count and cmake_helpers_package_Licenses
+  # (that is a list of licenses files)
   #
   set(_developmentGroupParts runtime library archive header config)
   set(_documentationGroupParts man html)
@@ -216,15 +217,21 @@ function(cmake_helpers_package)
       PROPERTY ${_property} ${_licenses_count}
     )
     #
-    # Concatenation of licenses into property cmake_helpers_package_Licenses
+    # Eventually configure the license file
+    #
+    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "\n${_license_number}. ${PROJECT_NAME} license:\n\n")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp _configured_license)
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "${_configured_license}")
+    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt.tmp)
+    #
+    # Save the list of licenses files in cmake_helpers_package_Licenses
     #
     set(_property cmake_helpers_package_Licenses)
-    configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
-    file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt _value)
     cmake_helpers_call(set_property
       DIRECTORY ${CMAKE_BINARY_DIR}
       APPEND
-      PROPERTY ${_property} "\n${_license_number}. ${PROJECT_NAME} license:\n\n${_value}\n"
+      PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt
     )
   endif()
   #
@@ -450,17 +457,18 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property}
     )
-    if(_licenses_header)
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt ${_licenses_header})
-      set(_property cmake_helpers_package_Licenses)
-      cmake_helpers_call(get_property
-	_licenses
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	PROPERTY ${_property}
-      )
-      if(_licenses)
-	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt ${_licenses})
-      endif()
+    set(_property cmake_helpers_package_Licenses)
+    cmake_helpers_call(get_property
+      _licenses
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property}
+    )
+    if(_licenses_header AND licenses)
+      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_licenses_header}")
+      foreach(_license IN LISTS _licenses)
+	file(READ ${_license} _license)
+	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt "${_license}")
+      endforeach()
       cmake_helpers_call(set CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSES.txt)
     endif()
     #
