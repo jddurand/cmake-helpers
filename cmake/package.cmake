@@ -146,7 +146,7 @@ function(cmake_helpers_package)
   # - Every single component X records its component display name and description, e.g. XComponent is recording:
   #   cmake_helpers_package_X_display_name
   #   cmake_helpers_package_X_description
-  # - Licenses  generates aggregation under cmake_helpers_package_Licenses_header and cmake_helpers_package_Licenses
+  # - Licenses  generates aggregation under cmake_helpers_package_Licenses_header, cmake_helpers_package_Licenses_count and cmake_helpers_package_Licenses
   #
   set(_developmentGroupParts runtime library archive header config)
   set(_documentationGroupParts man html)
@@ -176,11 +176,11 @@ function(cmake_helpers_package)
   endforeach()
   if(EXISTS ${_cmake_helpers_package_license})
     #
-    # Current licenses
+    # Licenses count
     #
-    set(_property cmake_helpers_package_Licenses)
+    set(_property cmake_helpers_package_Licenses_count)
     cmake_helpers_call(get_property
-      _licenses
+      _licenses_count
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property}
     )
@@ -193,20 +193,30 @@ function(cmake_helpers_package)
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property}
     )
-    if(NOT _licenses)
+    #
+    # Create/modify licenses header using licenses count
+    #
+    if(NOT _licenses_count)
       set(_licenses_header "The following licenses applies to this package:\n\n")
-      set(_license_number 1)
+      set(_licenses_count 1)
     else()
-      list(LENGTH _licenses _license_number)
-      math(EXPR _license_number "${_license_number} + 1")
+      math(EXPR _licenses_count "${_licenses_count} + 1")
     endif()
-    set(_licenses_header "${_licenses_header}${_license_number}. ${PROJECT_NAME}\n")
+    set(_licenses_header "${_licenses_header}${_licenses_count}. ${PROJECT_NAME}\n")
     cmake_helpers_call(set_property
       DIRECTORY ${CMAKE_BINARY_DIR}
       PROPERTY ${_property} ${_licenses_header}
     )
     #
-    # Current license
+    # Save licenses count property
+    #
+    set(_property cmake_helpers_package_Licenses_count)
+    cmake_helpers_call(set_property
+      DIRECTORY ${CMAKE_BINARY_DIR}
+      PROPERTY ${_property} ${_licenses_count}
+    )
+    #
+    # Concatenation of licenses into property cmake_helpers_package_Licenses
     #
     set(_property cmake_helpers_package_Licenses)
     configure_file(${_cmake_helpers_package_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt)
@@ -258,7 +268,7 @@ endif()
   set(_cmake_helpers_package_cpack_project_config_file ${CMAKE_BINARY_DIR}/cpack_project_config_file.cmake)
   if(PROJECT_IS_TOP_LEVEL)
     cmake_helpers_call(set CPACK_PROJECT_CONFIG_FILE ${_cmake_helpers_package_cpack_project_config_file})
-    # 
+    #
     # In CPACK_PROJECT_CONFIG_FILE we:
     # - Set environment variable CMAKE_HELPERS_CPACK_IS_RUNNING
     # - Append to CPACK_PRE_BUILD_SCRIPTS the eventual pkgconfig hooks
