@@ -41,6 +41,7 @@ function(cmake_helpers_depend depname)
     MAKEAVAILABLE                   # Note that MAKEAVAILABLE has precedence, if set, over the configure/build/install phases
     GENERATOR_CONFIG
     BUILD_DIR_SUFFIX                # We do not want to mix to the build/config/install steps with the add_subdirectory
+    ADD_SUBDIRECTORY_PROTECTION
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -98,6 +99,7 @@ function(cmake_helpers_depend depname)
     endif()
   endif()
   set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
+  set(_cmake_helpers_depend_add_subdirectory_protection     TRUE)
   #
   # Multi-value options default values
   #
@@ -481,25 +483,36 @@ function(cmake_helpers_depend depname)
   # Caller wants to have access to some development targets
   #
   if(_cmake_helpers_depend_makeavailable)
-    message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
     #
-    # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
+    # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
     #
-    if(NOT _cmake_helpers_depend_exclude_from_all)
+    if(EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
+      message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
       #
-      # If the sub-library is using our framework, disable the automatic skip of install rules
-      # when current project is not the top-level project
+      # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
       #
-      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
+      if(NOT _cmake_helpers_depend_exclude_from_all)
+	#
+	# If the sub-library is using our framework, disable the automatic skip of install rules
+	# when current project is not the top-level project
+	#
+	set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
+      else()
+	set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
+      endif()
+      cmake_helpers_call(add_subdirectory
+	${${_depname_tolower}_SOURCE_DIR}
+	${${_depname_tolower}_BINARY_DIR}
+	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
+	${_cmake_helpers_depend_fetchcontent_declare_system}
+      )
     else()
-      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
+      if(_cmake_helpers_depend_add_subdirectory_protection)
+	message(WARNING "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
+      else()
+	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
+      endif()
     endif()
-    cmake_helpers_call(add_subdirectory
-      ${${_depname_tolower}_SOURCE_DIR}
-      ${${_depname_tolower}_BINARY_DIR}
-      ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
-      ${_cmake_helpers_depend_fetchcontent_declare_system}
-    )
   endif()
   #
   # Send-out variables
