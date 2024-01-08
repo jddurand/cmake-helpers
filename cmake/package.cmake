@@ -324,7 +324,7 @@ endif()
     set(_cmake_helpers_package_cpack_pre_build_script ${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_${_cmake_helpers_package_config}.cmake)
     file(WRITE ${_cmake_helpers_package_cpack_pre_build_script}
 "#
-# Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
+# Unset environment variable CMAKE_HELPERS_CPACK_IS_RUNNING so that install hooks are running
 #
 unset(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
 #
@@ -565,16 +565,12 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
     # Assign components to component groups
     #
     foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
-      set(_depends)
       if(_part IN_LIST _developmentGroupParts)
 	set(_group DevelopmentGroup)
       elseif(_part IN_LIST _documentationGroupParts)
 	set(_group DocumentationGroup)
       elseif(_part IN_LIST _runtimeGroupParts)
 	set(_group RuntimeGroup)
-	if(cmake_helpers_package_RuntimeComponents)
-	  set(_depends DEPENDS RuntimeComponent)
-	endif()
       else()
 	message(FATAL_ERROR "Unknown _part ${_part}")
       endif()
@@ -595,7 +591,6 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
 	  DISPLAY_NAME ${_display_name}
 	  DESCRIPTION ${_description}
 	  GROUP ${_group}
-	  ${_depends}
 	)
       endforeach()
     endforeach()
