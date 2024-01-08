@@ -280,9 +280,18 @@ function(cmake_helpers_library)
       #
       list(POP_FRONT _args _depname)
       #
-      # Call our depend macro, that is aware of local installs and deals with import map
+      # Call our depend macro, that is aware of local installs and deals with import map.
+      # Take care cmake_helpers_depend() can do an add_subdirectory, when doing WIN32
+      # packaging. We do not want that.
       #
+      set(_env_cmake_helpers_win32_packaging_backup $ENV{CMAKE_HELPERS_WIN32_PACKAGING})
+      if(_env_cmake_helpers_win32_packaging_backup)
+	set(ENV{CMAKE_HELPERS_WIN32_PACKAGING} 0)
+      endif()
       cmake_helpers_depend(${_depname} FIND TRUE INSTALL FALSE FIND_PACKAGE_ARGS ${_args})
+      if(_env_cmake_helpers_win32_packaging_backup)
+	set(ENV{CMAKE_HELPERS_WIN32_PACKAGING} ${_env_cmake_helpers_win32_packaging_backup})
+      endif()
     endforeach()
   endif()
   #
