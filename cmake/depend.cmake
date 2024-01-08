@@ -51,7 +51,11 @@ function(cmake_helpers_depend depname)
   # Default values
   #
   set(_cmake_helpers_depend_file                            "")
-  set(_cmake_helpers_depend_exclude_from_all                TRUE)
+  if(ENV{CMAKE_HELPERS_WIN32_PACKAGING})
+    set(_cmake_helpers_depend_exclude_from_all              FALSE)
+  else()
+    set(_cmake_helpers_depend_exclude_from_all              TRUE)
+  endif()
   set(_cmake_helpers_depend_system                          FALSE)
   set(_cmake_helpers_depend_find                            TRUE)
   set(_cmake_helpers_depend_source_dir_outvar               cmake_helpers_exe_source_dir)
@@ -60,7 +64,11 @@ function(cmake_helpers_depend depname)
   set(_cmake_helpers_depend_build                           TRUE)
   set(_cmake_helpers_depend_install                         TRUE)
   set(_cmake_helpers_depend_find_package_name               ${depname})
-  set(_cmake_helpers_depend_makeavailable                   FALSE)
+  if(ENV{CMAKE_HELPERS_WIN32_PACKAGING})
+    set(_cmake_helpers_depend_makeavailable                 TRUE)
+  else()
+    set(_cmake_helpers_depend_makeavailable                 FALSE)
+  endif()
   #
   # In the case we are doing a local installation, we want to know the configuration type.
   # We always end up with a find_package, so we also want to specify import configuration mapping.
