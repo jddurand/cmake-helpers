@@ -236,7 +236,7 @@ function(cmake_helpers_package)
 # ${PROJECT_NAME} pre-build pkgconfig hook
 #
 if(NOT(\"x\\\${CPACK_BUILD_CONFIG}\" STREQUAL \"x\"))
-  list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_\${CPACK_BUILD_CONFIG}.cmake\")
+  list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}_\\\${CPACK_BUILD_CONFIG}.cmake\")
 else()
   list(APPEND CPACK_PRE_BUILD_SCRIPTS \"${CMAKE_CURRENT_BINARY_DIR}/cpack_pre_build_script_${PROJECT_NAME}.cmake\")
 endif()
