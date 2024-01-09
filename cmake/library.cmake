@@ -107,6 +107,7 @@ function(cmake_helpers_library)
     NTRACE
     TARGETS_OUTVAR
     ADD_VERSION_DEFINES
+    SHARED_LIBRARY_EXPORTS_DEFINE
   )
   set(_multiValueArgs
     FIND_DEPENDENCIES
@@ -181,6 +182,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
   set(_cmake_helpers_library_add_version_defines                  TRUE)
+  set(_cmake_helpers_library_shared_library_exports_define        ${PROJECT_NAME}_EXPORTS)
   #
   # Multiple-value arguments default values
   #
@@ -577,7 +579,7 @@ function(cmake_helpers_library)
     # Compile definitions
     #
     if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${PROJECT_NAME}_EXPORTS)
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_shared_library_exports_define})
     elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
       cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
     elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
