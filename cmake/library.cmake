@@ -104,10 +104,10 @@ function(cmake_helpers_library)
     EXPORT_HEADER_MACRO_NAME
     EXPORT_HEADER_FILE_NAME
     EXPORT_HEADER_STATIC_DEFINE
+    EXPORT_HEADER_SHARED_EXPORTS_DEFINE
     NTRACE
     TARGETS_OUTVAR
     ADD_VERSION_DEFINES
-    SHARED_LIBRARY_EXPORTS_DEFINE
   )
   set(_multiValueArgs
     FIND_DEPENDENCIES
@@ -179,10 +179,10 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_export_header_macro_name             ${PROJECT_NAME}_EXPORT)
   set(_cmake_helpers_library_export_header_file_name              include/${PROJECT_NAME}/export.h)
   set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
+  set(_cmake_helpers_library_export_header_shared_exports_define  ${PROJECT_NAME}_EXPORTS)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
   set(_cmake_helpers_library_add_version_defines                  TRUE)
-  set(_cmake_helpers_library_shared_library_exports_define        ${PROJECT_NAME}_EXPORTS)
   #
   # Multiple-value arguments default values
   #
@@ -579,7 +579,7 @@ function(cmake_helpers_library)
     # Compile definitions
     #
     if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
-      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_shared_library_exports_define})
+      cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_export_header_shared_exports_define})
     elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
       cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
     elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
