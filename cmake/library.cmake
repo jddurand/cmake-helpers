@@ -145,6 +145,16 @@ function(cmake_helpers_library)
     PODS_REJECT_RELPATH_REGEXES_APPEND
     PODS_RENAME_README_TO_NAMESPACE
     TYPE_ANY_COMPILE_OPTIONS
+    INTERFACE_PUBLIC_DEFINES
+    SHARED_PUBLIC_DEFINES
+    STATIC_PUBLIC_DEFINES
+    MODULE_PUBLIC_DEFINES
+    OBJECT_PUBLIC_DEFINES
+    INTERFACE_PRIVATE_DEFINES
+    SHARED_PRIVATE_DEFINES
+    STATIC_PRIVATE_DEFINES
+    MODULE_PRIVATE_DEFINES
+    OBJECT_PRIVATE_DEFINES
   )
   #
   # Single-value arguments default values
@@ -234,6 +244,16 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_pods_reject_relpath_regexes_append)
   set(_cmake_helpers_library_pods_rename_readme_to_namespace      TRUE)
   set(_cmake_helpers_library_type_any_compile_options)
+  set(_cmake_helpers_library_interface_public_defines)
+  set(_cmake_helpers_library_shared_public_defines)
+  set(_cmake_helpers_library_static_public_defines)
+  set(_cmake_helpers_library_module_public_defines)
+  set(_cmake_helpers_library_object_public_defines)
+  set(_cmake_helpers_library_interface_private_defines)
+  set(_cmake_helpers_library_shared_private_defines)
+  set(_cmake_helpers_library_static_private_defines)
+  set(_cmake_helpers_library_module_private_defines)
+  set(_cmake_helpers_library_object_private_defines)
   #
   # Parse Arguments
   #
@@ -580,11 +600,41 @@ function(cmake_helpers_library)
     #
     if(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY")
       cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_export_header_shared_exports_define})
+      if(_cmake_helpers_library_shared_private_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_shared_private_defines})
+      endif()
+      if(_cmake_helpers_library_shared_public_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_shared_public_defines})
+      endif()
     elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
       cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
+      if(_cmake_helpers_library_static_private_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_static_private_defines})
+      endif()
+      if(_cmake_helpers_library_static_public_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_static_public_defines})
+      endif()
     elseif(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
+      if(_cmake_helpers_library_module_private_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_module_private_defines})
+      endif()
+      if(_cmake_helpers_library_module_public_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_module_public_defines})
+      endif()
     elseif(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
+      if(_cmake_helpers_library_interface_private_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_interface_private_defines})
+      endif()
+      if(_cmake_helpers_library_interface_public_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_interface_public_defines})
+      endif()
     elseif(_cmake_helpers_library_target_type STREQUAL "OBJECT_LIBRARY")
+      if(_cmake_helpers_library_object_private_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE ${_cmake_helpers_library_object_private_defines})
+      endif()
+      if(_cmake_helpers_library_object_public_defines)
+	cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC ${_cmake_helpers_library_object_public_defines})
+      endif()
     else()
       message(FATAL_ERROR "Unsupported library type: ${_cmake_helpers_library_target_type}")
     endif()
