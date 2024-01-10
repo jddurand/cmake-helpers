@@ -75,15 +75,15 @@ Function(cmake_helpers_exe name)
     EXE_USING_STATIC_LIBRARY
     EXE_USING_INTERFACE_LIBRARY
     EXE_USING_OBJECT_LIBRARY
+    TARGETS_OUTVAR
+    TEST_TARGETS_OUTVAR
+    BUILD_TARGETS_OUTVAR
   )
   set(_multiValueArgs
     SOURCES
     TEST_ARGS
     DEPENDS
     DEPENDS_EXT
-    TARGETS_OUTVAR
-    TEST_TARGETS_OUTVAR
-    BUILD_TARGETS_OUTVAR
     ENVIRONMENT                     # Only for PATH
     ENVIRONMENTS                    # Array of MYVAR=OP:VALUE (can be used to affect PATH if needed)
     COMMAND
@@ -98,6 +98,9 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_exe_using_static_library    TRUE)
   set(_cmake_helpers_exe_exe_using_interface_library TRUE)
   set(_cmake_helpers_exe_exe_using_object_library    TRUE)
+  set(_cmake_helpers_exe_targets_outvar              FALSE)
+  set(_cmake_helpers_exe_test_targets_outvar         FALSE)
+  set(_cmake_helpers_exe_build_targets_outvar        FALSE)
   #
   # Multi-value options default values
   #
@@ -105,9 +108,6 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_test_args)
   set(_cmake_helpers_exe_depends)
   set(_cmake_helpers_exe_depends_ext)
-  set(_cmake_helpers_exe_targets_outvar)
-  set(_cmake_helpers_exe_test_targets_outvar)
-  set(_cmake_helpers_exe_build_targets_outvar)
   set(_cmake_helpers_exe_environment)
   set(_cmake_helpers_exe_environments)
   set(_cmake_helpers_exe_command)
