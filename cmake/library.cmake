@@ -191,7 +191,7 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_export_header_static_define          ${PROJECT_NAME}_STATIC)
   set(_cmake_helpers_library_export_header_shared_exports_define  ${PROJECT_NAME}_EXPORTS)
   set(_cmake_helpers_library_ntrace                               TRUE)
-  set(_cmake_helpers_library_targets_outvar                       cmake_helpers_targets)
+  set(_cmake_helpers_library_targets_outvar                       FALSE)
   set(_cmake_helpers_library_add_version_defines                  TRUE)
   #
   # Multiple-value arguments default values
@@ -1616,7 +1616,9 @@ endif()
   #
   # Send-out the targets
   #
-  set(${_cmake_helpers_library_targets_outvar} "${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets}" PARENT_SCOPE)
+  if(_cmake_helpers_library_targets_outvar)
+    set(${_cmake_helpers_library_targets_outvar} "${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets}" PARENT_SCOPE)
+  endif()
   #
   # End
   #
