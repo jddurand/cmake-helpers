@@ -1,4 +1,4 @@
-function(cmake_helpers_library)
+function(cmake_helpers_library name)
   # ============================================================================================================
   # This module can generate one export set:
   #
@@ -25,6 +25,12 @@ function(cmake_helpers_library)
   # Note that:
   # - An OBJECT library installs nothing
   # ============================================================================================================
+  #
+  # Check library name
+  #
+  if(NOT name)
+    message(FATAL_ERROR "name argument is missing")
+  endif()
   #
   # Log prefix
   #
@@ -166,11 +172,11 @@ function(cmake_helpers_library)
   set(_cmake_helpers_library_type_module                          FALSE)
   set(_cmake_helpers_library_type_object                          FALSE)
   set(_cmake_helpers_library_target_name_auto                     TRUE)
-  set(_cmake_helpers_library_target_name_interface                ${PROJECT_NAME}_iface)
-  set(_cmake_helpers_library_target_name_shared                   ${PROJECT_NAME}_shared)
-  set(_cmake_helpers_library_target_name_static                   ${PROJECT_NAME}_static)
-  set(_cmake_helpers_library_target_name_module                   ${PROJECT_NAME}_module)
-  set(_cmake_helpers_library_target_name_object                   ${PROJECT_NAME}_objs)
+  set(_cmake_helpers_library_target_name_interface                ${name}_iface)
+  set(_cmake_helpers_library_target_name_shared                   ${name}_shared)
+  set(_cmake_helpers_library_target_name_static                   ${name}_static)
+  set(_cmake_helpers_library_target_name_module                   ${name}_module)
+  set(_cmake_helpers_library_target_name_object                   ${name}_objs)
   set(_cmake_helpers_library_with_position_independent_code       TRUE)
   set(_cmake_helpers_library_with_visibility_preset_hidden        TRUE)
   set(_cmake_helpers_library_with_visibility_inlines_hidden       TRUE)
@@ -363,7 +369,7 @@ function(cmake_helpers_library)
     if(NOT _cmake_helpers_library_sources)
       list(APPEND _cmake_helpers_library_valid_types interface)
       if(_cmake_helpers_library_target_name_auto)
-        set(_cmake_helpers_library_target_name_interface ${PROJECT_NAME})
+        set(_cmake_helpers_library_target_name_interface ${name})
       endif()
     else()
       #
@@ -371,11 +377,11 @@ function(cmake_helpers_library)
       #
       list(APPEND _cmake_helpers_library_valid_types static)
       if(_cmake_helpers_library_target_name_auto)
-        set(_cmake_helpers_library_target_name_static ${PROJECT_NAME}_static)
+        set(_cmake_helpers_library_target_name_static ${name}_static)
       endif()
       list(APPEND _cmake_helpers_library_valid_types shared)
       if(_cmake_helpers_library_target_name_auto)
-        set(_cmake_helpers_library_target_name_shared ${PROJECT_NAME})
+        set(_cmake_helpers_library_target_name_shared ${name})
       endif()
       if((NOT _cmake_helpers_library_export_header_target) AND _cmake_helpers_library_export_header_target_auto)
         set(_cmake_helpers_library_export_target_from_type SHARED)

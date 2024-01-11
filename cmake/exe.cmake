@@ -80,6 +80,7 @@ Function(cmake_helpers_exe name)
     BUILD_TARGETS_OUTVAR
   )
   set(_multiValueArgs
+    LIBRARY_TARGETS
     SOURCES
     TEST_ARGS
     DEPENDS
@@ -104,6 +105,7 @@ Function(cmake_helpers_exe name)
   #
   # Multi-value options default values
   #
+  set(_cmake_helpers_exe_library_targets             ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
   set(_cmake_helpers_exe_sources)
   set(_cmake_helpers_exe_test_args)
   set(_cmake_helpers_exe_depends)
@@ -121,12 +123,12 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_targets)
   set(_cmake_helpers_exe_test_targets)
   set(_cmake_helpers_exe_build_targets)
-  if(NOT cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
-    set(cmake_helpers_property_${PROJECT_NAME}_LibraryTargets FALSE)
+  if(NOT _cmake_helpers_exe_library_targets)
+    set(_cmake_helpers_exe_library_targets FALSE)
   endif()
-  foreach(_cmake_helpers_library_target ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
-    if(TARGET ${_cmake_helpers_library_target})
-      get_target_property(_cmake_helpers_library_type ${_cmake_helpers_library_target} TYPE)
+  foreach(_cmake_helpers_exe_library_target ${_cmake_helpers_exe_library_targets})
+    if(TARGET ${_cmake_helpers_exe_library_target})
+      get_target_property(_cmake_helpers_library_type ${_cmake_helpers_exe_library_target} TYPE)
       if(_cmake_helpers_library_type STREQUAL "SHARED_LIBRARY")
 	if(NOT _cmake_helpers_exe_exe_using_shared_library)
 	  continue()
@@ -181,8 +183,8 @@ Function(cmake_helpers_exe name)
     endif()
     list(APPEND _cmake_helpers_exe_targets ${_cmake_helpers_exe_target})
     cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES OUTPUT_NAME ${_cmake_helpers_exe_output_name})
-    if(TARGET ${_cmake_helpers_library_target})
-      cmake_helpers_call(target_link_libraries ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_link_type} ${_cmake_helpers_library_target})
+    if(TARGET ${_cmake_helpers_exe_library_target})
+      cmake_helpers_call(target_link_libraries ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_link_type} ${_cmake_helpers_exe_library_target})
     endif()
     #
     # Apply eventual dependencies, every item in the list must be a space separated list
