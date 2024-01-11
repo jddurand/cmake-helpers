@@ -247,8 +247,8 @@ function(cmake_helpers_package)
 	APPEND
 	PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt
       )
-    endforeach()
-  endif()
+    endif()
+  endforeach()
   #
   # - PkgConfigHookScript generates aggregation under cmake_helpers_package_cpack_pre_build_scripts
   #
