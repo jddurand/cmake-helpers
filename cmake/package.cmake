@@ -137,6 +137,14 @@ function(cmake_helpers_package)
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_package "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # EXTRA_LICENSES must be a list of two items at every iteration: project_name, license
+  #
+  list(LENGTH _cmake_helpers_package_extra_licenses _cmake_helpers_package_extra_licenses_length)
+  math(EXPR _cmake_helpers_package_extra_licenses_length_modulo_2 "${_cmake_helpers_package_extra_licenses_length} % 2")
+  if(NOT(_cmake_helpers_package_extra_licenses_length_modulo_2 EQUAL 0))
+    message(FATAL_ERROR "EXTRA_LICENSES option value must be a list of two items: scope, lib")
+  endif()
+  #
   # A variable to echo execute_process commands in debug mode
   #
   if(CMAKE_HELPERS_DEBUG)
@@ -180,75 +188,93 @@ function(cmake_helpers_package)
       )
     endif()
   endforeach()
-  foreach(_license ${_cmake_helpers_package_license} ${_cmake_helpers_package_extra_licenses})
-    if(EXISTS ${_license})
-      #
-      # Licenses count
-      #
-      set(_property cmake_helpers_package_Licenses_count)
-      cmake_helpers_call(get_property
-	_licenses_count
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	PROPERTY ${_property}
-      )
-      #
-      # Licenses header
-      #
-      set(_property cmake_helpers_package_Licenses_header)
-      cmake_helpers_call(get_property
-	_licenses_header
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	PROPERTY ${_property}
-      )
-      #
-      # Create/modify licenses header using licenses count
-      #
-      if(NOT _licenses_count)
-	set(_licenses_header "The following licenses applies to this package:\n\n")
-	set(_licenses_count 1)
+  set(_all_licenses)
+  if(_cmake_helpers_package_license)
+    list(APPEND ${PROJECT_NAME} ${_cmake_helpers_package_license})
+  endif()
+  if(_cmake_helpers_package_extra_licenses)
+    list(APPEND ${_cmake_helpers_package_extra_licenses})
+  endif()
+  if(_all_licenses)
+    list(LENGTH _all_licenses _all_licenses_length)
+    math(EXPR _all_licenses_length_i_max "(${_all_licenses _all_licenses_length} / 2) - 1")
+    set(_j -1)
+    foreach(_i RANGE 0 ${_all_licenses_length_i_max})
+      math(EXPR _j "${_j} + 1")
+      list(GET _all_licenses ${_j} _license_project_name)
+      math(EXPR _j "${_j} + 1")
+      list(GET _all_licenses ${_j} _license)
+      if(EXISTS ${_license})
+	#
+	# Licenses count
+	#
+	set(_property cmake_helpers_package_Licenses_count)
+	cmake_helpers_call(get_property
+	  _licenses_count
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY ${_property}
+	)
+	#
+	# Licenses header
+	#
+	set(_property cmake_helpers_package_Licenses_header)
+	cmake_helpers_call(get_property
+	  _licenses_header
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY ${_property}
+	)
+	#
+	# Create/modify licenses header using licenses count
+	#
+	if(NOT _licenses_count)
+	  set(_licenses_header "The following licenses applies to this package:\n\n")
+	  set(_licenses_count 1)
+	else()
+	  math(EXPR _licenses_count "${_licenses_count} + 1")
+	endif()
+	set(_licenses_header "${_licenses_header}${_licenses_count}. ${_license_project_name}\n")
+	cmake_helpers_call(set_property
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY ${_property} ${_licenses_header}
+	)
+	#
+	# Save licenses count property
+	#
+	set(_property cmake_helpers_package_Licenses_count)
+	cmake_helpers_call(set_property
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  PROPERTY ${_property} ${_licenses_count}
+	)
+	#
+	# Eventually configure the license's files
+	#
+	configure_file(${_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.orig.txt)
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt "\n${_licenses_count}. ${_license_project_name} license:\n\n")
+	file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.orig.txt _configured_license)
+	file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt "${_configured_license}")
+	#
+	# Save the list of licenses files in cmake_helpers_package_Licenses
+	#
+	set(_property cmake_helpers_package_Licenses)
+	cmake_helpers_call(set_property
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  APPEND
+	  PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt
+	)
+	#
+	# Save the list of original licenses files in cmake_helpers_package_OriginalLicenses
+	#
+	set(_property cmake_helpers_package_OriginalLicenses)
+	cmake_helpers_call(set_property
+	  DIRECTORY ${CMAKE_BINARY_DIR}
+	  APPEND
+	  PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.orig.txt
+	)
       else()
-	math(EXPR _licenses_count "${_licenses_count} + 1")
+	message(STATUS "[${_cmake_helpers_logprefix}] License file not found for project ${_license_project_name}: ${_license}")
       endif()
-      set(_licenses_header "${_licenses_header}${_licenses_count}. ${PROJECT_NAME}\n")
-      cmake_helpers_call(set_property
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	PROPERTY ${_property} ${_licenses_header}
-      )
-      #
-      # Save licenses count property
-      #
-      set(_property cmake_helpers_package_Licenses_count)
-      cmake_helpers_call(set_property
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	PROPERTY ${_property} ${_licenses_count}
-      )
-      #
-      # Eventually configure the license file
-      #
-      configure_file(${_license} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt)
-      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "\n${_licenses_count}. ${PROJECT_NAME} license:\n\n")
-      file(READ ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt _configured_license)
-      file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt "${_configured_license}")
-      #
-      # Save the list of licenses files in cmake_helpers_package_Licenses
-      #
-      set(_property cmake_helpers_package_Licenses)
-      cmake_helpers_call(set_property
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	APPEND
-	PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt
-      )
-      #
-      # Save the list of original licenses files in cmake_helpers_package_OriginalLicenses
-      #
-      set(_property cmake_helpers_package_OriginalLicenses)
-      cmake_helpers_call(set_property
-	DIRECTORY ${CMAKE_BINARY_DIR}
-	APPEND
-	PROPERTY ${_property} ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.${_licenses_count}.txt
-      )
-    endif()
-  endforeach()
+    endforeach()
+  endif()
   #
   # - PkgConfigHookScript generates aggregation under cmake_helpers_package_cpack_pre_build_scripts
   #
