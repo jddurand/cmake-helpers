@@ -83,6 +83,7 @@ Function(cmake_helpers_exe name)
     LIBRARY_TARGETS
     SOURCES
     TEST_ARGS
+    TARGETS_DEPENDS
     DEPENDS
     DEPENDS_EXT
     ENVIRONMENT                     # Only for PATH
@@ -108,6 +109,7 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_library_targets             ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
   set(_cmake_helpers_exe_sources)
   set(_cmake_helpers_exe_test_args)
+  set(_cmake_helpers_exe_targets_depends)
   set(_cmake_helpers_exe_depends)
   set(_cmake_helpers_exe_depends_ext)
   set(_cmake_helpers_exe_environment)
@@ -414,6 +416,14 @@ Function(cmake_helpers_exe name)
       cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_test_target} PROPERTIES DEPENDS ${_cmake_helpers_exe_build_target})
     endif()
   endforeach()
+  #
+  # Apply target dependencies
+  #
+  if(_cmake_helpers_exe_targets_depends)
+    foreach(_cmake_helpers_exe_target IN LISTS _cmake_helpers_exe_targets)
+      cmake_helpers_call(add_dependencies ${_cmake_helpers_exe_target} ${_cmake_helpers_exe_targets_depends})
+    endforeach()
+  endif()
   #
   # Send-out the targets
   #
