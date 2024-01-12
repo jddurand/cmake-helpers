@@ -720,7 +720,7 @@ function(cmake_helpers_library name)
       # For static library we want to debug information within the lib
       # For the others we want to install the pdb file if it exists
       if(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
-	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /Z7)
+	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /wd9025 /Z7) # warning D9025 : overriding '/Zi' with '/Z7'
       elseif((_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY"))
         set(_cmake_helpers_library_target_pdb_file $<TARGET_PDB_FILE:${_cmake_helpers_library_target}>)
         if(_cmake_helpers_library_target_pdb_file)
