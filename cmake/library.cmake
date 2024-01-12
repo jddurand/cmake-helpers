@@ -720,7 +720,20 @@ function(cmake_helpers_library name)
       # For static library we want to debug information within the lib
       # For the others we want to install the pdb file if it exists
       if(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
-	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /wd9025 /Z7) # warning D9025 : overriding '/Zi' with '/Z7'
+	cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} PRIVATE /Z7)
+	#
+	# Quite tricky but the warning "D9025 : overriding '/Zi' with '/Z7'" cannot be removed. We have to
+	# lookup /Zi explicitly
+	#
+	foreach(property IN COMPILE_DEFINITIONS COMPILE_FEATURES COMPILE_FLAGS COMPILE_OPTIONS)
+	  cmake_helpers_call(get_target_property _property_value ${_cmake_helpers_library_target} ${property}_FLAGS)
+	  # If the specified flag is in that list, remove it and re-set the target property
+	  list(FIND _property_value /Zi _indice)
+	  if(_indice GREATER -1)
+	    list(REMOVE_ITEM _property_value /Zi)
+	    cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES ${property} ${_property_value})
+	  endif()
+	endforeach()
       elseif((_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY"))
         set(_cmake_helpers_library_target_pdb_file $<TARGET_PDB_FILE:${_cmake_helpers_library_target}>)
         if(_cmake_helpers_library_target_pdb_file)
