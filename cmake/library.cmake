@@ -725,7 +725,7 @@ function(cmake_helpers_library name)
 	# Quite tricky but the warning "D9025 : overriding '/Zi' with '/Z7'" cannot be removed. We have to
 	# lookup /Zi explicitly
 	#
-	foreach(property IN COMPILE_DEFINITIONS COMPILE_FEATURES COMPILE_FLAGS COMPILE_OPTIONS)
+	foreach(property "COMPILE_DEFINITIONS" "COMPILE_FEATURES" "COMPILE_FLAGS" "COMPILE_OPTIONS")
 	  cmake_helpers_call(get_target_property _property_value ${_cmake_helpers_library_target} ${property}_FLAGS)
 	  # If the specified flag is in that list, remove it and re-set the target property
 	  list(FIND _property_value /Zi _indice)
