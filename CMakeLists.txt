@@ -81,3 +81,13 @@ foreach(_cmake_helpers_type html cmake pkgconfig)
   string(TOUPPER "${_cmake_helpers_type}" _cmake_helpers_type_toupper)
   set(CMAKE_HELPERS_INSTALL_${_cmake_helpers_type_toupper}DIR ${_cmake_helpers_install_${_cmake_helpers_type}dir_default} CACHE PATH "${_cmake_helpers_type} install directory" FORCE)
 endforeach()
+#
+# If this is not a multi-generator config, then CMAKE_BUILD_TYPE should always be set
+#
+cmake_helpers_call(get_property _cmake_helpers_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _cmake_helpers_generator_is_multi_config)
+  if(NOT "${CMAKE_BUILD_TYPE}")
+    message(WARNING "Generator is not multi config and there is no CMAKE_BUILD_TYPE - Enforcing RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "RelWithDebInfo" FORCE)
+  endif()
+endif()
