@@ -14,16 +14,6 @@ if(NOT DEFINED CMAKE_HELPERS_INSTALL_PATH)
   set(CMAKE_HELPERS_INSTALL_PATH ${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
 endif()
 #
-# If this is not a multi-generator config, then CMAKE_BUILD_TYPE should always be set
-#
-get_property(_cmake_helpers_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT _cmake_helpers_generator_is_multi_config)
-  if(NOT "${CMAKE_BUILD_TYPE}")
-    message(WARNING "Generator is not multi config and there is no CMAKE_BUILD_TYPE - Enforcing RelWithDebInfo")
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "RelWithDebInfo" FORCE)
-  endif()
-endif()
-#
 # Load our includes, once
 #
 if(CMAKE_HELPERS_DEBUG)
