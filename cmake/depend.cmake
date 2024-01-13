@@ -405,12 +405,12 @@ function(cmake_helpers_depend depname)
   # We do a local installation, and do not mind about $<CONFIG>: we want the default from this package
   # as per FetchContent_Declare content options.
   #
+  if(CMAKE_HELPERS_DEBUG)
+    set(_cmake_helpers_process_command_echo_stdout "COMMAND_ECHO" "STDOUT")
+  else()
+    set(_cmake_helpers_process_command_echo_stdout)
+  endif()
   if(_cmake_helpers_depend_configure OR _cmake_helpers_depend_build OR _cmake_helpers_depend_install)
-    if(CMAKE_HELPERS_DEBUG)
-      set(_cmake_helpers_process_command_echo_stdout "COMMAND_ECHO" "STDOUT")
-    else()
-      set(_cmake_helpers_process_command_echo_stdout)
-    endif()
     if(_cmake_helpers_depend_have_required)
       set(_cmake_helpers_process_command_error_is_fatal "COMMAND_ERROR_IS_FATAL" "ANY")
     else()
@@ -485,9 +485,15 @@ function(cmake_helpers_depend depname)
     endif()
   endif()
   #
-  # Caller wants to have access to some development targets
+  # Caller wants to have access to some development targets.
+  # Source and binary directories are meaningful only when it is made available.
   #
-  if(_cmake_helpers_depend_makeavailable)
+  if(NOT _cmake_helpers_depend_makeavailable)
+    set(_cmake_helpers_depend_depname_source_dir)
+    set(_cmake_helpers_depend_depname_binary_dir)
+  else()
+    set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
+    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}-for-${PROJECT_NAME}")
     #
     # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
     #
@@ -507,7 +513,7 @@ function(cmake_helpers_depend depname)
       endif()
       cmake_helpers_call(add_subdirectory
 	${${_depname_tolower}_SOURCE_DIR}
-	${${_depname_tolower}_BINARY_DIR}
+	${_cmake_helpers_depend_depname_binary_dir}
 	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
 	${_cmake_helpers_depend_fetchcontent_declare_system}
       )
@@ -522,8 +528,8 @@ function(cmake_helpers_depend depname)
   #
   # Send-out variables
   #
-  set(${_cmake_helpers_depend_source_dir_outvar} "${${_depname_tolower}_SOURCE_DIR}" PARENT_SCOPE)
-  set(${_cmake_helpers_depend_binary_dir_outvar} "${${_depname_tolower}_BINARY_DIR}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_source_dir_outvar} "${_cmake_helpers_depend_depname_source_dir}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_binary_dir_outvar} "${_cmake_helpers_depend_depname_binary_dir}" PARENT_SCOPE)
   #
   # End
   #
