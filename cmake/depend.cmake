@@ -42,7 +42,6 @@ function(cmake_helpers_depend depname)
     GENERATOR_CONFIG
     BUILD_DIR_SUFFIX                # We do not want to mix to the build/config/install steps with the add_subdirectory
     ADD_SUBDIRECTORY_PROTECTION
-    ADD_SUBDIRECTORY_BINARY_DIR
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -101,7 +100,6 @@ function(cmake_helpers_depend depname)
   endif()
   set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
   set(_cmake_helpers_depend_add_subdirectory_protection     TRUE)
-  set(_cmake_helpers_depend_add_subdirectory_binary_dir     ${CMAKE_CURRENT_BINARY_DIR}/${depname}-build)
   #
   # Multi-value options default values
   #
@@ -507,26 +505,8 @@ function(cmake_helpers_depend depname)
       else()
 	set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
       endif()
-      #
-      # We do NOT want to have the same binary directory shared between different projects in case of
-      # an add_subdirectory
-      #
-      if(CMAKE_HELPERS_DEBUG)
-	set(_cmake_helpers_process_command_echo_stdout "COMMAND_ECHO" "STDOUT")
-      else()
-	set(_cmake_helpers_process_command_echo_stdout)
-      endif()
-      if(EXISTS ${_cmake_helpers_depend_add_subdirectory_binary_dir})
-	message(WARNING "[${_cmake_helpers_logprefix}] ${_cmake_helpers_depend_add_subdirectory_binary_dir} already exist - removing it")
-        execute_process(
-          COMMAND ${CMAKE_COMMAND} -E rm -rf ${_cmake_helpers_depend_add_subdirectory_binary_dir}
-	  ${_cmake_helpers_process_command_echo_stdout}
-          COMMAND_ERROR_IS_FATAL ANY
-        )
-      endif()
       cmake_helpers_call(add_subdirectory
 	${${_depname_tolower}_SOURCE_DIR}
-	${_cmake_helpers_depend_add_subdirectory_binary_dir}
 	${${_depname_tolower}_BINARY_DIR}
 	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
 	${_cmake_helpers_depend_fetchcontent_declare_system}
@@ -538,12 +518,12 @@ function(cmake_helpers_depend depname)
 	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
       endif()
     endif()
-    #
-    # Send-out variables when it is made available
-    #
-    set(${_cmake_helpers_depend_source_dir_outvar} "${${_depname_tolower}_SOURCE_DIR}" PARENT_SCOPE)
-    set(${_cmake_helpers_depend_binary_dir_outvar} "${${_depname_tolower}_BINARY_DIR}" PARENT_SCOPE)
   endif()
+  #
+  # Send-out variables
+  #
+  set(${_cmake_helpers_depend_source_dir_outvar} "${${_depname_tolower}_SOURCE_DIR}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_binary_dir_outvar} "${${_depname_tolower}_BINARY_DIR}" PARENT_SCOPE)
   #
   # End
   #
