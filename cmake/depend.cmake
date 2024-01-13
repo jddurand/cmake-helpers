@@ -493,32 +493,38 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_depname_binary_dir)
   else()
     set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
-    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}-for-${PROJECT_NAME}")
     #
     # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
     #
     if(EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
-      message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
-      message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
-      message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
-      #
-      # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
-      #
-      if(NOT _cmake_helpers_depend_exclude_from_all)
-	#
-	# If the sub-library is using our framework, disable the automatic skip of install rules
-	# when current project is not the top-level project
-	#
-	set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
+      set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}-for-${CMAKE_PROJECT_NAME}")
+      if (EXISTS ${_cmake_helpers_depend_depname_binary_dir})
+	message(STATUS "[${_cmake_helpers_logprefix}] Using ${depname} already available at:")
+	message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
+	message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
       else()
-	set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
+	message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available at:")
+	message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
+	message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
+	#
+	# Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
+	#
+	if(NOT _cmake_helpers_depend_exclude_from_all)
+	  #
+	  # If the sub-library is using our framework, disable the automatic skip of install rules
+	  # when current project is not the top-level project
+	  #
+	  set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
+	else()
+	  set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
+	endif()
+	cmake_helpers_call(add_subdirectory
+	  ${${_depname_tolower}_SOURCE_DIR}
+	  ${_cmake_helpers_depend_depname_binary_dir}
+	  ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
+	  ${_cmake_helpers_depend_fetchcontent_declare_system}
+	)
       endif()
-      cmake_helpers_call(add_subdirectory
-	${${_depname_tolower}_SOURCE_DIR}
-	${_cmake_helpers_depend_depname_binary_dir}
-	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
-	${_cmake_helpers_depend_fetchcontent_declare_system}
-      )
     else()
       if(_cmake_helpers_depend_add_subdirectory_protection)
 	message(WARNING "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
