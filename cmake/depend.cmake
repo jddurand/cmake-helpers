@@ -113,7 +113,7 @@ function(cmake_helpers_depend depname)
   #
   # It is illegal to not have _cmake_helpers_depend_build_dir_suffix
   #
-  if(NOT ${_cmake_helpers_depend_build_dir_suffix})
+  if("x${_cmake_helpers_depend_build_dir_suffix}" STREQUAL "x")
     message(FATAL_ERROR "[${_cmake_helpers_logprefix}] BUILD_DIR_SUFFIX option must be set")
   endif()
   #
