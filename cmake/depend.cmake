@@ -111,6 +111,12 @@ function(cmake_helpers_depend depname)
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_depend "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
   #
+  # It is illegal to not have _cmake_helpers_depend_build_dir_suffix
+  #
+  if(NOT ${_cmake_helpers_depend_build_dir_suffix})
+    message(FATAL_ERROR "[${_cmake_helpers_logprefix}] BUILD_DIR_SUFFIX option must be set")
+  endif()
+  #
   # If we install we must build
   #
   if(_cmake_helpers_depend_install)
@@ -484,17 +490,23 @@ function(cmake_helpers_depend depname)
   endif()
   #
   # Caller wants to have access to some development targets.
-  # Source and binary directories are meaningful only when it is made available.
+  # If we do the add_subdirectory ourself, make sure the binary dir is for the top-level project, else
+  # caller gets the binary dir of the fetchcontent.
   #
+  set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
   if(NOT _cmake_helpers_depend_makeavailable)
-    set(_cmake_helpers_depend_depname_source_dir)
-    set(_cmake_helpers_depend_depname_binary_dir)
+    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
   else()
-    set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
     #
     # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
     #
-    if(EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
+    if(NOT EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
+      if(_cmake_helpers_depend_add_subdirectory_protection)
+	message(WARNING "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped, no binary directory is available")
+      else()
+	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
+      endif()
+    else()
       set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}-for-${CMAKE_PROJECT_NAME}")
       if (EXISTS ${_cmake_helpers_depend_depname_binary_dir})
 	message(STATUS "[${_cmake_helpers_logprefix}] Using ${depname} already available at:")
@@ -522,12 +534,6 @@ function(cmake_helpers_depend depname)
 	  ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
 	  ${_cmake_helpers_depend_fetchcontent_declare_system}
 	)
-      endif()
-    else()
-      if(_cmake_helpers_depend_add_subdirectory_protection)
-	message(WARNING "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
-      else()
-	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
       endif()
     endif()
   endif()
