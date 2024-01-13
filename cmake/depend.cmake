@@ -518,7 +518,7 @@ function(cmake_helpers_depend depname)
     else()
       set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
     endif()
-    cmake_helpers_call(FetchContent_MakeAvailable ${depname})
+    FetchContent_MakeAvailable(${depname})
   endif()
   #
   # Send-out variables
