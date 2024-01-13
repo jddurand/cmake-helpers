@@ -424,7 +424,7 @@ function(cmake_helpers_depend depname)
       #
       # Configure
       #
-      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
@@ -440,7 +440,7 @@ function(cmake_helpers_depend depname)
 	#
 	# Build
 	#
-	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
 	execute_process(
           COMMAND ${CMAKE_COMMAND}
             --build "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
@@ -450,7 +450,7 @@ function(cmake_helpers_depend depname)
           ${_cmake_helpers_process_command_error_is_fatal}
 	)
 	if(_cmake_helpers_depend_install AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
-          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
+          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path} using ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
           execute_process(
             COMMAND ${CMAKE_COMMAND}
               --install "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
@@ -494,54 +494,31 @@ function(cmake_helpers_depend depname)
   # caller gets the binary dir of the fetchcontent.
   #
   set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
-  if(NOT _cmake_helpers_depend_makeavailable)
-    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
-  else()
+  set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
+  if(_cmake_helpers_depend_makeavailable)
+    message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available at:")
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${${_depname_tolower}_SOURCE_DIR}")
+    message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${${_depname_tolower}_BINARY_DIR}")
     #
-    # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
+    # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. We control the install()
+    # calls with this flag.
     #
-    if(NOT EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
-      if(_cmake_helpers_depend_add_subdirectory_protection)
-	message(WARNING "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped, no binary directory is available")
-      else()
-	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt is missing: add_subdirectory is skipped")
-      endif()
+    if(NOT _cmake_helpers_depend_exclude_from_all)
+      #
+      # If the sub-library is using our framework, disable the automatic skip of install rules
+      # when current project is not the top-level project
+      #
+      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
     else()
-      set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}-for-${CMAKE_PROJECT_NAME}")
-      if (EXISTS ${_cmake_helpers_depend_depname_binary_dir})
-	message(STATUS "[${_cmake_helpers_logprefix}] Using ${depname} already available at:")
-	message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
-	message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
-      else()
-	message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available at:")
-	message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
-	message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
-	#
-	# Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
-	#
-	if(NOT _cmake_helpers_depend_exclude_from_all)
-	  #
-	  # If the sub-library is using our framework, disable the automatic skip of install rules
-	  # when current project is not the top-level project
-	  #
-	  set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO FALSE)
-	else()
-	  set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
-	endif()
-	cmake_helpers_call(add_subdirectory
-	  ${${_depname_tolower}_SOURCE_DIR}
-	  ${_cmake_helpers_depend_depname_binary_dir}
-	  ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
-	  ${_cmake_helpers_depend_fetchcontent_declare_system}
-	)
-      endif()
+      set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO TRUE)
     endif()
+    cmake_helpers_call(FetchContent_MakeAvailable ${depname})
   endif()
   #
   # Send-out variables
   #
-  set(${_cmake_helpers_depend_source_dir_outvar} "${_cmake_helpers_depend_depname_source_dir}" PARENT_SCOPE)
-  set(${_cmake_helpers_depend_binary_dir_outvar} "${_cmake_helpers_depend_depname_binary_dir}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_source_dir_outvar} "${${_depname_tolower}_SOURCE_DIR}" PARENT_SCOPE)
+  set(${_cmake_helpers_depend_binary_dir_outvar} "${${_depname_tolower}_BINARY_DIR}" PARENT_SCOPE)
   #
   # End
   #
