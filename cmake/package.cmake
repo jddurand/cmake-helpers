@@ -142,7 +142,7 @@ function(cmake_helpers_package)
   list(LENGTH _cmake_helpers_package_extra_licenses _cmake_helpers_package_extra_licenses_length)
   math(EXPR _cmake_helpers_package_extra_licenses_length_modulo_2 "${_cmake_helpers_package_extra_licenses_length} % 2")
   if(NOT(_cmake_helpers_package_extra_licenses_length_modulo_2 EQUAL 0))
-    message(FATAL_ERROR "EXTRA_LICENSES option value must be a list of two items: scope, lib")
+    message(FATAL_ERROR "EXTRA_LICENSES option value must be a list of two items: project_name, license_file")
   endif()
   #
   # A variable to echo execute_process commands in debug mode
