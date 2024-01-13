@@ -499,6 +499,8 @@ function(cmake_helpers_depend depname)
     #
     if(EXISTS "${${_depname_tolower}_SOURCE_DIR}/CMakeLists.txt")
       message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
+      message(STATUS "[${_cmake_helpers_logprefix}] ... Source dir: ${_cmake_helpers_depend_depname_source_dir}")
+      message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
       #
       # Internally FetchContent_MakeAvailable will do nothing else but an add_subdirectory. So do we.
       #
