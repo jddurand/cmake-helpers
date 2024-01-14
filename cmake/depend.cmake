@@ -310,14 +310,8 @@ function(cmake_helpers_depend depname)
 	#
 	return()
       else()
-	#
-	# It is found: we overwrite the CONFIGURE, BUILD and INSTALL OPTIONS, not needed
-	#
-	set(_cmake_helpers_depend_configure FALSE)
-	set(_cmake_helpers_depend_build FALSE)
-	set(_cmake_helpers_depend_install FALSE)
 	if(CMAKE_HELPERS_DEBUG)
-	  message(STATUS "[${_cmake_helpers_logprefix}] Continuing at the makeavailable step")
+	  message(STATUS "[${_cmake_helpers_logprefix}] Continuing up to the makeavailable step")
 	endif()
       endif()
     else()
