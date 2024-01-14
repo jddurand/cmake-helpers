@@ -357,7 +357,7 @@ function(cmake_helpers_depend depname)
       # EXTERNALPROJECT_ADD_ARGS generic alternative
       #
       set(_cmake_helpers_depend_content_options ${_cmake_helpers_depend_externalproject_add_args})
-      message(STATUS "[${_cmake_helpers_logprefix}] Fetching ${depname}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Declaring ${depname}")
     else()
       message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
     endif()
