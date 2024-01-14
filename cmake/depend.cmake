@@ -414,6 +414,9 @@ function(cmake_helpers_depend depname)
   else()
     set(_cmake_helpers_process_command_echo_stdout)
   endif()
+  #
+  # Configure/Build/Install mode: we work in an independant copy of the dependency source
+  #
   if(_cmake_helpers_depend_configure OR _cmake_helpers_depend_build OR _cmake_helpers_depend_install)
     if(_cmake_helpers_depend_have_required)
       set(_cmake_helpers_process_command_error_is_fatal "COMMAND_ERROR_IS_FATAL" "ANY")
@@ -424,7 +427,7 @@ function(cmake_helpers_depend depname)
       #
       # Configure
       #
-      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
@@ -440,7 +443,7 @@ function(cmake_helpers_depend depname)
 	#
 	# Build
 	#
-	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
+	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
 	execute_process(
           COMMAND ${CMAKE_COMMAND}
             --build "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
@@ -450,7 +453,7 @@ function(cmake_helpers_depend depname)
           ${_cmake_helpers_process_command_error_is_fatal}
 	)
 	if(_cmake_helpers_depend_install AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
-          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}")
+          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}${_cmake_helpers_depend_build_dir_suffix}")
           execute_process(
             COMMAND ${CMAKE_COMMAND}
               --install "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
@@ -463,7 +466,6 @@ function(cmake_helpers_depend depname)
 	  if(_cmake_helpers_depend_find AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
 	    #
 	    # Re-do a find_package
-	    #
 	    #
 	    # We look for all *.cmake in ${_cmake_helpers_install_path}, collect the directories in CMAKE_PREFIX_PATH,
 	    # Make sure that NO_CMAKE_PATH is not in find_package arguments nor that CMAKE_FIND_USE_CMAKE_PATH is FALSE.
@@ -494,9 +496,10 @@ function(cmake_helpers_depend depname)
   # caller gets the binary dir of the fetchcontent.
   #
   set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
-  if(NOT _cmake_helpers_depend_makeavailable)
-    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
-  else()
+  set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
+  if(_cmake_helpers_depend_makeavailable)
+    cmake_helpers_call(FetchContent_MakeAvailable ${depname})
+    if(FALSE)
     #
     # We prevent the case of a failure if the source directory does not contain CMakeLists.txt
     #
@@ -535,6 +538,7 @@ function(cmake_helpers_depend depname)
 	  ${_cmake_helpers_depend_fetchcontent_declare_system}
 	)
       endif()
+    endif()
     endif()
   endif()
   #
