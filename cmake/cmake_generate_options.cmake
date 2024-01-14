@@ -139,7 +139,7 @@ function(cmake_generate_options outvar)
   #
   # FETCHCONTENT_BASE_DIR
   #
-  list(APPEND _common_cmake_options "-DCMAKE_HELPERS_FETCHCONTENT_BASE_DIR=${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
+  # list(APPEND _common_cmake_options "-DCMAKE_HELPERS_FETCHCONTENT_BASE_DIR=${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
   #
   # Disable warning on non-used variables
   #
