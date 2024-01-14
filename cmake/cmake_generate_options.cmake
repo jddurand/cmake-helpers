@@ -141,6 +141,10 @@ function(cmake_generate_options outvar)
   #
   list(APPEND _common_cmake_options "-DCMAKE_HELPERS_FETCHCONTENT_BASE_DIR=${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
   #
+  # Disable warning on non-used variables
+  #
+  list(APPEND _common_cmake_options "--no-warn-unused-cli")
+  #
   # Save result
   #
   set(${outvar} ${_common_cmake_options} PARENT_SCOPE)
