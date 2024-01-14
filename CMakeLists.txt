@@ -17,8 +17,18 @@ endif()
 # Load our includes, once
 #
 if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION}")
+  message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION} at ${CMAKE_CURRENT_BINARY_DIR}")
 endif()
+#
+# Force CMAKE_HELPERS_FETCHCONTENT_BASE_DIR - this will propagated to all sub-processes
+#
+if(NOT CMAKE_HELPERS_FETCHCONTENT_BASE_DIR)
+  set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps CACHE PATH "CMake helpers fetchContent base dir" FORCE)
+endif()
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[cmake_helpers] Setting FETCHCONTENT_BASE_DIR to ${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
+endif()
+set(FETCHCONTENT_BASE_DIR ${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} CACHE PATH "FetchContent base dir" FORCE)
 #
 # Load all cmake file
 #
