@@ -98,7 +98,7 @@ function(cmake_helpers_depend depname)
       set(_cmake_helpers_depend_generator_config            ${_cmake_helpers_depend_generator_config_default})
     endif()
   endif()
-  set(_cmake_helpers_depend_build_dir_suffix                "-local-build")
+  set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
   set(_cmake_helpers_depend_add_subdirectory_protection     TRUE)
   #
   # Multi-value options default values
