@@ -33,7 +33,7 @@ function(cmake_generate_options outvar)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] Generator platform: ${CMAKE_GENERATOR_PLATFORM}")
     endif()
-  else()
+  elseif(FALSE)
     #
     # We copy/pasted the technique used in
     # https://github.com/OpenMathLib/OpenBLAS/blob/develop/cmake/system_check.cmake
@@ -136,6 +136,10 @@ function(cmake_generate_options outvar)
       endif()
     endif()
   endif()
+  #
+  # FETCHCONTENT_BASE_DIR
+  #
+  list(APPEND _common_cmake_options "-DCMAKE_HELPERS_FETCHCONTENT_BASE_DIR=${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
   #
   # Save result
   #
