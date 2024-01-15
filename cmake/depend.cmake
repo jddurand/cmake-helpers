@@ -42,6 +42,7 @@ function(cmake_helpers_depend depname)
     GENERATOR_CONFIG
     BUILD_DIR_SUFFIX                # We do not want to mix to the build/config/install steps with the add_subdirectory
     ADD_SUBDIRECTORY_PROTECTION
+    ALWAYS_GET_SOURCES
   )
   set(_multiValueArgs
     EXTERNALPROJECT_ADD_ARGS
@@ -100,6 +101,7 @@ function(cmake_helpers_depend depname)
   endif()
   set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
   set(_cmake_helpers_depend_add_subdirectory_protection     TRUE)
+  set(_cmake_helpers_depend_always_get_sources              FALSE)
   #
   # Multi-value options default values
   #
@@ -294,7 +296,7 @@ function(cmake_helpers_depend depname)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} found")
       endif()
-      if(NOT _cmake_helpers_depend_makeavailable)
+      if((NOT _cmake_helpers_depend_makeavailable) AND (NOT _cmake_helpers_depend_always_get_sources))
 	#
 	# We return if the caller do not want some targets in its build process
 	#
@@ -320,7 +322,8 @@ function(cmake_helpers_depend depname)
     endif()
   endif()
   #
-  # Prepare the FetchContent_Declare EXCLUDE_FROM_ALL and SYSTEM options
+  # Prepare the FetchContent_Declare EXCLUDE_FROM_ALL and SYSTEM options.
+  # This is de-facto getting the sources.
   #
   cmake_helpers_call(include FetchContent)
   set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all)
