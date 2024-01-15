@@ -471,6 +471,15 @@ function(getPathLocations target locations_outvar)
   cmake_helpers_call(get_target_property _libraries ${target} INTERFACE_LINK_LIBRARIES)
   if(_libraries)
     foreach(_library IN LISTS _libraries)
+      #
+      # Special case of link only dependencies: <$LINK_ONLY:xxx>
+      #
+      if("${_library}" MATCHES "^\\\$<LINK_ONLY:(.*)>\$")
+        if("x${CMAKE_MATCH_1}" STREQUAL "x")
+          continue()
+        endif()
+        set(_library ${CMAKE_MATCH_1})
+      endif()
       if(TARGET ${_library})
 	get_target_property(_is_imported ${_library} IMPORTED)
 	if(_is_imported)
