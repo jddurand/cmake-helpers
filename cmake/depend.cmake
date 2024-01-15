@@ -290,6 +290,7 @@ function(cmake_helpers_depend depname)
     cmake_helpers_call(list REMOVE_ITEM _cmake_helpers_depend_find_package_args_tmp "NO_CMAKE_PATH")
     cmake_helpers_call(set CMAKE_FIND_USE_CMAKE_PATH TRUE)
   endif()
+  set(_cmake_helpers_depend_get_sources ${_cmake_helpers_depend_always_get_sources})
   if(_cmake_helpers_depend_find)
     cmake_helpers_call(find_package ${_cmake_helpers_depend_find_package_name} ${_cmake_helpers_depend_find_package_args_tmp})
     if(${_cmake_helpers_depend_find_package_name}_FOUND)
@@ -298,10 +299,17 @@ function(cmake_helpers_depend depname)
       endif()
       if((NOT _cmake_helpers_depend_makeavailable) AND (NOT _cmake_helpers_depend_always_get_sources))
 	#
-	# We return if the caller do not want some targets in its build process
+	# We return if the caller do not want some targets in its build process nor the sources
 	#
 	return()
       else()
+	#
+	# - _cmake_helpers_depend_makeavailable: get it in the build process
+	# - _cmake_helpers_depend_always_get_sources: get the sources
+	#
+	# So in any case, we want the sources at least
+	#
+	set(_cmake_helpers_depend_get_sources TRUE)
 	#
 	# We do not want to configure or build or install since find suceeded
 	#
@@ -319,89 +327,105 @@ function(cmake_helpers_depend depname)
       if(_cmake_helper_depend_find_package_must_succeed)
 	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} is not found - use the FILE or EXTERNALPROJECT_ADD_ARGS options to continue")
       endif()
+      #
+      # Not found: we need the sources
+      #
+      set(_cmake_helpers_depend_get_sources TRUE)
     endif()
-  endif()
-  #
-  # Prepare the FetchContent_Declare EXCLUDE_FROM_ALL and SYSTEM options.
-  # This is de-facto getting the sources.
-  #
-  cmake_helpers_call(include FetchContent)
-  set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all)
-  if(_cmake_helpers_depend_exclude_from_all)
-    set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all "EXCLUDE_FROM_ALL")
   else()
-    set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all)
-  endif()
-  set(_cmake_helpers_depend_fetchcontent_declare_system)
-  if(_cmake_helpers_depend_system)
-    set(_cmake_helpers_depend_fetchcontent_declare_system "SYSTEM")
-  else()
-    set(_cmake_helpers_depend_fetchcontent_declare_system)
+    #
+    # No find performed: we need the sources
+    #
+    set(_cmake_helpers_depend_get_sources TRUE)
   endif()
   #
   # We will need the lowercase version of depname
   #
   string(TOLOWER "${depname}" _depname_tolower)
   #
-  # Loop on the alternatives
+  # Get sources ?
   #
-  foreach(_cmake_helpers_depend_alternative "file" "externalproject_add_args")
-    if(NOT _cmake_helpers_depend_${_cmake_helpers_depend_alternative})
-      continue()
-    endif()
-    if(_cmake_helpers_depend_alternative STREQUAL "file")
-      #
-      # FILE alternative - we can check if if exiss
-      #
-      set(_cmake_helpers_depend_content_options URL ${_cmake_helpers_depend_file})
-      message(STATUS "[${_cmake_helpers_logprefix}] Declaring ${depname} using ${_cmake_helpers_depend_file}")
-    elseif(_cmake_helpers_depend_alternative STREQUAL "externalproject_add_args")
-      #
-      # EXTERNALPROJECT_ADD_ARGS generic alternative
-      #
-      set(_cmake_helpers_depend_content_options ${_cmake_helpers_depend_externalproject_add_args})
-      message(STATUS "[${_cmake_helpers_logprefix}] Declaring ${depname}")
+  if(_cmake_helpers_depend_get_sources)
+    #
+    # Prepare the FetchContent_Declare EXCLUDE_FROM_ALL and SYSTEM options.
+    # This is de-facto getting the sources.
+    #
+    cmake_helpers_call(include FetchContent)
+    set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all)
+    if(_cmake_helpers_depend_exclude_from_all)
+      set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all "EXCLUDE_FROM_ALL")
     else()
-      message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
+      set(_cmake_helpers_depend_fetchcontent_declare_exclude_from_all)
+    endif()
+    set(_cmake_helpers_depend_fetchcontent_declare_system)
+    if(_cmake_helpers_depend_system)
+      set(_cmake_helpers_depend_fetchcontent_declare_system "SYSTEM")
+    else()
+      set(_cmake_helpers_depend_fetchcontent_declare_system)
     endif()
     #
-    # FetchContent_Declare()
+    # Loop on the alternatives
     #
-    cmake_helpers_call(FetchContent_Declare ${depname}
-      ${_cmake_helpers_depend_content_options}
-      ${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
-      ${_cmake_helpers_depend_fetchcontent_declare_system}
-      OVERRIDE_FIND_PACKAGE
-    )
+    foreach(_cmake_helpers_depend_alternative "file" "externalproject_add_args")
+      if(NOT _cmake_helpers_depend_${_cmake_helpers_depend_alternative})
+	continue()
+      endif()
+      if(_cmake_helpers_depend_alternative STREQUAL "file")
+	#
+	# FILE alternative - we can check if if exiss
+	#
+	set(_cmake_helpers_depend_content_options URL ${_cmake_helpers_depend_file})
+	message(STATUS "[${_cmake_helpers_logprefix}] Declaring ${depname} using ${_cmake_helpers_depend_file}")
+      elseif(_cmake_helpers_depend_alternative STREQUAL "externalproject_add_args")
+	#
+	# EXTERNALPROJECT_ADD_ARGS generic alternative
+	#
+	set(_cmake_helpers_depend_content_options ${_cmake_helpers_depend_externalproject_add_args})
+	message(STATUS "[${_cmake_helpers_logprefix}] Declaring ${depname}")
+      else()
+	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
+      endif()
+      #
+      # FetchContent_Declare()
+      #
+      cmake_helpers_call(FetchContent_Declare ${depname}
+	${_cmake_helpers_depend_content_options}
+	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
+	${_cmake_helpers_depend_fetchcontent_declare_system}
+	OVERRIDE_FIND_PACKAGE
+      )
+      #
+      # FetchContent_Populate()
+      #
+      if(NOT ${_depname_tolower}_POPULATED)
+	message(STATUS "[${_cmake_helpers_logprefix}] Populating ${depname}")
+	cmake_helpers_call(FetchContent_Populate ${depname})
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_POPULATED: ${${_depname_tolower}_POPULATED}")
+	endif()
+      else()
+	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} already populated")
+      endif()
+      if(${_depname_tolower}_POPULATED)
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_SOURCE_DIR: ${${_depname_tolower}_SOURCE_DIR}")
+	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_BINARY_DIR: ${${_depname_tolower}_BINARY_DIR}")
+	endif()
+	break()
+      endif()
+    endforeach()
     #
-    # FetchContent_Populate()
+    # If not populated and REQUIRED, this is an error
     #
     if(NOT ${_depname_tolower}_POPULATED)
-      message(STATUS "[${_cmake_helpers_logprefix}] Populating ${depname}")
-      cmake_helpers_call(FetchContent_Populate ${depname})
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_POPULATED: ${${_depname_tolower}_POPULATED}")
+      if(_cmake_helpers_depend_have_required)
+	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} cannot be populated")
+      else()
+	return()
       endif()
-    else()
-      message(STATUS "[${_cmake_helpers_logprefix}] ${depname} already populated")
     endif()
-    if(${_depname_tolower}_POPULATED)
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_SOURCE_DIR: ${${_depname_tolower}_SOURCE_DIR}")
-	message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_BINARY_DIR: ${${_depname_tolower}_BINARY_DIR}")
-      endif()
-      break()
-    endif()
-  endforeach()
-  #
-  # If not populated and not REQUIRED, this is an error
-  #
-  if(NOT ${_depname_tolower}_POPULATED)
-    if(_cmake_helpers_depend_have_required)
-      message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} cannot be populated")
-    else()
-      return()
-    endif()
+    set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
+    set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
   endif()
   #
   # We do a local installation, and do not mind about $<CONFIG>: we want the default from this package
@@ -493,8 +517,6 @@ function(cmake_helpers_depend depname)
   # If we do the add_subdirectory ourself, make sure the binary dir is for the top-level project, else
   # caller gets the binary dir of the fetchcontent.
   #
-  set(_cmake_helpers_depend_depname_source_dir "${${_depname_tolower}_SOURCE_DIR}")
-  set(_cmake_helpers_depend_depname_binary_dir "${${_depname_tolower}_BINARY_DIR}")
   if(_cmake_helpers_depend_makeavailable)
     if(FALSE)
       message(STATUS "[${_cmake_helpers_logprefix}] Making ${depname} available")
