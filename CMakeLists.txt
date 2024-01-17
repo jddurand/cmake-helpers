@@ -40,16 +40,16 @@ foreach (_file ${_files})
   include(${_file})
 endforeach()
 #
-# Initialize
-#
-cmake_helpers_init()
-#
 # Set the options
 #
 option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
 option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
 option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
 option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ON)
+#
+# Initialize
+#
+cmake_helpers_init()
 #
 # ... Standard include dirs
 #
