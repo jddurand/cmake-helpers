@@ -3,7 +3,7 @@ function(cmake_helpers_init)
   # Our "globals". We use a file to load/update them so that we are inter-process compatible.
   # We intentionnaly use CMAKE_BINARY_DIR to be at the top level of the current CMake build tree.
   #
-  cmake_helpers_global("" "")
+  # cmake_helpers_global("" "")
   #
   # We use GNU standard for installation
   #
