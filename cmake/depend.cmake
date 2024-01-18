@@ -371,15 +371,15 @@ function(cmake_helpers_depend depname)
       #
       # Whatever the default, we always to be a new binary tree
       #
-      set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${CMAKE_HELPERS_BUILDS_COUNT})
+      set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname})
       if(EXISTS ${_cmake_helpers_depend_build_path})
 	#
 	# Loop until the path does not exist
 	#
+	set(_cmake_helpers_depend_build_count 0)
 	while(TRUE)
-	  math(EXPR CMAKE_HELPERS_BUILDS_COUNT "${CMAKE_HELPERS_BUILDS_COUNT} + 1")
-	  cmake_helpers_global(CMAKE_HELPERS_BUILDS_COUNT ${CMAKE_HELPERS_BUILDS_COUNT})
-	  set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${CMAKE_HELPERS_BUILDS_COUNT})
+	  math(EXPR _cmake_helpers_depend_build_count "${_cmake_helpers_depend_build_count} + 1")
+	  set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${_cmake_helpers_depend_build_count})
 	  if(NOT EXISTS ${_cmake_helpers_depend_build_path})
 	    break()
 	  endif()

@@ -5,7 +5,6 @@ function(cmake_helpers_global variable value)
   set(_cmake_helpers_globals
     FETCHCONTENT_BASE_DIR
     CMAKE_HELPERS_BUILDS_PATH
-    CMAKE_HELPERS_BUILDS_COUNT
     CMAKE_HELPERS_INSTALL_PATH
   )
   #
@@ -13,7 +12,6 @@ function(cmake_helpers_global variable value)
   #
   set(FETCHCONTENT_BASE_DIR_DEFAULT ${CMAKE_BINARY_DIR}/_deps)
   set(CMAKE_HELPERS_BUILDS_PATH_DEFAULT ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
-  set(CMAKE_HELPERS_BUILDS_COUNT_DEFAULT 0 )
   set(CMAKE_HELPERS_INSTALL_PATH_DEFAULT ${CMAKE_BINARY_DIR}/cmake_helpers_install)
   #
   # Calling this function on an unsupported global is more than meaningless, this is an error
