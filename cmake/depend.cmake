@@ -454,6 +454,7 @@ function(cmake_helpers_depend depname)
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
+	  -DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}  
           ${_cmake_helpers_depend_cmake_generate_options}
           -S "${${_depname_tolower}_SOURCE_DIR}"
           -B "${${_depname_tolower}_BINARY_DIR}"
