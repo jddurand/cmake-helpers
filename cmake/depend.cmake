@@ -214,6 +214,9 @@ function(cmake_helpers_depend depname)
   #
   # Prepare already installed dependencies for find_package
   #
+  if(CMAKE_HELPERS_DEBUG)
+    message(STATUS "[${_cmake_helpers_logprefix}] Globbing ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake")
+  endif()
   file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake)
   set(_cmake_helpers_depend_prefix_paths ${CMAKE_HELPERS_INSTALL_PATH})
   foreach(_cmake IN LISTS _cmakes)
@@ -372,6 +375,9 @@ function(cmake_helpers_depend depname)
       # Whatever the default, we always to be a new binary tree
       #
       set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname})
+      if(CMAKE_HELPERS_DEBUG)
+	message(STATUS "[${_cmake_helpers_logprefix}] Checking if ${_cmake_helpers_depend_build_path} exist")
+      endif()
       if(EXISTS ${_cmake_helpers_depend_build_path})
 	#
 	# Loop until the path does not exist
@@ -380,6 +386,9 @@ function(cmake_helpers_depend depname)
 	while(TRUE)
 	  math(EXPR _cmake_helpers_depend_build_count "${_cmake_helpers_depend_build_count} + 1")
 	  set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${_cmake_helpers_depend_build_count})
+	  if(CMAKE_HELPERS_DEBUG)
+	    message(STATUS "[${_cmake_helpers_logprefix}] Checking if ${_cmake_helpers_depend_build_path} exist")
+	  endif()
 	  if(NOT EXISTS ${_cmake_helpers_depend_build_path})
 	    break()
 	  endif()
