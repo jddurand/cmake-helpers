@@ -1,34 +1,18 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR) # We require BUILD_LOCAL_INTERFACE
-#
-# General local install path, intentionaly under PROJECT_BINARY_DIR and not CMAKE_CURRENT_BINARY_DIR
-# Intentionaly done before project definition to recuperate parent's PROJECT_BINARY_DIR.
-#
-if(DEFINED PROJECT_BINARY_DIR)
-  set(CMAKE_HELPERS_INSTALL_PATH ${PROJECT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
-else()
-  unset(CMAKE_HELPERS_INSTALL_PATH)
-endif()
 project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
-if(NOT DEFINED CMAKE_HELPERS_INSTALL_PATH)
-  # No project() in the parent
-  set(CMAKE_HELPERS_INSTALL_PATH ${CMAKE_CURRENT_BINARY_DIR}/cmake_helpers_install CACHE PATH "Local installation directory" FORCE)
-endif()
 #
-# Load our includes, once
+# Set the options
+#
+option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
+option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
+option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
+option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ON)
+#
+# Log that are we being loaded
 #
 if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION} at ${CMAKE_CURRENT_BINARY_DIR}")
 endif()
-#
-# Force CMAKE_HELPERS_FETCHCONTENT_BASE_DIR - this will propagated to all sub-processes
-#
-if(NOT CMAKE_HELPERS_FETCHCONTENT_BASE_DIR)
-  set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps CACHE PATH "CMake helpers fetchContent base dir" FORCE)
-endif()
-if(CMAKE_HELPERS_DEBUG)
-  message(STATUS "[cmake_helpers] Setting FETCHCONTENT_BASE_DIR to ${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}")
-endif()
-set(FETCHCONTENT_BASE_DIR ${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} CACHE PATH "FetchContent base dir" FORCE)
 #
 # Load all cmake file
 #
@@ -39,13 +23,6 @@ foreach (_file ${_files})
   endif()
   include(${_file})
 endforeach()
-#
-# Set the options
-#
-option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
-option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
-option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
-option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ON)
 #
 # Initialize
 #

@@ -40,7 +40,6 @@ function(cmake_helpers_depend depname)
     FIND_PACKAGE_NAME
     MAKEAVAILABLE                   # Note that MAKEAVAILABLE has precedence, if set, over the configure/build/install phases
     GENERATOR_CONFIG
-    BUILD_DIR_SUFFIX                # We do not want to mix to the build/config/install steps with the add_subdirectory
     ADD_SUBDIRECTORY_PROTECTION
     ALWAYS_GET_SOURCES
   )
@@ -99,7 +98,6 @@ function(cmake_helpers_depend depname)
       set(_cmake_helpers_depend_generator_config            ${_cmake_helpers_depend_generator_config_default})
     endif()
   endif()
-  set(_cmake_helpers_depend_build_dir_suffix                "-cmh")
   set(_cmake_helpers_depend_add_subdirectory_protection     TRUE)
   set(_cmake_helpers_depend_always_get_sources              FALSE)
   #
@@ -112,12 +110,6 @@ function(cmake_helpers_depend depname)
   # Parse Arguments
   #
   cmake_helpers_parse_arguments(package _cmake_helpers_depend "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" "${ARGN}")
-  #
-  # It is illegal to not have _cmake_helpers_depend_build_dir_suffix
-  #
-  if("x${_cmake_helpers_depend_build_dir_suffix}" STREQUAL "x")
-    message(FATAL_ERROR "[${_cmake_helpers_logprefix}] BUILD_DIR_SUFFIX option must be set")
-  endif()
   #
   # If we install we must build
   #
@@ -220,19 +212,10 @@ function(cmake_helpers_depend depname)
     set(_cmake_helpers_depend_file "")
   endif()
   #
-  # In case of a recursive call via an external project, local install path is recuperated via an environment variable
-  #
-  if("x$ENV{CMAKE_HELPERS_INSTALL_PATH}" STREQUAL "x")
-    set(_cmake_helpers_install_path ${CMAKE_HELPERS_INSTALL_PATH})
-    set(ENV{CMAKE_HELPERS_INSTALL_PATH} ${_cmake_helpers_install_path})
-  else()
-    set(_cmake_helpers_install_path $ENV{CMAKE_HELPERS_INSTALL_PATH})
-  endif()
-  #
   # Prepare already installed dependencies for find_package
   #
-  file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.cmake)
-  set(_cmake_helpers_depend_prefix_paths ${_cmake_helpers_install_path})
+  file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake)
+  set(_cmake_helpers_depend_prefix_paths ${CMAKE_HELPERS_INSTALL_PATH})
   foreach(_cmake IN LISTS _cmakes)
     get_filename_component(_dir ${_cmake} DIRECTORY)
     if(NOT _dir IN_LIST _cmake_helpers_depend_prefix_paths)
@@ -386,10 +369,28 @@ function(cmake_helpers_depend depname)
 	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
       endif()
       #
+      # Whatever the default, we always to be a new binary tree
+      #
+      set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${CMAKE_HELPERS_BUILDS_COUNT})
+      if(EXISTS ${_cmake_helpers_depend_build_path})
+	#
+	# Loop until the path does not exist
+	#
+	while(TRUE)
+	  math(EXPR CMAKE_HELPERS_BUILDS_COUNT "${CMAKE_HELPERS_BUILDS_COUNT} + 1")
+	  cmake_helpers_global(CMAKE_HELPERS_BUILDS_COUNT ${CMAKE_HELPERS_BUILDS_COUNT})
+	  set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${CMAKE_HELPERS_BUILDS_COUNT})
+	  if(NOT EXISTS ${_cmake_helpers_depend_build_path})
+	    break()
+	  endif()
+	endwhile()
+      endif()
+      #
       # FetchContent_Declare()
       #
       cmake_helpers_call(FetchContent_Declare ${depname}
 	${_cmake_helpers_depend_content_options}
+	BINARY_DIR ${_cmake_helpers_depend_build_path}
 	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
 	${_cmake_helpers_depend_fetchcontent_declare_system}
 	OVERRIDE_FIND_PACKAGE
@@ -449,13 +450,13 @@ function(cmake_helpers_depend depname)
       #
       # Configure
       #
-      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Configuring ${depname} in ${${_depname_tolower}_BINARY_DIR}")
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
           ${_cmake_helpers_depend_cmake_generate_options}
           -S "${${_depname_tolower}_SOURCE_DIR}"
-          -B "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
+          -B "${${_depname_tolower}_BINARY_DIR}"
           ${_cmake_helpers_depend_configure_step_config_option}
         RESULT_VARIABLE _result_variable
 	${_cmake_helpers_process_command_echo_stdout}
@@ -465,21 +466,21 @@ function(cmake_helpers_depend depname)
 	#
 	# Build
 	#
-	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}")
+	message(STATUS "[${_cmake_helpers_logprefix}] Building ${depname} in ${${_depname_tolower}_BINARY_DIR}")
 	execute_process(
           COMMAND ${CMAKE_COMMAND}
-            --build "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
+            --build "${${_depname_tolower}_BINARY_DIR}"
             ${_cmake_helpers_depend_build_step_config_option}
           RESULT_VARIABLE _result_variable
           ${_cmake_helpers_process_command_echo_stdout}
           ${_cmake_helpers_process_command_error_is_fatal}
 	)
 	if(_cmake_helpers_depend_install AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
-          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${_cmake_helpers_install_path}${_cmake_helpers_depend_build_dir_suffix}")
+          message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${CMAKE_HELPERS_INSTALL_PATH}")
           execute_process(
             COMMAND ${CMAKE_COMMAND}
-              --install "${${_depname_tolower}_BINARY_DIR}${_cmake_helpers_depend_build_dir_suffix}"
-	      --prefix "${_cmake_helpers_install_path}"
+              --install "${${_depname_tolower}_BINARY_DIR}"
+	      --prefix "${CMAKE_HELPERS_INSTALL_PATH}"
               ${_cmake_helpers_depend_install_step_config_option}
             RESULT_VARIABLE _result_variable
             ${_cmake_helpers_process_command_echo_stdout}
@@ -489,10 +490,10 @@ function(cmake_helpers_depend depname)
 	    #
 	    # Re-do a find_package
 	    #
-	    # We look for all *.cmake in ${_cmake_helpers_install_path}, collect the directories in CMAKE_PREFIX_PATH,
+	    # We look for all *.cmake in ${CMAKE_HELPERS_INSTALL_PATH}, collect the directories in CMAKE_PREFIX_PATH,
 	    # Make sure that NO_CMAKE_PATH is not in find_package arguments nor that CMAKE_FIND_USE_CMAKE_PATH is FALSE.
 	    #
-	    cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${_cmake_helpers_install_path}/*.cmake)
+	    cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake)
 	    set(_cmake_helpers_depend_prefix_paths)
 	    foreach(_cmake IN LISTS _cmakes)
 	      get_filename_component(_dir ${_cmake} DIRECTORY)
