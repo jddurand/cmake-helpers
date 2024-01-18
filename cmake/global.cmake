@@ -1,5 +1,4 @@
 function(cmake_helpers_global variable value)
-  return()
   #
   # The globals default values that we support
   #
