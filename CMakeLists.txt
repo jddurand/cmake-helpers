@@ -4,14 +4,38 @@ project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 # Inject globals first
 #
 include(${PROJECT_SOURCE_DIR}/cmake/global.cmake)
-cmake_helpers_global("" "")
+#
+# List of our options
+#
+set(_cmake_helpers_globals
+  FETCHCONTENT_BASE_DIR
+  CMAKE_HELPERS_BUILDS_PATH
+  CMAKE_HELPERS_INSTALL_PATH
+  CMAKE_HELPERS_DEBUG
+  CMAKE_HELPERS_GENERATE_STDINT_H
+  CMAKE_HELPERS_GENERATE_INTTYPES_H
+  CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO
+  CACHE "CMake Helpers globals"
+  FORCE
+)
 #
 # Set the options
 #
-option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" ${CMAKE_HELPERS_DEBUG})
-option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ${CMAKE_HELPERS_GENERATE_STDINT_H})
-option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ${CMAKE_HELPERS_GENERATE_INTTYPES_H})
-option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ${CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO})
+option(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR         "Common base dir for FetchContent"                 ${CMAKE_BINARY_DIR}/_deps)
+option(CMAKE_HELPERS_BUILDS_PATH                   "Common base dir for local builds"                 ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
+option(CMAKE_HELPERS_INSTALL_PATH                  "Common base dir for local installs"               ${CMAKE_BINARY_DIR}/cmake_helpers_install)
+option(CMAKE_HELPERS_DEBUG                         "CMake Helpers debug"                              OFF)
+option(CMAKE_HELPERS_GENERATE_STDINT_H             "CMake Helpers stdint.h generation if not found"   ON)
+option(CMAKE_HELPERS_GENERATE_INTTYPES_H           "CMake Helpers inttypes.h generation if not found" ON)
+option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects"                  ON)
+#
+# Dump options
+#
+if(CMAKE_HELPERS_DEBUG)
+  foreach(_cmake_helpers_global IN LISTS _cmake_helpers_globals)
+    message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: ${${_cmake_helpers_global}}")
+  endforeach()
+endif()
 #
 # Log that are we being loaded
 #
@@ -19,7 +43,7 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION} at ${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 #
-# Load all cmake file, this is a problem if we reload cmake/global.cmake
+# Load our cmake files
 #
 file(GLOB _files ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
 foreach (_file ${_files})
