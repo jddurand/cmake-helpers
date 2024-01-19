@@ -16,9 +16,15 @@ set(CMAKE_HELPERS_GLOBALS "${_cmake_helpers_globals}" CACHE STRING "CMake Helper
 #
 # Set the options
 #
-option(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR         "Common base dir for FetchContent"                 ${CMAKE_BINARY_DIR}/_deps)
-option(CMAKE_HELPERS_BUILDS_PATH                   "Common base dir for local builds"                 ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
-option(CMAKE_HELPERS_INSTALL_PATH                  "Common base dir for local installs"               ${CMAKE_BINARY_DIR}/cmake_helpers_install)
+if(NOT DEFINED CMAKE_HELPERS_FETCHCONTENT_BASE_DIR)
+  set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
+endif()
+if(NOT DEFINED CMAKE_HELPERS_BUILDS_PATH)
+  set(CMAKE_HELPERS_BUILDS_PATH ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
+endif()
+if(NOT DEFINED CMAKE_HELPERS_INSTALL_PATH)
+  set(CMAKE_HELPERS_INSTALL_PATH ${CMAKE_BINARY_DIR}/cmake_helpers_install)
+endif()
 option(CMAKE_HELPERS_DEBUG                         "CMake Helpers debug"                              OFF)
 option(CMAKE_HELPERS_GENERATE_STDINT_H             "CMake Helpers stdint.h generation if not found"   ON)
 option(CMAKE_HELPERS_GENERATE_INTTYPES_H           "CMake Helpers inttypes.h generation if not found" ON)
