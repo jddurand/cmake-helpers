@@ -7,6 +7,9 @@ function(cmake_helpers_global variable value)
     CMAKE_HELPERS_BUILDS_PATH
     CMAKE_HELPERS_INSTALL_PATH
     CMAKE_HELPERS_DEBUG
+    CMAKE_HELPERS_GENERATE_STDINT_H
+    CMAKE_HELPERS_GENERATE_INTTYPES_H
+    CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO
   )
   #
   # The defaults
@@ -81,10 +84,15 @@ function(cmake_helpers_global variable value)
       if(NOT DEFINED ${_cmake_helpers_global})
 	set(${_cmake_helpers_global} ${${_cmake_helpers_global}_DEFAULT})
       endif()
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: \"${${_cmake_helpers_global}_DEFAULT}\"")
-      endif()
       file(APPEND ${CMAKE_HELPERS_GLOBALS_STORE} "set(${_cmake_helpers_global} \"${${_cmake_helpers_global}}\" CACHE STRING \"\" FORCE)\n")
+    endforeach()
+  endif()
+  #
+  # Dump globals
+  #
+  if(CMAKE_HELPERS_DEBUG)
+    foreach(_cmake_helpers_global IN LISTS _cmake_helpers_globals)
+      message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: \"${${_cmake_helpers_global}}\"")
     endforeach()
   endif()
 endfunction()
