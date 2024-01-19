@@ -536,7 +536,7 @@ function(cmake_helpers_depend depname)
       #
       # We prevent the case of double inclusion
       #
-      cmake_helpers_call(get_property _cmake_helpers_depend_already_available_depnames DIRECTORY ${CMAKE_HELPERS_BUILDS_PATH} PROPERTY cmake_helpers_depend_already_available_depnames)
+      cmake_helpers_call(get_property _cmake_helpers_depend_already_available_depnames DIRECTORY ${CMAKE_BINARY_DIR} PROPERTY cmake_helpers_depend_already_available_depnames)
       if(depname IN_LIST _cmake_helpers_depend_already_available_depnames)
 	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} already available")
 	if(CMAKE_HELPERS_DEBUG)
@@ -550,7 +550,7 @@ function(cmake_helpers_depend depname)
 	  message(STATUS "[${_cmake_helpers_logprefix}] ... Binary dir: ${_cmake_helpers_depend_depname_binary_dir}")
 	endif()
 	list(APPEND _cmake_helpers_depend_already_available_depnames ${depname})
-	cmake_helpers_call(set_property DIRECTORY ${CMAKE_HELPERS_BUILDS_PATH} APPEND PROPERTY cmake_helpers_depend_already_available_depnames ${depname})
+	cmake_helpers_call(set_property DIRECTORY ${CMAKE_BINARY_DIR} APPEND PROPERTY cmake_helpers_depend_already_available_depnames ${depname})
 	#
 	# We prevent the case of a failure if the source directory does not contain CMakeLists.txt
 	#
