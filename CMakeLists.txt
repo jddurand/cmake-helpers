@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR) # We require BUILD_LOCAL_INTERFACE
 project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 #
-# Inject globals first
-#
-include(${PROJECT_SOURCE_DIR}/cmake/global.cmake)
-#
 # List of our options
 #
 set(_cmake_helpers_globals
