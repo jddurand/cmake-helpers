@@ -11,9 +11,8 @@ set(_cmake_helpers_globals
   CMAKE_HELPERS_GENERATE_STDINT_H
   CMAKE_HELPERS_GENERATE_INTTYPES_H
   CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO
-  CACHE "CMake Helpers globals"
-  FORCE
 )
+set(CMAKE_HELPERS_GLOBALS "${_cmake_helpers_globals}" CACHE STRING "CMake Helpers global" FORCE)
 #
 # Set the options
 #

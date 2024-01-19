@@ -143,7 +143,7 @@ function(cmake_generate_options outvar)
   #
   # Our globals
   #
-  foreach(_cmake_helpers_global IN LISTS_cmake_helpers_globals)
+  foreach(_cmake_helpers_global IN LISTS CMAKE_HELPERS_GLOBALS)
     list(APPEND _common_cmake_options "-D${_cmake_helpers_global}=\"${${_cmake_helpers_global}}\"")
   endforeach()
   #
