@@ -1,5 +1,9 @@
 function(cmake_helpers_global variable value)
   #
+  # Log prefix
+  #
+  set(_cmake_helpers_logprefix "cmake_helpers/global")
+  #
   # The globals default values that we support
   #
   set(_cmake_helpers_globals
@@ -17,6 +21,10 @@ function(cmake_helpers_global variable value)
   set(FETCHCONTENT_BASE_DIR_DEFAULT ${CMAKE_BINARY_DIR}/_deps)
   set(CMAKE_HELPERS_BUILDS_PATH_DEFAULT ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
   set(CMAKE_HELPERS_INSTALL_PATH_DEFAULT ${CMAKE_BINARY_DIR}/cmake_helpers_install)
+  set(CMAKE_HELPERS_DEBUG_DEFAULT OFF)
+  set(CMAKE_HELPERS_GENERATE_STDINT_H_DEFAULT ON)
+  set(CMAKE_HELPERS_GENERATE_INTTYPES_H_DEFAULT ON)
+  set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO_DEFAULT ON)
   #
   # Calling this function on an unsupported global is more than meaningless, this is an error
   #
@@ -46,7 +54,7 @@ function(cmake_helpers_global variable value)
   #
   if(EXISTS ${CMAKE_HELPERS_GLOBALS_STORE})
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[cmake_helpers] Loading ${CMAKE_HELPERS_GLOBALS_STORE}")
+      message(STATUS "[${_cmake_helpers_logprefix}] Loading ${CMAKE_HELPERS_GLOBALS_STORE}")
     endif()
     include(${CMAKE_HELPERS_GLOBALS_STORE})
   else()
@@ -60,7 +68,7 @@ function(cmake_helpers_global variable value)
   #
   if(NOT "x${variable}" STREQUAL "x")
     if(CMAKE_HELPERS_DEBUG)
-      message(STATUS "[cmake_helpers] Setting ${variable} to \"${value}\"")
+      message(STATUS "[${_cmake_helpers_logprefix}] Setting ${variable} to \"${value}\"")
     endif()
     set(${variable} "${value}" CACHE STRING "" FORCE)
     #
@@ -74,9 +82,9 @@ function(cmake_helpers_global variable value)
   if(_cmake_helpers_global_create OR _cmake_helpers_global_update)
     if(CMAKE_HELPERS_DEBUG)
       if(_cmake_helpers_global_create)
-	message(STATUS "[cmake_helpers] Creating ${CMAKE_HELPERS_GLOBALS_STORE}")
+	message(STATUS "[${_cmake_helpers_logprefix}] ${CMAKE_HELPERS_GLOBALS_STORE}")
       else()
-	message(STATUS "[cmake_helpers] Updating ${CMAKE_HELPERS_GLOBALS_STORE}")
+	message(STATUS "[${_cmake_helpers_logprefix}] Updating ${CMAKE_HELPERS_GLOBALS_STORE}")
       endif()
     endif()
     file(WRITE ${CMAKE_HELPERS_GLOBALS_STORE} "# cmake-helpers globals\n")
@@ -92,7 +100,7 @@ function(cmake_helpers_global variable value)
   #
   if(CMAKE_HELPERS_DEBUG)
     foreach(_cmake_helpers_global IN LISTS _cmake_helpers_globals)
-      message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: \"${${_cmake_helpers_global}}\"")
+      message(STATUS "[${_cmake_helpers_logprefix}] ${_cmake_helpers_global}: \"${${_cmake_helpers_global}}\"")
     endforeach()
   endif()
 endfunction()
