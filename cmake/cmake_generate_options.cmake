@@ -144,7 +144,7 @@ function(cmake_generate_options outvar)
   # Our options
   #
   foreach(_cmake_helpers_option IN LISTS CMAKE_HELPERS_OPTIONS)
-    list(APPEND _common_cmake_options "-D${_cmake_helpers_option}=\"${${_cmake_helpers_option}}\"")
+    list(APPEND _common_cmake_options "-D${_cmake_helpers_option}=${${_cmake_helpers_option}}")
   endforeach()
   #
   # Save result
