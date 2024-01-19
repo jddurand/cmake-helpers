@@ -3,7 +3,7 @@ project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 #
 # List of our options
 #
-set(_cmake_helpers_globals
+set(_cmake_helpers_options
   CMAKE_HELPERS_FETCHCONTENT_BASE_DIR
   CMAKE_HELPERS_BUILDS_PATH
   CMAKE_HELPERS_INSTALL_PATH
@@ -22,11 +22,15 @@ set(CMAKE_HELPERS_GENERATE_STDINT_H             "stdint.h generation if not foun
 set(CMAKE_HELPERS_GENERATE_INTTYPES_H           "inttypes.h generation if not found" CACHE BOOL ON)
 set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" CACHE BOOL ON)
 #
+# Save options for reuse in cmake_generate_options
+#
+set(CMAKE_HELPERS_OPTIONS "CMake Helpers options" CACHE INTERNAL "${_cmake_helpers_options}" FORCE)
+#
 # Dump options
 #
 if(CMAKE_HELPERS_DEBUG)
-  foreach(_cmake_helpers_global IN LISTS _cmake_helpers_globals)
-    message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: ${${_cmake_helpers_global}}")
+  foreach(_cmake_helpers_option IN LISTS _cmake_helpers_options)
+    message(STATUS "[cmake_helpers] ${_cmake_helpers_option}: ${${_cmake_helpers_option}}")
   endforeach()
 endif()
 #

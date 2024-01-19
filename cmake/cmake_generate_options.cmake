@@ -141,10 +141,10 @@ function(cmake_generate_options outvar)
   #
   list(APPEND _common_cmake_options "--no-warn-unused-cli")
   #
-  # Our globals
+  # Our options
   #
-  foreach(_cmake_helpers_global IN LISTS CMAKE_HELPERS_GLOBALS)
-    list(APPEND _common_cmake_options "-D${_cmake_helpers_global}=\"${${_cmake_helpers_global}}\"")
+  foreach(_cmake_helpers_option IN LISTS CMAKE_HELPERS_OPTIONS)
+    list(APPEND _common_cmake_options "-D${_cmake_helpers_option}=\"${${_cmake_helpers_option}}\"")
   endforeach()
   #
   # Save result
