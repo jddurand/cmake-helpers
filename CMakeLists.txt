@@ -4,7 +4,7 @@ project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 # List of our options
 #
 set(_cmake_helpers_globals
-  FETCHCONTENT_BASE_DIR
+  CMAKE_HELPERS_FETCHCONTENT_BASE_DIR
   CMAKE_HELPERS_BUILDS_PATH
   CMAKE_HELPERS_INSTALL_PATH
   CMAKE_HELPERS_DEBUG
@@ -12,23 +12,15 @@ set(_cmake_helpers_globals
   CMAKE_HELPERS_GENERATE_INTTYPES_H
   CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO
 )
-set(CMAKE_HELPERS_GLOBALS "${_cmake_helpers_globals}" CACHE STRING "CMake Helpers global" FORCE)
+# Not all options are boolean
 #
-# Set the options
-#
-if(NOT DEFINED CMAKE_HELPERS_FETCHCONTENT_BASE_DIR)
-  set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
-endif()
-if(NOT DEFINED CMAKE_HELPERS_BUILDS_PATH)
-  set(CMAKE_HELPERS_BUILDS_PATH ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
-endif()
-if(NOT DEFINED CMAKE_HELPERS_INSTALL_PATH)
-  set(CMAKE_HELPERS_INSTALL_PATH ${CMAKE_BINARY_DIR}/cmake_helpers_install)
-endif()
-option(CMAKE_HELPERS_DEBUG                         "CMake Helpers debug"                              OFF)
-option(CMAKE_HELPERS_GENERATE_STDINT_H             "CMake Helpers stdint.h generation if not found"   ON)
-option(CMAKE_HELPERS_GENERATE_INTTYPES_H           "CMake Helpers inttypes.h generation if not found" ON)
-option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects"                  ON)
+set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR         "FetchContent base dir" CACHE PATH ${CMAKE_BINARY_DIR}/_deps)
+set(CMAKE_HELPERS_BUILDS_PATH                   "Common builds path"    CACHE PATH ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
+set(CMAKE_HELPERS_INSTALL_PATH                  "Common install path"   CACHE PATH ${CMAKE_BINARY_DIR}/cmake_helpers_install)
+set(CMAKE_HELPERS_DEBUG                         "CMake Helpers debug"   CACHE BOOL OFF)
+set(CMAKE_HELPERS_GENERATE_STDINT_H             "stdint.h generation if not found" CACHE BOOL ON)
+set(CMAKE_HELPERS_GENERATE_INTTYPES_H           "inttypes.h generation if not found" CACHE BOOL ON)
+set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" CACHE BOOL ON)
 #
 # Dump options
 #
@@ -36,6 +28,12 @@ if(CMAKE_HELPERS_DEBUG)
   foreach(_cmake_helpers_global IN LISTS _cmake_helpers_globals)
     message(STATUS "[cmake_helpers] ${_cmake_helpers_global}: ${${_cmake_helpers_global}}")
   endforeach()
+endif()
+#
+# FETCHCONTENT_BASE_DIR is special
+#
+if(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR)
+  set(FETCHCONTENT_BASE_DIR "FetchContent base dir" CACHE PATH ${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR} FORCE)
 endif()
 #
 # Log that are we being loaded
