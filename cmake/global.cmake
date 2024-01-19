@@ -6,6 +6,7 @@ function(cmake_helpers_global variable value)
     FETCHCONTENT_BASE_DIR
     CMAKE_HELPERS_BUILDS_PATH
     CMAKE_HELPERS_INSTALL_PATH
+    CMAKE_HELPERS_DEBUG
   )
   #
   # The defaults

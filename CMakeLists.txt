@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR) # We require BUILD_LOCAL_INTERFACE
 project(cmake-helpers VERSION 1.0.0 LANGUAGES C CXX)
 #
+# Inject globals first
+#
+include(${PROJECT_SOURCE_DIR}/cmake/global.cmake)
+cmake_helpers_global("" "")
+#
 # Set the options
 #
-option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" OFF)
-option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ON)
-option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ON)
-option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ON)
+option(CMAKE_HELPERS_DEBUG "CMake Helpers debug" ${CMAKE_HELPERS_DEBUG})
+option(CMAKE_HELPERS_GENERATE_STDINT_H "CMake Helpers stdint.h generation if not found" ${CMAKE_HELPERS_GENERATE_STDINT_H})
+option(CMAKE_HELPERS_GENERATE_INTTYPES_H "CMake Helpers inttypes.h generation if not found" ${CMAKE_HELPERS_GENERATE_INTTYPES_H})
+option(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" ${CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO})
 #
 # Log that are we being loaded
 #
@@ -14,7 +19,7 @@ if(CMAKE_HELPERS_DEBUG)
   message(STATUS "[cmake_helpers] Loading version ${PROJECT_VERSION} at ${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 #
-# Load all cmake file
+# Load all cmake file, this is a problem if we reload cmake/global.cmake
 #
 file(GLOB _files ${PROJECT_SOURCE_DIR}/cmake/*.cmake)
 foreach (_file ${_files})
