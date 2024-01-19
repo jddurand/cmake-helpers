@@ -14,17 +14,17 @@ set(_cmake_helpers_options
 )
 # Not all options are boolean
 #
-set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR         "FetchContent base dir" CACHE PATH ${CMAKE_BINARY_DIR}/_deps)
-set(CMAKE_HELPERS_BUILDS_PATH                   "Common builds path"    CACHE PATH ${CMAKE_BINARY_DIR}/cmake_helpers_builds)
-set(CMAKE_HELPERS_INSTALL_PATH                  "Common install path"   CACHE PATH ${CMAKE_BINARY_DIR}/cmake_helpers_install)
-set(CMAKE_HELPERS_DEBUG                         "CMake Helpers debug"   CACHE BOOL OFF)
-set(CMAKE_HELPERS_GENERATE_STDINT_H             "stdint.h generation if not found" CACHE BOOL ON)
-set(CMAKE_HELPERS_GENERATE_INTTYPES_H           "inttypes.h generation if not found" CACHE BOOL ON)
-set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO "Exclude install of sub-projects" CACHE BOOL ON)
+set(CMAKE_HELPERS_FETCHCONTENT_BASE_DIR         ${CMAKE_BINARY_DIR}/_deps                 CACHE PATH "FetchContent base dir")
+set(CMAKE_HELPERS_BUILDS_PATH                   ${CMAKE_BINARY_DIR}/cmake_helpers_builds  CACHE PATH "Common builds path")
+set(CMAKE_HELPERS_INSTALL_PATH                  ${CMAKE_BINARY_DIR}/cmake_helpers_install CACHE PATH "Common install path")
+set(CMAKE_HELPERS_DEBUG                         OFF                                       CACHE BOOL "CMake Helpers debug")
+set(CMAKE_HELPERS_GENERATE_STDINT_H             ON                                        CACHE BOOL "stdint.h generation if not found")
+set(CMAKE_HELPERS_GENERATE_INTTYPES_H           ON                                        CACHE BOOL "inttypes.h generation if not found")
+set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO ON                                        CACHE BOOL "Exclude install of sub-projects")
 #
 # Save options for reuse in cmake_generate_options
 #
-set(CMAKE_HELPERS_OPTIONS "CMake Helpers options" CACHE INTERNAL "${_cmake_helpers_options}" FORCE)
+set(CMAKE_HELPERS_OPTIONS                       "${_cmake_helpers_options}"               CACHE INTERNAL "CMake Helpers options" FORCE)
 #
 # Dump options
 #
