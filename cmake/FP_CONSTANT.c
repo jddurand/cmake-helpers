@@ -2,6 +2,10 @@
 #cmakedefine HAVE_MATH_H
 #cmakedefine HAVE_FLOAT_H
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
