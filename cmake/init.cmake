@@ -513,7 +513,7 @@ function(cmake_helpers_init)
   # Header files generation
   #
   set(_header_files_generated FALSE)
-  set(_output_gen_dir ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
+  set(_output_gen_dir ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
   if(((NOT DEFINED HAVE_STDINT_H) OR (NOT HAVE_STDINT_H)) AND CMAKE_HELPERS_GENERATE_STDINT_H)
     set(_output_file ${_output_gen_dir}/stdint.h)
     if(NOT EXISTS ${_output_file})
@@ -537,7 +537,7 @@ function(cmake_helpers_init)
     set(_header_files_generated TRUE)
   endif()
   if(_header_files_generated)
-    message(STATUS "\${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_INCLUDEDIR} should be added by caller to its include path")
+    message(STATUS "\${CMAKE_BINARY_DIR}/\${CMAKE_INSTALL_INCLUDEDIR} may be added by caller to its include path")
   endif()
   set(CMAKE_EXTRA_INCLUDE_FILES ${CMAKE_EXTRA_INCLUDE_FILES_BACKUP})
   #
