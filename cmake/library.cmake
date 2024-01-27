@@ -1641,6 +1641,7 @@ endif()
       list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_scope)
       math(EXPR _j "${_j} + 1")
       list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_lib)
+      prefer_static_dependencies(_cmake_helpers_library_depend_lib ${_cmake_helpers_library_depend_lib})
       foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
@@ -1648,7 +1649,6 @@ endif()
 	    #
 	    # An interface's target can only have the INTERFACE scope
 	    #
-            message(WARNING "${_cmake_helpers_library_depend_lib} is an interface library - scope ${_cmake_helpers_library_depend_scope} changed to INTERFACE")
 	    set(_cmake_helpers_library_depend_scope "INTERFACE")
           endif()
 	endif()
@@ -1674,6 +1674,7 @@ endif()
       list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_interface)
       math(EXPR _j "${_j} + 1")
       list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_lib)
+      prefer_static_dependencies(_cmake_helpers_library_depend_lib ${_cmake_helpers_library_depend_lib})
       foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
@@ -1681,7 +1682,6 @@ endif()
 	    #
 	    # An interface's target can only have the INTERFACE scope
 	    #
-            message(WARNING "${_cmake_helpers_library_depend_lib} is an interface library - scope ${_cmake_helpers_library_depend_scope} changed to INTERFACE")
 	    set(_cmake_helpers_library_depend_scope "INTERFACE")
           endif()
 	endif()
