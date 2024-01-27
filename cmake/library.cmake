@@ -450,6 +450,10 @@ function(cmake_helpers_library name)
       )
       cmake_helpers_call(add_library ${_cmake_helpers_library_target}_iface INTERFACE)
       cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target}_iface INTERFACE ${_cmake_helpers_library_target} $<TARGET_OBJECTS:${_cmake_helpers_library_target}>)
+      #
+      # ${_cmake_helpers_library_target}_iface is never exported and exist only when the project is added via add_directory().
+      #
+      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES CMAKE_HELPERS_IFACE_TARGET "${_cmake_helpers_library_target}_iface")
     endif()
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
     if(_cmake_helpers_library_type_any_compile_options)
