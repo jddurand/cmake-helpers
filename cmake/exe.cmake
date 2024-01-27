@@ -125,6 +125,7 @@ Function(cmake_helpers_exe name)
   set(_cmake_helpers_exe_targets)
   set(_cmake_helpers_exe_test_targets)
   set(_cmake_helpers_exe_build_targets)
+  set(_cmake_helpers_exe_install_targets)
   if(NOT _cmake_helpers_exe_library_targets)
     set(_cmake_helpers_exe_library_targets FALSE)
   endif()
@@ -253,6 +254,7 @@ Function(cmake_helpers_exe name)
 	  DESTINATION ${CMAKE_HELPERS_INSTALL_CMAKEDIR}
 	  COMPONENT ${PROJECT_NAME}ExeComponent
 	)
+        list(APPEND _cmake_helpers_exe_install_targets ${_cmake_helpers_exe_target})
       endif()
     endif()
     if(_cmake_helpers_exe_test)
@@ -415,6 +417,15 @@ Function(cmake_helpers_exe name)
       endif()
       cmake_helpers_call(set_tests_properties ${_cmake_helpers_exe_test_target} PROPERTIES DEPENDS ${_cmake_helpers_exe_build_target})
     endif()
+  endforeach()
+  #
+  # For installed targets, add the NEIGHBOR_TARGETS exported property
+  #
+  foreach(_cmake_helpers_exe_target IN LISTS _cmake_helpers_exe_install_targets)
+    set(_cmake_helpers_exe_neighbor_targets ${_cmake_helpers_exe_install_targets})
+    list(REMOVE_ITEM _cmake_helpers_exe_neighbor_targets ${_cmake_helpers_exe_target})
+    cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES NEIGHBOR_TARGETS "${_cmake_helpers_exe_neighbor_targets}")
+    cmake_helpers_call(set_target_properties ${_cmake_helpers_exe_target} PROPERTIES EXPORT_PROPERTIES "NEIGHBOR_TARGETS")
   endforeach()
   #
   # Apply target dependencies
