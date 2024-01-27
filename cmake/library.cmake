@@ -457,6 +457,14 @@ function(cmake_helpers_library name)
     endif()
   endforeach()
   #
+  # We always add CMAKE_HELPERS_NEIGHBOR_TARGETS custom property to library targets
+  #
+  foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+    set(_cmake_helpers_library_neighbor_targets ${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets})
+    list(REMOVE_ITEM _cmake_helpers_library_neighbor_targets ${_cmake_helpers_library_target})
+    cmake_helpers_call(set_property TARGET ${_cmake_helpers_library_target} APPEND PROPERTY EXPORT_PROPERTIES NEIGHBOR_TARGETS "${_cmake_helpers_library_neighbor_targets}")
+  endforeach()
+  #
   # FILE_SETs
   # Headers are splitted in two FILE_SETs that share the same base dirs:
   # - Public headers go in the public file set "public_headers"
