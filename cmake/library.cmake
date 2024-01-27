@@ -1644,10 +1644,13 @@ endif()
       foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-	  #
-	  # An interface's target can only have the INTERFACE scope
-	  #
-	  set(_cmake_helpers_library_depend_scope "INTERFACE")
+          if(NOT (_cmake_helpers_library_depend_scope STREQUAL "INTERFACE"))
+	    #
+	    # An interface's target can only have the INTERFACE scope
+	    #
+            message(WARNING "${_cmake_helpers_library_depend_lib} is an interface library - scope ${_cmake_helpers_library_depend_scope} changed to INTERFACE")
+	    set(_cmake_helpers_library_depend_scope "INTERFACE")
+          endif()
 	endif()
 	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_scope} ${_cmake_helpers_library_depend_lib})
       endforeach()
@@ -1674,10 +1677,13 @@ endif()
       foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
-	  #
-	  # An interface's target can only have the INTERFACE scope
-	  #
-	  set(_cmake_helpers_library_depend_scope "INTERFACE")
+          if(NOT (_cmake_helpers_library_depend_scope STREQUAL "INTERFACE"))
+	    #
+	    # An interface's target can only have the INTERFACE scope
+	    #
+            message(WARNING "${_cmake_helpers_library_depend_lib} is an interface library - scope ${_cmake_helpers_library_depend_scope} changed to INTERFACE")
+	    set(_cmake_helpers_library_depend_scope "INTERFACE")
+          endif()
 	endif()
 	cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target} ${_cmake_helpers_library_depend_scope} $<${_cmake_helpers_library_depend_interface}:${_cmake_helpers_library_depend_lib}>)
       endforeach()
