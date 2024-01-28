@@ -509,7 +509,7 @@ function(cmake_helpers_depend depname)
 	    # We look for all *.cmake in ${CMAKE_HELPERS_INSTALL_PATH}, collect the directories in CMAKE_PREFIX_PATH,
 	    # Make sure that NO_CMAKE_PATH is not in find_package arguments nor that CMAKE_FIND_USE_CMAKE_PATH is FALSE.
 	    #
-	    cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES|false ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake)
+	    cmake_helpers_call(file GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${CMAKE_HELPERS_INSTALL_PATH}/*.cmake)
 	    set(_cmake_helpers_depend_prefix_paths)
 	    foreach(_cmake IN LISTS _cmakes)
 	      get_filename_component(_dir ${_cmake} DIRECTORY)
