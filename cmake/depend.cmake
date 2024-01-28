@@ -408,7 +408,11 @@ function(cmake_helpers_depend depname)
       # FetchContent_Populate() ?
       #
       cmake_helpers_call(FetchContent_GetProperties ${depname})
-      if(NOT ${_depname_tolower}_POPULATED)
+      if(${_depname_tolower}_POPULATED)
+	if(CMAKE_HELPERS_DEBUG)
+	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname} already populated")
+	endif()
+      else()
 	message(STATUS "[${_cmake_helpers_logprefix}] Populating ${depname}")
 	cmake_helpers_call(FetchContent_Populate ${depname})
 	if(CMAKE_HELPERS_DEBUG)
