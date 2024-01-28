@@ -405,8 +405,9 @@ function(cmake_helpers_depend depname)
 	OVERRIDE_FIND_PACKAGE
       )
       #
-      # FetchContent_Populate()
+      # FetchContent_Populate() ?
       #
+      cmake_helpers_call(FetchContent_GetProperties ${depname})
       if(NOT ${_depname_tolower}_POPULATED)
 	message(STATUS "[${_cmake_helpers_logprefix}] Populating ${depname}")
 	cmake_helpers_call(FetchContent_Populate ${depname})
@@ -416,6 +417,10 @@ function(cmake_helpers_depend depname)
       else()
 	message(STATUS "[${_cmake_helpers_logprefix}] ${depname} already populated")
       endif()
+      #
+      # No need to call FetchContent_GetProperties here, because if ${_depname_tolower}_POPULATED was FALSE thereupper,
+      # then we call FetchContent_Populate that will always set ${_depname_tolower}_POPULATED on success
+      #
       if(${_depname_tolower}_POPULATED)
 	if(CMAKE_HELPERS_DEBUG)
 	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_SOURCE_DIR: ${${_depname_tolower}_SOURCE_DIR}")
@@ -427,6 +432,7 @@ function(cmake_helpers_depend depname)
     #
     # If not populated and REQUIRED, this is an error
     #
+    cmake_helpers_call(FetchContent_GetProperties ${depname})
     if(NOT ${_depname_tolower}_POPULATED)
       if(_cmake_helpers_depend_have_required)
 	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] ${depname} cannot be populated")
