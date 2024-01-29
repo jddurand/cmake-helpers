@@ -439,7 +439,11 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_objectTargets)
   foreach(_cmake_helpers_library_type IN LISTS _cmake_helpers_library_types)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
+    #
+    # Note that we omit sources, this is ok because we use target_sources later on
+    #
     # cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
+    cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type})
     #
     # We always create interfaces version of all libraries that are not pure interfaces
     #
@@ -448,7 +452,8 @@ function(cmake_helpers_library name)
 	(_cmake_helpers_library_type STREQUAL "STATIC") OR
 	(_cmake_helpers_library_type STREQUAL "MODULE")
       )
-      cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs OBJECT ${_cmake_helpers_library_sources})
+      # cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs OBJECT ${_cmake_helpers_library_sources})
+      cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs OBJECT)
       list(APPEND _cmake_helpers_library_objectTargets ${_cmake_helpers_library_target}_objs)
       cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs_iface INTERFACE)
       cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target}_objs_iface INTERFACE ${_cmake_helpers_library_target}_objs $<TARGET_OBJECTS:${_cmake_helpers_library_target}_objs>)
