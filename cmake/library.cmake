@@ -448,7 +448,7 @@ function(cmake_helpers_library name)
 	(_cmake_helpers_library_type STREQUAL "STATIC") OR
 	(_cmake_helpers_library_type STREQUAL "MODULE")
       )
-      cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs OBJECT ${_cmake_helpers_library_sources} EXCLUDE_FROM_ALL)
+      cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs OBJECT ${_cmake_helpers_library_sources})
       list(APPEND _cmake_helpers_library_objectTargets ${_cmake_helpers_library_target}_objs)
       cmake_helpers_call(add_library ${_cmake_helpers_library_target}_objs_iface INTERFACE EXCLUDE_FROM_ALL)
       cmake_helpers_call(target_link_libraries ${_cmake_helpers_library_target}_objs_iface INTERFACE ${_cmake_helpers_library_target}_objs $<TARGET_OBJECTS:${_cmake_helpers_library_target}_objs>)
