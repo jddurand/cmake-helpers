@@ -114,6 +114,7 @@ function(cmake_helpers_library name)
     NTRACE
     TARGETS_OUTVAR
     ADD_VERSION_DEFINES
+    INTERNAL
   )
   set(_multiValueArgs
     FIND_DEPENDENCIES
@@ -199,6 +200,7 @@ function(cmake_helpers_library name)
   set(_cmake_helpers_library_ntrace                               TRUE)
   set(_cmake_helpers_library_targets_outvar                       FALSE)
   set(_cmake_helpers_library_add_version_defines                  TRUE)
+  set(_cmake_helpers_library_internal                             FALSE)
   #
   # Multiple-value arguments default values
   #
@@ -1663,23 +1665,25 @@ endif()
     endforeach()
   endif()
   #
-  # Save properties
+  # Save properties if not an internal thingy
   #
-  if(CMAKE_HELPERS_DEBUG)
-    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
-    message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
-    message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
+  if(NOT _cmake_helpers_library_internal)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
+      message(STATUS "[${_cmake_helpers_logprefix}] Setting directory properties")
+      message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
+    endif()
+    foreach(_cmake_helpers_library_property IN LISTS _cmake_helpers_library_properties)
+      if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property})
+	cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property}})
+      endif()
+    endforeach()
+    foreach(_cmake_helpers_library_array_property IN LISTS _cmake_helpers_library_array_properties)
+      if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property})
+	cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} APPEND PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property}})
+      endif()
+    endforeach()
   endif()
-  foreach(_cmake_helpers_library_property IN LISTS _cmake_helpers_library_properties)
-    if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property})
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_property}})
-    endif()
-  endforeach()
-  foreach(_cmake_helpers_library_array_property IN LISTS _cmake_helpers_library_array_properties)
-    if(cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property})
-      cmake_helpers_call(set_property DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} APPEND PROPERTY cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property} ${cmake_helpers_property_${PROJECT_NAME}_${_cmake_helpers_library_array_property}})
-    endif()
-  endforeach()
   #
   # Send-out the targets
   #
