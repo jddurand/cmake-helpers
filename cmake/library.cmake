@@ -1551,7 +1551,8 @@ endif()
     #
     # Install CODE hook for the ConfigComponent
     #
-    install(CODE "        set(CMAKE_HELPERS_CPACK_IS_RUNNING \$ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
+    if(cmake_helpers_property_${PROJECT_NAME}_PkgConfigHookScript)
+      install(CODE "        set(CMAKE_HELPERS_CPACK_IS_RUNNING \$ENV{CMAKE_HELPERS_CPACK_IS_RUNNING})
   #
   # We do not want to run this when it is CPack
   #
@@ -1591,8 +1592,9 @@ endif()
     )
   endif()
 "
-      COMPONENT ${PROJECT_NAME}ConfigComponent
-    )
+	COMPONENT ${PROJECT_NAME}ConfigComponent
+      )
+    endif()
   endif()
   #
   # Apply dependencies
