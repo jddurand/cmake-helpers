@@ -372,40 +372,16 @@ function(cmake_helpers_depend depname)
 	message(FATAL_ERROR "[${_cmake_helpers_logprefix}] Unknown alternative ${_cmake_helpers_depend_alternative}")
       endif()
       #
-      # Whatever the default, we always to be a new binary tree
-      #
-      set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname})
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] Checking if ${_cmake_helpers_depend_build_path} exist")
-      endif()
-      if(EXISTS ${_cmake_helpers_depend_build_path})
-	#
-	# Loop until the path does not exist
-	#
-	set(_cmake_helpers_depend_build_count 0)
-	while(TRUE)
-	  math(EXPR _cmake_helpers_depend_build_count "${_cmake_helpers_depend_build_count} + 1")
-	  set(_cmake_helpers_depend_build_path ${CMAKE_HELPERS_BUILDS_PATH}/${depname}-${_cmake_helpers_depend_build_count})
-	  if(CMAKE_HELPERS_DEBUG)
-	    message(STATUS "[${_cmake_helpers_logprefix}] Checking if ${_cmake_helpers_depend_build_path} exist")
-	  endif()
-	  if(NOT EXISTS ${_cmake_helpers_depend_build_path})
-	    break()
-	  endif()
-	endwhile()
-      endif()
-      #
       # FetchContent_Declare()
       #
       cmake_helpers_call(FetchContent_Declare ${depname}
 	${_cmake_helpers_depend_content_options}
-	BINARY_DIR ${_cmake_helpers_depend_build_path}
 	${_cmake_helpers_depend_fetchcontent_declare_exclude_from_all}
 	${_cmake_helpers_depend_fetchcontent_declare_system}
 	OVERRIDE_FIND_PACKAGE
       )
       #
-      # FetchContent_Populate() ?
+      # Already populated ?
       #
       cmake_helpers_call(FetchContent_GetProperties ${depname})
       if(${_depname_tolower}_POPULATED)
@@ -413,12 +389,9 @@ function(cmake_helpers_depend depname)
       else()
 	message(STATUS "[${_cmake_helpers_logprefix}] Populating ${depname}")
 	cmake_helpers_call(FetchContent_Populate ${depname})
-	if(CMAKE_HELPERS_DEBUG)
-	  message(STATUS "[${_cmake_helpers_logprefix}] ${_depname_tolower}_POPULATED: ${${_depname_tolower}_POPULATED}")
-	endif()
       endif()
       #
-      # No need to call FetchContent_GetProperties here, because if ${_depname_tolower}_POPULATED was FALSE thereupper,
+      # No need to call again FetchContent_GetProperties here, because if ${_depname_tolower}_POPULATED is FALSE,
       # then we call FetchContent_Populate that will always set ${_depname_tolower}_POPULATED on success
       #
       if(${_depname_tolower}_POPULATED)
@@ -469,7 +442,7 @@ function(cmake_helpers_depend depname)
       execute_process(
 	COMMAND ${CMAKE_COMMAND}
           -DCMAKE_HELPERS_DEBUG=${CMAKE_HELPERS_DEBUG}
-	  -DFETCHCONTENT_BASE_DIR=${FETCHCONTENT_BASE_DIR}  
+	  -DFETCHCONTENT_BASE_DIR=${CMAKE_HELPERS_FETCHCONTENT_BASE_DIR}
           ${_cmake_helpers_depend_cmake_generate_options}
           -S "${${_depname_tolower}_SOURCE_DIR}"
           -B "${${_depname_tolower}_BINARY_DIR}"
