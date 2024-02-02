@@ -353,7 +353,7 @@ endif()
   # to remember that is via CPACK_INSTALL_SCRIPTS.
   #
   set(_cpack_install_script ${CMAKE_BINARY_DIR}/cpack_install_script.cmake)
-  set(_cpack_local_install_prefix_txt ${CMAKE_BINARY_DIR}/cpack_local_install_prefix.txt)
+  set(_cpack_local_install_prefix_txt ${CMAKE_HELPERS_BUILDS_PATH}/cpack_local_install_prefix.txt)
   if(PROJECT_IS_TOP_LEVEL)
     file(WRITE  ${_cpack_install_script} "message(STATUS \"Remembering local install prefix: \${CMAKE_INSTALL_PREFIX}\")\n")
     file(APPEND ${_cpack_install_script} "file(WRITE \"${_cpack_local_install_prefix_txt}\" \${CMAKE_INSTALL_PREFIX})\n")
