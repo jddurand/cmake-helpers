@@ -52,6 +52,7 @@ function(cmake_helpers_depend depname)
   # Default values
   #
   set(_env_cmake_helpers_win32_packaging $ENV{CMAKE_HELPERS_WIN32_PACKAGING})
+  set(_env_cmake_helpers_generator_config_default $ENV{CMAKE_HELPERS_GENERATOR_CONFIG_DEFAULT})
   set(_cmake_helpers_depend_file                            "")
   if(_env_cmake_helpers_win32_packaging)
     set(_cmake_helpers_depend_exclude_from_all              FALSE)
@@ -76,7 +77,11 @@ function(cmake_helpers_depend depname)
   # We always end up with a find_package, so we also want to specify import configuration mapping.
   #
   cmake_helpers_call(get_property _cmake_helpers_depend_generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-  set(_cmake_helpers_depend_generator_config_default        RelWithDebInfo)
+  if(NOT("x${_env_cmake_helpers_generator_config_default}" STREQUAL "x"))
+    set(_cmake_helpers_depend_generator_config_default        ${_env_cmake_helpers_generator_config_default})
+  else()
+    set(_cmake_helpers_depend_generator_config_default        RelWithDebInfo)
+  endif()
   if(_cmake_helpers_depend_generator_is_multi_config)
     #
     # Multi-generator. config is not know until build/install steps.
