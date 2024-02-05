@@ -1049,11 +1049,13 @@ foreach(_cmake IN LISTS _cmakes)
   endif()
 endforeach()
 message(STATUS "[${_cmake_helpers_logprefix}] _cmakedirs: ${_cmakedirs}")
-list(PREPEND CMAKE_PREFIX_PATH ${_cmakedirs})
 #
-# Prepend CMAKE_HELPERS_INSTALL_PREFIX (which is the final destination), CMAKE_HELPERS_CMAKEDIR (final destination/lib/cmake) and _cmakedirs (local cmake installs)
+# Prepend:
+# CMAKE_HELPERS_CMAKEDIR (final destination/lib/cmake)
+# _cmakedirs (local cmake installs)
+# CMAKE_HELPERS_INSTALL_PREFIX (final destination)
 #
-list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PREFIX} ${CMAKE_HELPERS_CMAKEDIR} ${_cmakedirs})
+list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_CMAKEDIR} ${_cmakedirs} ${CMAKE_HELPERS_INSTALL_PREFIX})
 #
 # Say to find_package to use CMAKE_PREFIX_PATH
 #
@@ -1490,7 +1492,7 @@ endif()
   endif()
   set(_destination \${CMAKE_INSTALL_PREFIX})
   cmake_path(CONVERT \"\${_destination}\" TO_CMAKE_PATH_LIST _destination NORMALIZE)
-  if(\$ENV{DESTDIR})
+  if(NOT(\"x\$ENV{DESTDIR}\" STREQUAL \"x\"))
     cmake_path(CONVERT \"\$ENV{DESTDIR}\" TO_CMAKE_PATH_LIST _destdir NORMALIZE)
     string(LENGTH \${_destination} _destination_length)
     if(_destination_length GREATER 1)
@@ -1501,7 +1503,7 @@ endif()
         string(SUBSTRING \"\${_destination}\" 2 1 _ch3)
       endif()
       set(_skip 0)
-      if(NOT (ch1 STREQUAL \"/\"))
+      if(NOT (_ch1 STREQUAL \"/\"))
         set(_relative 0)
         if((((_ch1 STRGREATER_EQUAL \"a\") AND (_ch1 STRLESS_EQUAL \"z\")) OR ((_ch1 STRGREATER_EQUAL \"A\") AND (_ch1 STRLESS_EQUAL \"Z\"))) AND (_ch2 STREQUAL \":\"))
           #
