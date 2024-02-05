@@ -1019,11 +1019,11 @@ foreach(_pc IN LISTS _pcs)
 endforeach()
 message(STATUS "[${_cmake_helpers_logprefix}] _pcdirs: ${_pcdirs}")
 if(_pcdirs)
-  if(WIN32 AND NOT CYGWIN)
-    set(_path_separator ";")
-  else()
-    set(_path_separator ":")
-  endif()
+  #
+  # Recuperate path separator
+  #
+  cmake_path(CONVERT "x;y" TO_NATIVE_PATH_LIST _xy)
+  string(SUBSTRING "${_xy}" 1 1 _path_separator)
   if("x$ENV{PKG_CONFIG_PATH}" STREQUAL "x")
     list(JOIN _pcdirs "${_path_separator}" _pcdirs_join)
     set(ENV{PKG_CONFIG_PATH} ${_pcdirs_join})
@@ -1034,9 +1034,26 @@ if(_pcdirs)
 endif()
 message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CONFIG_PATH}")
 #
-# We know we are installed in CMAKE_HELPERS_CMAKEDIR: append it also to CMAKE_PREFIX_PATH
+# Alike for *.pc, look for *.cmake files that we installed locally
 #
-list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PREFIX} ${CMAKE_HELPERS_CMAKEDIR})
+set(_cmakedirs)
+file(GLOB_RECURSE _cmakes LIST_DIRECTORIES false ${_cmake_helpers_install_path}/*.cmake)
+foreach(_cmake IN LISTS _cmakes)
+  get_filename_component(_dir ${_cmake} DIRECTORY)
+  if(NOT _dir IN_LIST _cmakedirs)
+    if(CMAKE_HELPERS_DEBUG)
+      message(STATUS "[${_cmake_helpers_logprefix}] Found cmake dir: ${_dir}")
+    endif()
+    cmake_path(CONVERT ${_dir} TO_CMAKE_PATH_LIST _dir NORMALIZE)
+    list(APPEND _cmakedirs ${_dir})
+  endif()
+endforeach()
+message(STATUS "[${_cmake_helpers_logprefix}] _cmakedirs: ${_cmakedirs}")
+list(PREPEND CMAKE_PREFIX_PATH ${_cmakedirs})
+#
+# Prepend CMAKE_HELPERS_INSTALL_PREFIX (which is the final destination), CMAKE_HELPERS_CMAKEDIR (final destination/lib/cmake) and _cmakedirs (local cmake installs)
+#
+list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_HELPERS_INSTALL_PREFIX} ${CMAKE_HELPERS_CMAKEDIR} ${_cmakedirs})
 #
 # Say to find_package to use CMAKE_PREFIX_PATH
 #
