@@ -395,11 +395,20 @@ set(_cmake_helpers_install_path \"${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
+set(_have_env_destdir FALSE)
+if(DEFINED ENV{DESTDIR})
+  set(_have_env_destdir TRUE)
+  set(_destdir_backup $ENV{DESTDIR})
+  unset(ENV{DESTDIR})
+endif()
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --config ${_cmake_helpers_package_config} --prefix \"\${_cmake_helpers_install_path}\"
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
+if(_have_env_destdir)
+  set(ENV{DESTDIR} ${_destdir_backup})
+endif()
 if(NOT EXISTS \"${_cpack_local_install_prefix_txt}\")
   message(FATAL_ERROR \"${_cpack_local_install_prefix_txt} does not exist\")
 endif()
@@ -449,11 +458,20 @@ set(_cmake_helpers_install_path \"${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
 message(STATUS \"Doing a local install of ${PROJECT_NAME} in \${_cmake_helpers_install_path}\")
 message(STATUS \"******************************************************************************\")
+set(_have_env_destdir FALSE)
+if(DEFINED ENV{DESTDIR})
+  set(_have_env_destdir TRUE)
+  set(_destdir_backup $ENV{DESTDIR})
+  unset(ENV{DESTDIR})
+endif()
 execute_process(
   COMMAND \"${CMAKE_COMMAND}\" --install \"${CMAKE_CURRENT_BINARY_DIR}\" --prefix \"\${_cmake_helpers_install_path}\"
   ${_cmake_helpers_package_command_echo_stdout}
   COMMAND_ERROR_IS_FATAL ANY
 )
+if(_have_env_destdir)
+  set(ENV{DESTDIR} ${_destdir_backup})
+endif()
 if(NOT EXISTS \"${_cpack_local_install_prefix_txt}\")
   message(FATAL_ERROR \"${_cpack_local_install_prefix_txt} does not exist\")
 endif()

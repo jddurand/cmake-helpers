@@ -477,6 +477,11 @@ function(cmake_helpers_depend depname)
 	)
 	if(_cmake_helpers_depend_install AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
           message(STATUS "[${_cmake_helpers_logprefix}] Installing ${depname} in ${CMAKE_HELPERS_INSTALL_PATH}")
+          if(DEFINED ENV{DESTDIR})
+            set(_have_env_destdir TRUE)
+            set(_destdir_backup $ENV{DESTDIR})
+            unset(ENV{DESTDIR})
+          endif()
           execute_process(
             COMMAND ${CMAKE_COMMAND}
               --install "${${_depname_tolower}_BINARY_DIR}"
@@ -486,6 +491,9 @@ function(cmake_helpers_depend depname)
             ${_cmake_helpers_process_command_echo_stdout}
             ${_cmake_helpers_process_command_error_is_fatal}
           )
+          if(_have_env_destdir)
+            set(ENV{DESTDIR} ${_destdir_backup})
+          endif()
 	  if(_cmake_helpers_depend_find AND ((NOT _result_variable) OR (_result_variable EQUAL 0)))
 	    #
 	    # Re-do a find_package
