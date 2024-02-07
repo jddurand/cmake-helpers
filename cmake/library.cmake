@@ -452,21 +452,22 @@ function(cmake_helpers_library name)
     # For shared, static and module libraries, we always create convenient libraries that are outside of the ALL target:
     # - object library
     # - interface on the object library
+    #
     if(
 	(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR
 	(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY") OR
 	(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
-	cmake_helpers_call(add_library objs_${_cmake_helpers_library_target} OBJECT ${_cmake_helpers_library_sources} EXCLUDE_FROM_ALL)
-	list(APPEND _cmake_helpers_library_targets objs_${_cmake_helpers_library_target})
-	if(_cmake_helpers_library_type_any_compile_options)
-	  cmake_helpers_call(target_compile_options objs_${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
-	endif()
-	cmake_helpers_call(add_library iface_objs_${_cmake_helpers_library_target} INTERFACE EXCLUDE_FROM_ALL)
-	cmake_helpers_call(target_link_libraries iface_objs_${_cmake_helpers_library_target} INTERFACE objs_${_cmake_helpers_library_target} $<TARGE_OBJECTS:objs_${_cmake_helpers_library_target}>)
-	#
-	# We voluntarily do not add iface_objs_${_cmake_helpers_library_target} to _cmake_helpers_library_targets
-	#
       )
+      cmake_helpers_call(add_library objs_${_cmake_helpers_library_target} OBJECT ${_cmake_helpers_library_sources} EXCLUDE_FROM_ALL)
+      list(APPEND _cmake_helpers_library_targets objs_${_cmake_helpers_library_target})
+      if(_cmake_helpers_library_type_any_compile_options)
+	cmake_helpers_call(target_compile_options objs_${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
+      endif()
+      cmake_helpers_call(add_library iface_objs_${_cmake_helpers_library_target} INTERFACE EXCLUDE_FROM_ALL)
+      cmake_helpers_call(target_link_libraries iface_objs_${_cmake_helpers_library_target} INTERFACE objs_${_cmake_helpers_library_target} $<TARGE_OBJECTS:objs_${_cmake_helpers_library_target}>)
+      #
+      # We voluntarily do not add iface_objs_${_cmake_helpers_library_target} to _cmake_helpers_library_targets
+      #
     endif()
   endforeach()
   #
