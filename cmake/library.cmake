@@ -438,12 +438,35 @@ function(cmake_helpers_library name)
     message(STATUS "[${_cmake_helpers_logprefix}] Creating targets")
     message(STATUS "[${_cmake_helpers_logprefix}] ----------------")
   endif()
+  set(_cmake_helpers_library_targets)
   foreach(_cmake_helpers_library_type IN LISTS _cmake_helpers_library_types)
     set(_cmake_helpers_library_target ${_cmake_helpers_library_type_${_cmake_helpers_library_type}_name})
     cmake_helpers_call(add_library ${_cmake_helpers_library_target} ${_cmake_helpers_library_type} ${_cmake_helpers_library_sources})
     list(APPEND cmake_helpers_property_${PROJECT_NAME}_LibraryTargets ${_cmake_helpers_library_target})
+    list(APPEND _cmake_helpers_library_targets ${_cmake_helpers_library_target})
     if(_cmake_helpers_library_type_any_compile_options)
       cmake_helpers_call(target_compile_options ${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
+    endif()
+    get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
+    #
+    # For shared, static and module libraries, we always create convenient libraries that are outside of the ALL target:
+    # - object library
+    # - interface on the object library
+    if(
+	(_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR
+	(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY") OR
+	(_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY")
+	cmake_helpers_call(add_library objs_${_cmake_helpers_library_target} OBJECT ${_cmake_helpers_library_sources} EXCLUDE_FROM_ALL)
+	list(APPEND _cmake_helpers_library_targets objs_${_cmake_helpers_library_target})
+	if(_cmake_helpers_library_type_any_compile_options)
+	  cmake_helpers_call(target_compile_options objs_${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
+	endif()
+	cmake_helpers_call(add_library iface_objs_${_cmake_helpers_library_target} INTERFACE EXCLUDE_FROM_ALL)
+	cmake_helpers_call(target_link_libraries iface_objs_${_cmake_helpers_library_target} INTERFACE objs_${_cmake_helpers_library_target} $<TARGE_OBJECTS:objs_${_cmake_helpers_library_target}>)
+	#
+	# We voluntarily do not add iface_objs_${_cmake_helpers_library_target} to _cmake_helpers_library_targets
+	#
+      )
     endif()
   endforeach()
   #
@@ -453,7 +476,7 @@ function(cmake_helpers_library name)
   # - Private headers go in the private file set "private_headers"
   # This is duplicating base_dirs in include directories, but there is no harm with that.
   #
-  foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+  foreach(_cmake_helpers_library_target IN LISTS _cmake_helpers_library_targets)
     cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PUBLIC FILE_SET public_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
     cmake_helpers_call(target_sources ${_cmake_helpers_library_target} PRIVATE FILE_SET private_headers BASE_DIRS ${_cmake_helpers_library_headers_base_dirs} TYPE HEADERS)
   endforeach()
@@ -575,7 +598,7 @@ function(cmake_helpers_library name)
   #
   # Targets specifics
   #
-  foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+  foreach(_cmake_helpers_library_target IN LISTS _cmake_helpers_library_targets)
     get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
     if(CMAKE_HELPERS_DEBUG)
       message(STATUS "[${_cmake_helpers_logprefix}] ----------------------------")
@@ -743,7 +766,7 @@ function(cmake_helpers_library name)
     # We select the targets to install
     #
     set(_cmake_helpers_library_install_targets)
-    foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+    foreach(_cmake_helpers_library_target IN LISTS _cmake_helpers_library_targets)
       get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
       if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
 	list(APPEND _cmake_helpers_library_install_targets ${_cmake_helpers_library_target})
@@ -1639,7 +1662,7 @@ endif()
       list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_scope)
       math(EXPR _j "${_j} + 1")
       list(GET _cmake_helpers_library_depends ${_j} _cmake_helpers_library_depend_lib)
-      foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+      foreach(_cmake_helpers_library_target IN LISTS _cmake_helpers_library_targets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
           if(NOT (_cmake_helpers_library_depend_scope STREQUAL "INTERFACE"))
@@ -1671,7 +1694,7 @@ endif()
       list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_interface)
       math(EXPR _j "${_j} + 1")
       list(GET _cmake_helpers_library_depends_ext ${_j} _cmake_helpers_library_depend_lib)
-      foreach(_cmake_helpers_library_target IN LISTS cmake_helpers_property_${PROJECT_NAME}_LibraryTargets)
+      foreach(_cmake_helpers_library_target IN LISTS _cmake_helpers_library_targets)
 	get_target_property(_cmake_helpers_library_target_type ${_cmake_helpers_library_target} TYPE)
 	if(_cmake_helpers_library_target_type STREQUAL "INTERFACE_LIBRARY")
           if(NOT (_cmake_helpers_library_depend_scope STREQUAL "INTERFACE"))
