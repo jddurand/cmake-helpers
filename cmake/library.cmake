@@ -464,7 +464,7 @@ function(cmake_helpers_library name)
 	cmake_helpers_call(target_compile_options objs_${_cmake_helpers_library_target} ${_cmake_helpers_library_type_any_compile_options})
       endif()
       cmake_helpers_call(add_library iface_objs_${_cmake_helpers_library_target} INTERFACE EXCLUDE_FROM_ALL)
-      cmake_helpers_call(target_link_libraries iface_objs_${_cmake_helpers_library_target} INTERFACE objs_${_cmake_helpers_library_target} $<TARGE_OBJECTS:objs_${_cmake_helpers_library_target}>)
+      cmake_helpers_call(target_link_libraries iface_objs_${_cmake_helpers_library_target} INTERFACE objs_${_cmake_helpers_library_target} $<TARGET_OBJECTS:objs_${_cmake_helpers_library_target}>)
       #
       # We voluntarily do not add iface_objs_${_cmake_helpers_library_target} to _cmake_helpers_library_targets
       #
