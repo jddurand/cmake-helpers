@@ -664,7 +664,7 @@ function(cmake_helpers_library name)
 	get_target_property(_cmake_helpers_library_target_proxy_type ${_cmake_helpers_library_target_proxy} TYPE)
 	if(_cmake_helpers_library_target_proxy_type STREQUAL "SHARED_LIBRARY")
 	  cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PRIVATE -D${_cmake_helpers_library_export_header_shared_exports_define})
-	elseif(_cmake_helpers_library_target_type STREQUAL "STATIC_LIBRARY")
+	elseif(_cmake_helpers_library_target_proxy_type STREQUAL "STATIC_LIBRARY")
 	  cmake_helpers_call(target_compile_definitions ${_cmake_helpers_library_target} PUBLIC -D${_cmake_helpers_library_export_header_static_define})
 	endif()
       endif()
@@ -1746,7 +1746,7 @@ endif()
   # Send-out the targets
   #
   if(_cmake_helpers_library_targets_outvar)
-    set(${_cmake_helpers_library_targets_outvar} "${cmake_helpers_property_${PROJECT_NAME}_LibraryTargets}" PARENT_SCOPE)
+    set(${_cmake_helpers_library_targets_outvar} "${_cmake_helpers_library_targets}" PARENT_SCOPE)
   endif()
   #
   # End
