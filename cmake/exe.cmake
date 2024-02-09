@@ -567,7 +567,7 @@ function(setPathDirectories target directories_outvar)
     if(NOT _directory IN_LIST _directories)
       list(APPEND _directories ${_directory})
     endif()
-  endif()
+  endforeach()
   #
   # Get runtime paths (not working on windows, handled with the copy of dlls)
   #
