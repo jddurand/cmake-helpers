@@ -157,14 +157,12 @@ Function(cmake_helpers_exe name)
 	else()
           set(_cmake_helpers_exe_output_name "${name}_iface")
 	  set(_cmake_helpers_exe_link_type PUBLIC)
-	  # set(_cmake_helpers_exe_target_dir)
 	endif()
       elseif(_cmake_helpers_library_type STREQUAL "OBJECT_LIBRARY")
 	if(NOT _cmake_helpers_exe_exe_using_object_library)
 	  continue()
 	else()
           set(_cmake_helpers_exe_output_name "${name}_objs")
-	  # set(_cmake_helpers_exe_target_dir)
 	endif()
       else()
         message(FATAL_ERROR "Unsupported library type ${_cmake_helpers_library_type}")
@@ -257,8 +255,23 @@ Function(cmake_helpers_exe name)
         list(APPEND _cmake_helpers_exe_install_targets ${_cmake_helpers_exe_target})
       endif()
     endif()
+    #
+    # Test
+    #
     if(_cmake_helpers_exe_test)
       enable_testing()
+      #
+      # Specific to windows, no impact on other platforms
+      #
+      set(_cmake_helpers_exe_runtime_dlls_dir ${CMAKE_CURRENT_BINARY_DIR}/runtime_dlls/${_cmake_helpers_exe_target})
+      add_custom_command(TARGET ${_cmake_helpers_exe_target} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E rm -rf ${_cmake_helpers_exe_runtime_dlls_dir}
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${_cmake_helpers_exe_runtime_dlls_dir}
+      )
+      add_custom_command(TARGET ${_cmake_helpers_exe_target} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy -t ${_cmake_helpers_exe_runtime_dlls_dir} $<TARGET_RUNTIME_DLLS:${_cmake_helpers_exe_target}>
+	COMMAND_EXPAND_LISTS
+      )
       #
       # Recuperate path separator: if separator is ";" then we have to escape otherwise CTest will not understand
       #
@@ -270,7 +283,7 @@ Function(cmake_helpers_exe name)
       # - Target directory
       # - Locations of dependencies
       #
-      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_target_dir})
+      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_runtime_dlls_dir})
       appendPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths)
       #
       # Make sure they are expressed as native paths
@@ -278,7 +291,7 @@ Function(cmake_helpers_exe name)
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}] PATH hook")
       endif()
-      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_prepend_paths} ${_cmake_helpers_exe_target_dir})
+      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_prepend_paths})
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}]   prepend paths       : ${_cmake_helpers_exe_prepend_paths}")
       endif()
@@ -471,6 +484,13 @@ endfunction()
 function(getPathLocations target locations_outvar)
   set(_locations)
   cmake_helpers_call(get_target_property _libraries ${target} INTERFACE_LINK_LIBRARIES)
+  if(CMAKE_HELPERS_DEBUG)
+    if(_libraries)
+      message(STATUS "[${_cmake_helpers_logprefix}] INTERFACE_LINK_LIBRARIES: ${_libraries}")
+    else()
+      message(STATUS "[${_cmake_helpers_logprefix}] INTERFACE_LINK_LIBRARIES:")
+    endif()
+  endif()
   if(_libraries)
     foreach(_library IN LISTS _libraries)
       #
