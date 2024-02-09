@@ -284,7 +284,7 @@ Function(cmake_helpers_exe name)
       # - Locations of dependencies
       #
       set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_runtime_dlls_dir})
-      appendPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths)
+      appendPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_prepend_paths})
       #
       # Make sure they are expressed as native paths
       #
@@ -563,7 +563,7 @@ endfunction()
 function(appendPathDirectories target directories_outvar)
   set(_locations)
   getPathLocations(${target} _locations)
-  set(_directories)
+  set(_directories ${ARGN})
   foreach(_location IN LISTS _locations)
     #
     # We do not process location if it contains a generator expression, assume to start with "$<"
