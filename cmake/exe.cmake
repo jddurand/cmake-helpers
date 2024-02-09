@@ -280,21 +280,18 @@ Function(cmake_helpers_exe name)
       #
       # Environment modification:
       # - Environment set by the caller
+      # - dll runtime copies (effective on dll platforms only)
       # - Target directory
       # - Locations of dependencies
       #
       set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_runtime_dlls_dir})
-      appendPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_prepend_paths})
-      #
-      # Make sure they are expressed as native paths
-      #
-      if(CMAKE_HELPERS_DEBUG)
-	message(STATUS "[${_cmake_helpers_logprefix}] PATH hook")
-      endif()
-      set(_cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_environment} ${_cmake_helpers_exe_prepend_paths})
+      setPathDirectories(${_cmake_helpers_exe_target} _cmake_helpers_exe_prepend_paths ${_cmake_helpers_exe_prepend_paths})
       if(CMAKE_HELPERS_DEBUG)
 	message(STATUS "[${_cmake_helpers_logprefix}]   prepend paths       : ${_cmake_helpers_exe_prepend_paths}")
       endif()
+      #
+      # Make sure they are expressed as native paths
+      #
       cmake_path(CONVERT "${_cmake_helpers_exe_prepend_paths}" TO_NATIVE_PATH_LIST _cmake_helpers_exe_prepend_native_paths)
       if(_cmake_helpers_exe_test_sep STREQUAL ";")
 	string(REPLACE ";" "\\$<SEMICOLON>" _cmake_helpers_exe_prepend_native_paths "${_cmake_helpers_exe_prepend_native_paths}")
@@ -560,10 +557,22 @@ function(getPathLocations target locations_outvar)
   set(${locations_outvar} ${_locations} PARENT_SCOPE)
 endfunction()
 
-function(appendPathDirectories target directories_outvar)
+function(setPathDirectories target directories_outvar)
+  #
+  # Remove duplicates
+  #
+  set(_directories)
+  foreach(_directory ${ARGN})
+    cmake_path(CONVERT ${_directory} TO_CMAKE_PATH_LIST _directory NORMALIZE)
+    if(NOT _directory IN_LIST _directories)
+      list(APPEND _directories ${_directory})
+    endif()
+  endif()
+  #
+  # Get runtime paths (not working on windows, handled with the copy of dlls)
+  #
   set(_locations)
   getPathLocations(${target} _locations)
-  set(_directories ${ARGN})
   foreach(_location IN LISTS _locations)
     #
     # We do not process location if it contains a generator expression, assume to start with "$<"
