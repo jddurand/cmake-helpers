@@ -717,7 +717,9 @@ function(cmake_helpers_library name)
     # Target properties
     #
     if((_cmake_helpers_library_target_type STREQUAL "SHARED_LIBRARY") OR (_cmake_helpers_library_target_type STREQUAL "MODULE_LIBRARY"))
-      cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+      if(NOT $ENV{CMAKE_HELPERS_NAMELINK_SKIP})
+        cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+      endif()
     endif()
     if(HAVE_C99MODIFIERS)
       cmake_helpers_call(set_target_properties ${_cmake_helpers_library_target} PROPERTIES C_STANDARD 99)
