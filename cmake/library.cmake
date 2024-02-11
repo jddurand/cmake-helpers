@@ -1050,7 +1050,9 @@ foreach(_pc IN LISTS _pcs)
     list(APPEND _pcdirs ${_dir})
   endif()
 endforeach()
-message(STATUS "[${_cmake_helpers_logprefix}] _pcdirs: ${_pcdirs}")
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[${_cmake_helpers_logprefix}] _pcdirs: ${_pcdirs}")
+endif()
 if(_pcdirs)
   #
   # Recuperate path separator
@@ -1065,7 +1067,9 @@ if(_pcdirs)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}${_path_separator}${_pcdirs_join}")
   endif()
 endif()
-message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CONFIG_PATH}")
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[${_cmake_helpers_logprefix}] ENV{PKG_CONFIG_PATH}: $ENV{PKG_CONFIG_PATH}")
+endif()
 #
 # Alike for *.pc, look for *.cmake files that we installed locally
 #
@@ -1081,7 +1085,9 @@ foreach(_cmake IN LISTS _cmakes)
     list(APPEND _cmakedirs ${_dir})
   endif()
 endforeach()
-message(STATUS "[${_cmake_helpers_logprefix}] _cmakedirs: ${_cmakedirs}")
+if(CMAKE_HELPERS_DEBUG)
+  message(STATUS "[${_cmake_helpers_logprefix}] _cmakedirs: ${_cmakedirs}")
+endif()
 #
 # Prepend:
 # CMAKE_HELPERS_CMAKEDIR (final destination/lib/cmake)
