@@ -12,7 +12,7 @@
 int main() {
   float neg = -1.0;
   float pos = 1.0;
-  float res = copysignf(pos, neg);
+  float res = C_COPYSIGNF(pos, neg);
 
   exit(0);
 }

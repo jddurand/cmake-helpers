@@ -12,7 +12,7 @@
 int main() {
   long double neg = -1.0;
   long double pos = 1.0;
-  long double res = copysignl(pos, neg);
+  long double res = C_COPYSIGNL(pos, neg);
 
   exit(0);
 }
