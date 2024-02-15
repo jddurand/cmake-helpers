@@ -8,18 +8,22 @@
 #define C_UNLIKELY(x)  C__BUILTIN_EXPECT(!!(x), 0)
 
 /* Copied from https://kernelnewbies.org/FAQ/LikelyUnlikely */
-int main(int argc, char *argv[])
+int test_expect(char *s)
 {
    int a;
 
    /* Get the value from somewhere GCC can't optimize */
-   a = atoi (argv[1]);
+   a = atoi(s);
 
    if (C_UNLIKELY(a == 2)) {
       a++;
    } else {
       a--;
    }
+}
 
+int main(int argc, char *argv[])
+{
+   test_expect("1");
    exit(0);
 }
