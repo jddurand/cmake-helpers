@@ -96,7 +96,7 @@ function(cmake_helpers_package)
   # Single-value arguments default values
   #
   set(_cmake_helpers_package_name                              ${PROJECT_NAME})
-  set(_cmake_helpers_package_vendor                            " ")
+  set(_cmake_helpers_package_vendor                            ${PROJECT_NAME})
   set(_cmake_helpers_package_description_summary               "${_cmake_helpers_package_name}")
   set(_cmake_helpers_package_license                           ${PROJECT_SOURCE_DIR}/LICENSE)
   set(_cmake_helpers_package_install_directory                 "${_cmake_helpers_package_name}")
