@@ -10,20 +10,20 @@ function(cmake_helpers_try_run name configure_input)
     set(_found_value FALSE)
     if (_values)
       foreach(_value ${_values})
-	list(APPEND _compile_definitions -D${name}=${_value})
+	set(_compile_and_value_definitions ${_compile_definitions} -D${name}=${_value})
 	message(STATUS "Looking for ${_value}")
 	try_run(
 	  _run_result
 	  _compile_result
 	  SOURCE_FROM_FILE _try.c ${_configure_output}
-	  COMPILE_DEFINITIONS ${_compile_definitions}
+	  COMPILE_DEFINITIONS ${_compile_and_value_definitions}
 	  COMPILE_OUTPUT_VARIABLE _compile_output
 	  RUN_OUTPUT_VARIABLE _run_output
 	)
 	if(CMAKE_HELPERS_DEBUG)
 	  file(READ ${_configure_output} _source)
 	  message(STATUS "Source:\n${_source}")
-	  message(STATUS "Compile definitions: ${_compile_definitions}")
+	  message(STATUS "Compile definitions: ${_compile_and_value_definitions}")
 	  message(STATUS "Compile result: ${_compile_result}")
 	  message(STATUS "Compile output:\n${_compile_output}")
 	  message(STATUS "Run result: ${_run_result}")
