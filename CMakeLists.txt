@@ -91,12 +91,13 @@ foreach(_cmake_helpers_type bin include doc lib man dataroot java javadoc)
   set(CMAKE_HELPERS_INSTALL_${_cmake_helpers_type_toupper}DIR ${CMAKE_INSTALL_${_cmake_helpers_type_toupper}DIR} CACHE PATH "${_cmake_helpers_type} install directory" FORCE)
 endforeach()
 #
-# ... Our interpretation of where should be html, cmake and pkgconfig files
+# ... Our interpretation of where should be html, md, cmake and pkgconfig files
 #
 set(_cmake_helpers_install_htmldir_default      ${CMAKE_INSTALL_DOCDIR}/html)
 set(_cmake_helpers_install_cmakedir_default     ${CMAKE_INSTALL_LIBDIR}/cmake)
 set(_cmake_helpers_install_pkgconfigdir_default ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-foreach(_cmake_helpers_type html cmake pkgconfig)
+set(_cmake_helpers_install_mddir_default        ${CMAKE_INSTALL_DOCDIR}/md)
+foreach(_cmake_helpers_type html cmake pkgconfig md)
   string(TOUPPER "${_cmake_helpers_type}" _cmake_helpers_type_toupper)
   set(CMAKE_HELPERS_INSTALL_${_cmake_helpers_type_toupper}DIR ${_cmake_helpers_install_${_cmake_helpers_type}dir_default} CACHE PATH "${_cmake_helpers_type} install directory" FORCE)
 endforeach()

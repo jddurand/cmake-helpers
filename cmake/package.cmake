@@ -11,6 +11,7 @@ function(cmake_helpers_package)
   # - cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent            : Boolean indicating presence of COMPONENT ${PROJECT_NAME}HtmlComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveManComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ManComponent
   # - cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent             : Boolean indicating presence of COMPONENT ${PROJECT_NAME}ExeComponent
+  # - cmake_helpers_property_${PROJECT_NAME}_HaveMdComponent              : Boolean indicating presence of COMPONENT ${PROJECT_NAME}MdComponent
   # ============================================================================================================
   #
   # We do not want to package if we install nothing
@@ -40,6 +41,7 @@ function(cmake_helpers_package)
     cmake_helpers_property_${PROJECT_NAME}_HaveManComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveHtmlComponent
     cmake_helpers_property_${PROJECT_NAME}_HaveExeComponent
+    cmake_helpers_property_${PROJECT_NAME}_HaveMdComponent
   )
   if(CMAKE_HELPERS_DEBUG)
     message(STATUS "[${_cmake_helpers_logprefix}] -------------")
@@ -88,6 +90,8 @@ function(cmake_helpers_package)
     HTML_DESCRIPTION
     APPLICATION_DISPLAY_NAME
     APPLICATION_DESCRIPTION
+    MD_DISPLAY_NAME
+    MD_DESCRIPTION
   )
   set(_multiValueArgs
     EXTRA_LICENSES
@@ -128,6 +132,8 @@ function(cmake_helpers_package)
   set(_cmake_helpers_package_html_description                  "${PROJECT_NAME} documentation in the html format")
   set(_cmake_helpers_package_application_display_name          "${PROJECT_NAME} applications")
   set(_cmake_helpers_package_application_description           "${PROJECT_NAME} executables")
+  set(_cmake_helpers_package_md_display_name                   "${PROJECT_NAME} md")
+  set(_cmake_helpers_package_md_description                    "${PROJECT_NAME} documentation in the markdown format")
   #
   # Multiple-value arguments default values
   #
@@ -163,7 +169,7 @@ function(cmake_helpers_package)
   # (that is a list of licenses files)
   #
   set(_developmentGroupParts runtime library archive header config)
-  set(_documentationGroupParts man html)
+  set(_documentationGroupParts man html md)
   set(_runtimeGroupParts exe)
   foreach(_part IN LISTS _developmentGroupParts _documentationGroupParts _runtimeGroupParts)
     _cmake_helpers_package_toupper_firstletter("${_part}" _part_toupper_firstletter)
@@ -634,7 +640,7 @@ set(ENV{CMAKE_HELPERS_CPACK_IS_RUNNING} TRUE)
     else()
       set(_cmake_helpers_package_can_developmentgroup FALSE)
     endif()
-    if(cmake_helpers_package_ManComponents OR cmake_helpers_package_HtmlComponents)
+    if(cmake_helpers_package_ManComponents OR cmake_helpers_package_HtmlComponents OR cmake_helpers_package_MdComponents)
       set(_cmake_helpers_package_can_documentationgroup TRUE)
     else()
       set(_cmake_helpers_package_can_documentationgroup FALSE)
