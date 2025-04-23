@@ -11,6 +11,7 @@ set(_cmake_helpers_options
   CMAKE_HELPERS_GENERATE_STDINT_H
   CMAKE_HELPERS_GENERATE_INTTYPES_H
   CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO
+  CMAKE_HELPERS_INIT
 )
 # Not all options are boolean
 #
@@ -21,6 +22,7 @@ set(CMAKE_HELPERS_DEBUG                         OFF                             
 set(CMAKE_HELPERS_GENERATE_STDINT_H             ON                                        CACHE BOOL "stdint.h generation if not found")
 set(CMAKE_HELPERS_GENERATE_INTTYPES_H           ON                                        CACHE BOOL "inttypes.h generation if not found")
 set(CMAKE_HELPERS_EXCLUDE_INSTALL_FROM_ALL_AUTO ON                                        CACHE BOOL "Exclude install of sub-projects")
+set(CMAKE_HELPERS_INIT                          ON                                        CACHE BOOL "Perform standard initializations - can be OFF")
 #
 # Save options for reuse in cmake_generate_options
 #
@@ -58,7 +60,9 @@ endforeach()
 #
 # Initialize
 #
-cmake_helpers_init()
+if(CMAKE_HELPERS_INIT)
+  cmake_helpers_init()
+endif()
 #
 # ... Standard include dirs
 #
